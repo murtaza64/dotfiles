@@ -15,6 +15,7 @@ source ~/.dotfiles/zsh/murtaza.zsh-theme
 # custom aliases
 alias less='less --mouse --wheel-lines 3'
 export PAGER='less --mouse --wheel-lines 3'
+alias grep='grep --color=auto'
 
 # fuck
 if command -v thefuck >/dev/null; then
