@@ -36,3 +36,20 @@ fi
 source /usr/share/doc/fzf/examples/completion.zsh
 source /usr/share/doc/fzf/examples/key-bindings.zsh
 export FZF_DEFAULT_OPTS="--multi --bind 'ctrl-a:select-all'"
+
+function h {
+    if [ "$#" -eq 0 ]; then
+        local cmd=$(history | sed "s/^[ \t]*//" \
+            | sed "s/^[0-9]\+\s\+//" | fzf --tac)
+    else
+        local cmd=$(history | sed "s/^[ \t]*//" \
+            | sed "s/^[0-9]\+\s\+//" | fzf --tac -q ${(j[ ])@})
+    fi
+    if [[ ! -z $cmd ]]; then
+        echo $cmd
+        print -s $cmd
+        eval $cmd
+    else
+        return 2
+    fi
+}
