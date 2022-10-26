@@ -1,6 +1,11 @@
-ZSH_ROOT=~/.dotfiles/zsh
+ZSH_ROOT=~/.config/zsh
+autoload -Uz compinit
+compinit
+ZSHRCLOG=0
 function log {
-    echo "zshrc: $1"
+    if [[ $ZSHRCLOG -ne 0 ]]; then
+        echo "zshrc: $1"
+    fi
 }
 
 # borrowed from oh-my-zsh
@@ -10,7 +15,7 @@ for zshfile ($ZSH_ROOT/*.zsh); do
     source $zshfile
 done
 
-source ~/.dotfiles/zsh/murtaza.zsh-theme
+source $ZSH_ROOT/murtaza.zsh-theme
 
 # custom aliases
 alias less='less --mouse --wheel-lines 3'
@@ -34,17 +39,21 @@ else
 fi
 
 # fzf
-source /usr/share/doc/fzf/examples/completion.zsh
-source /usr/share/doc/fzf/examples/key-bindings.zsh
-export FZF_DEFAULT_OPTS="--multi --bind 'ctrl-a:select-all'"
+if [[ -f "/usr/share/doc/fzf" ]]; then
+    source /usr/share/doc/fzf/examples/completion.zsh
+    source /usr/share/doc/fzf/examples/key-bindings.zsh
+    export FZF_DEFAULT_OPTS="--multi --bind 'ctrl-a:select-all'"
+else
+    log "fzf not found"
+fi
 
 function h {
     if [ "$#" -eq 0 ]; then
         local cmd=$(history | sed "s/^[ \t]*//" \
-            | sed "s/^[0-9]\+\s\+//" | fzf --tac)
+            | sed "s/^[0-9]\+\s\+//" | tac | awk '!seen[$0]++' | fzf)
     else
         local cmd=$(history | sed "s/^[ \t]*//" \
-            | sed "s/^[0-9]\+\s\+//" | fzf --tac -q ${(j[ ])@})
+            | sed "s/^[0-9]\+\s\+//" | tac | awk '!seen[$0]++' | fzf -q ${(j[ ])@})
     fi
     if [[ ! -z $cmd ]]; then
         echo $cmd
@@ -54,3 +63,8 @@ function h {
         return 2
     fi
 }
+
+source "$ZSH_ROOT/rcnt.zsh"
+
+# spacevim
+export SPACEVIMDIR=.config/SpaceVim
