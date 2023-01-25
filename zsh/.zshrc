@@ -1,4 +1,5 @@
-ZSH_ROOT=~/.config/zsh
+# ZSH_ROOT=~/.config/zsh
+# This should be set in .zshenv
 autoload -Uz compinit
 compinit
 ZSHRCLOG=0
