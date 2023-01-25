@@ -41,10 +41,10 @@ export FZF_DEFAULT_OPTS="--multi --bind 'ctrl-a:select-all'"
 function h {
     if [ "$#" -eq 0 ]; then
         local cmd=$(history | sed "s/^[ \t]*//" \
-            | sed "s/^[0-9]\+\s\+//" | fzf --tac)
+            | sed "s/^[0-9]\+\s\+//" | fzf --tac --tiebreak=index)
     else
         local cmd=$(history | sed "s/^[ \t]*//" \
-            | sed "s/^[0-9]\+\s\+//" | fzf --tac -q ${(j[ ])@})
+            | sed "s/^[0-9]\+\s\+//" | fzf --tac ---tiebreak=index q ${(j[ ])@})
     fi
     if [[ ! -z $cmd ]]; then
         echo $cmd
