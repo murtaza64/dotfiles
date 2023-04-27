@@ -1,4 +1,7 @@
 PROMPT=$'\n'
+if [[ -v SSH_CLIENT ]]; then
+	PROMPT+='%{$FG[213]%}(%n@%m via ssh) '
+fi
 PROMPT+='%{$FG[247]%}%~%{$reset_color%} $(git_prompt_info)'
 PROMPT+="%(?:%{$fg_bold[green]%}$:%{$FG[168]%}$)%{$reset_color%} "
 
