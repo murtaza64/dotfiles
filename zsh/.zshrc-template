@@ -1,0 +1,2 @@
+# Add system-specific configuration to this file
+source "$ZSH_ROOT/zshrc-global"
