@@ -58,13 +58,13 @@ function h {
             | sed "s/^[0-9]\+\s\+//" | tac | awk '!seen[$0]++' | fzf --tiebreak=index -q ${(j[ ])@})
     fi
     if [[ ! -z $cmd ]]; then
-        echo $cmd
-        print -s $cmd
-        eval $cmd
+        print -z $cmd
     else
         return 2
     fi
 }
+zle -N interactive-history h
+bindkey '^[h' interactive-history
 
 source "$ZSH_ROOT/rcnt.zsh"
 
