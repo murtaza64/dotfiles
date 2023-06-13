@@ -50,15 +50,18 @@ else
 fi
 
 function h {
+    local fzf_options=(--border=rounded --border-label="zsh history" 
+         --border-label-pos=bottom)
     if [ "$#" -eq 0 ]; then
         local cmd=$(history | sed "s/^[ \t]*//" \
-            | sed "s/^[0-9]\+\s\+//" | tac | awk '!seen[$0]++' | fzf --tiebreak=index)
+            | sed "s/^[0-9*]\+\s\+//" | tac | awk '!seen[$0]++' | fzf $fzf_options --tiebreak=index)
     else
         local cmd=$(history | sed "s/^[ \t]*//" \
-            | sed "s/^[0-9]\+\s\+//" | tac | awk '!seen[$0]++' | fzf --tiebreak=index -q ${(j[ ])@})
+            | sed "s/^[0-9*]\+\s\+//" | tac | awk '!seen[$0]++' | fzf $fzf_options \
+            --tiebreak=index -q ${(j[ ])@})
     fi
     if [[ ! -z $cmd ]]; then
-        print -z $cmd
+        zle -U $cmd 2> /dev/null || print -z $cmd
     else
         return 2
     fi

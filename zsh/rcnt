@@ -1,3 +1,0 @@
-#! /usr/bin/zsh
-echo "/etc/X11/xorg.conf:2 hours ago"
-echo "/home/murtaza/.config/zsh:20 minutes ago"

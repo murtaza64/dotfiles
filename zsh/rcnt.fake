@@ -1,0 +1,9 @@
+#! /usr/bin/zsh
+echo "/home/murtaza/.config/zsh:20 minutes ago"
+echo "/home/murtaza/.config/zsh/.zshrc:20 minutes ago"
+echo "/z/y/x:1 hours ago"
+echo "/c/d/e:3 hours ago"
+echo "/d/e/f:3 hours ago"
+echo "/a/b/c:3 hours ago"
+echo "/etc/X11/xorg.conf:2 hours ago"
+
