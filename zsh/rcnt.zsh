@@ -29,4 +29,5 @@ rcnt_add() {
         fi
     done
 }
+autoload -Uz add-zsh-hook
 add-zsh-hook preexec rcnt_add
