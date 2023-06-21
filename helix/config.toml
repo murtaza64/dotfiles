@@ -1,0 +1,9 @@
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[keys.normal]
+"A-j" = ["extend_to_line_bounds", "delete_selection", "paste_after"]
+"A-k" = ["extend_to_line_bounds", "delete_selection", "move_line_up", "paste_before"]
+"C-n" = ["save_selection", "move_line_down", "goto_line_start", "insert_newline", "jump_backward"]
