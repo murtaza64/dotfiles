@@ -64,6 +64,7 @@ vim.opt.rtp:prepend(lazypath)
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
+  'kmonad/kmonad-vim',
 
   -- Git related plugins
   'tpope/vim-fugitive',
@@ -228,6 +229,20 @@ vim.o.mouse = 'a'
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
+if os.getenv("WSL_DITRO_NAME") ~= "" then
+  vim.g.clipboard = {
+    name = 'myClipboard',
+    copy = {
+      ["+"] = {'tmux', 'load-buffer', '-'},
+      ["*"] = {'tmux', 'load-buffer', '-'},
+    },
+    paste = {
+      ["+"] = {'tmux', 'save-buffer', '-'},
+      ["*"] = {'tmux', 'save-buffer', '-'},
+    },
+    cache_enabled = 1,
+  }
+end
 vim.o.clipboard = 'unnamedplus'
 
 -- Enable break indent
@@ -268,8 +283,17 @@ vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 vim.keymap.set('c', '<CR>', "wildmenumode()? '<C-y>' : '<CR>'", { expr = true, silent = true})
 
 -- CR clears search highlighting
-vim.keymap.set('n', '<CR>', ":noh<CR><CR>", { silent = true })
+-- vim.keymap.set('n', '<CR>', ":noh<CR><CR>", { silent = true })
 
+-- Esc clears search highlighting in normal mode
+vim.keymap.set('n', '<Esc>', function()
+  if vim.v.hlsearch ~= 0 then
+   vim.cmd("noh")
+  else
+    local keys = vim.api.nvim_replace_termcodes('<Esc>', true, false, true)
+    vim.api.nvim_feedkeys(keys, 'n', false)
+  end
+end)
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
