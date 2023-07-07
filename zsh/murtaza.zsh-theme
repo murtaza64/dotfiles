@@ -21,24 +21,4 @@ ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[blue]%}✈"
 export LSCOLORS="exfxcxdxbxegedabagacad"
 export LS_COLORS="di=36:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43"
 
-function zle-line-init zle-keymap-select {
-    # local normal_prompt="%{$bg[blue]%}%{$fg_bold[black]%} NORMAL %{$reset_color%}"
-    # local insert_prompt="%{$bg[green]%}%{$fg_bold[black]%} INSERT %{$reset_color%}"
-    # RPS1="${${KEYMAP/vicmd/$normal_prompt}/(main|viins)/$insert_prompt}"
-    # RPS2=$RPS1
-    # zle reset-prompt
-    if [[ ${KEYMAP} == vicmd ]] ||
-	    [[ $1 = 'block' ]]; then
-	echo -ne '\e[2 q'
-
-    elif [[ ${KEYMAP} == main ]] ||
-	    [[ ${KEYMAP} == viins ]] ||
-	    [[ ${KEYMAP} = '' ]] ||
-	    [[ $1 = 'beam' ]]; then
-	echo -ne '\e[5 q'
-    fi
-}
-
-zle -N zle-line-init
-zle -N zle-keymap-select
 

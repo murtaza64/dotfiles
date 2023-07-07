@@ -154,3 +154,5 @@ bindkey '^H' backward-kill-word
 bindkey -M viins '^H' backward-kill-word
 
 bindkey -M vicmd 'q' push-line
+
+export KEYTIMEOUT=1

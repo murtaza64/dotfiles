@@ -1,0 +1,16 @@
+[core]
+	pager = delta -n
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+
+[user]
+	email = murtaza.javaid@gmail.com
+	name = Murtaza Javaid
+
+[credential "https://github.com"]
+	username = murtaza64
+	helper = /home/murtaza/.config/git/git-credential-bw
