@@ -75,6 +75,13 @@ require('lazy').setup({
   {
     'christoomey/vim-tmux-navigator',
     lazy = false,
+    init = function()
+      vim.g.tmux_navigator_no_mappings = 1
+      vim.keymap.set({"n", "v", "s", "o"}, "<C-M-h>", ":<C-U>TmuxNavigateLeft<cr>", { silent = true })
+      vim.keymap.set({"n", "v", "s", "o"}, "<C-M-j>", ":<C-U>TmuxNavigateDown<cr>", { silent = true })
+      vim.keymap.set({"n", "v", "s", "o"}, "<C-M-k>", ":<C-U>TmuxNavigateUp<cr>", { silent = true })
+      vim.keymap.set({"n", "v", "s", "o"}, "<C-M-l>", ":<C-U>TmuxNavigateRight<cr>", { silent = true })
+    end,
   },
 
   -- NOTE: This is where your plugins related to LSP can be installed.
@@ -142,19 +149,6 @@ require('lazy').setup({
     end,
   },
 
-  {
-      -- Set lualine as statusline
-      'nvim-lualine/lualine.nvim',
-    -- See `:help lualine.txt`
-    opts = {
-      options = {
-        icons_enabled = false,
-        theme = 'catppuccin',
-        component_separators = '|',
-        section_separators = '',
-      },
-    },
-  },
 
   {
     -- Add indentation guides even on blank lines
@@ -162,7 +156,7 @@ require('lazy').setup({
     -- Enable `lukas-reineke/indent-blankline.nvim`
     -- See `:help indent_blankline.txt`
     opts = {
-      char = '┊',
+      -- char = '┊',
       show_trailing_blankline_indent = false,
     },
   },
@@ -213,12 +207,20 @@ require('lazy').setup({
 -- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
 
--- Set highlight on search
-vim.o.hlsearch = false
-
 -- Make line numbers default
 vim.wo.number = true
 vim.wo.relativenumber = true
+
+vim.o.hlsearch = true
+
+vim.opt.listchars = {
+  space = '⋅',
+  trail = '⋅',
+  tab = '» ',
+}
+
+-- Don't show default search progress
+vim.o.shortmess = vim.o.shortmess .. 'S'
 
 -- Enable mouse mode
 vim.o.mouse = 'a'
@@ -261,7 +263,12 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 -- Remap for dealing with word wrap
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+
+-- Enter selects highlighted item in command mode wildmenu
 vim.keymap.set('c', '<CR>', "wildmenumode()? '<C-y>' : '<CR>'", { expr = true, silent = true})
+
+-- CR clears search highlighting
+vim.keymap.set('n', '<CR>', ":noh<CR><CR>", { silent = true })
 
 
 -- [[ Highlight on yank ]]
@@ -303,7 +310,13 @@ vim.keymap.set('n', '<leader>/', function()
 end, { desc = '[/] Fuzzily search in current buffer' })
 
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
-vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
+vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, { desc = '[F]ind [F]iles' })
+vim.keymap.set('n', '<leader>fa', function()
+  require('telescope.builtin').find_files({
+    find_command = {"find", "-L", "-not", "-path", "**/.git/*"},
+    hidden = true,
+  })
+end, { desc = '[F]ind [A]ll files (hidden and symlink)' })
 vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
@@ -410,7 +423,7 @@ local on_attach = function(_, bufnr)
 
   -- See `:help K` for why this keymap
   nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
-  nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
+  -- nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
 
   -- Lesser used LSP functionality
   nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
