@@ -41,35 +41,34 @@ else
 fi
 
 # fzf
-if [[ -f "/usr/share/doc/fzf" ]]; then
+if [[ -d "/usr/share/doc/fzf" ]]; then
     source /usr/share/doc/fzf/examples/completion.zsh
     source /usr/share/doc/fzf/examples/key-bindings.zsh
-    export FZF_DEFAULT_OPTS="--multi --bind 'ctrl-a:select-all'"
+    # export FZF_DEFAULT_OPTS="--multi --bind 'ctrl-a:select-all'"
+elif [[ -d "/usr/share/fzf" ]]; then
+    source /usr/share/fzf/completion.zsh
+    source /usr/share/fzf/key-bindings.zsh
 else
     log "fzf not found"
 fi
 
-function h {
-    local fzf_options=(--border=rounded --border-label="zsh history" 
-         --border-label-pos=bottom)
-    if [ "$#" -eq 0 ]; then
-        local cmd=$(history | sed "s/^[ \t]*//" \
-            | sed "s/^[0-9*]\+\s\+//" | tac | awk '!seen[$0]++' | fzf $fzf_options --tiebreak=index)
-    else
-        local cmd=$(history | sed "s/^[ \t]*//" \
-            | sed "s/^[0-9*]\+\s\+//" | tac | awk '!seen[$0]++' | fzf $fzf_options \
-            --tiebreak=index -q ${(j[ ])@})
-    fi
-    if [[ ! -z $cmd ]]; then
-        zle -U $cmd 2> /dev/null || print -z $cmd
-    else
-        return 2
-    fi
-}
-zle -N interactive-history h
-bindkey '^[h' interactive-history
-
-source "$ZSH_ROOT/rcnt.zsh"
-
-# spacevim
-export SPACEVIMDIR=.config/SpaceVim
+# My history widget is made obsolete by builtin fzf functionality :(
+# function h {
+#     local fzf_options=(--border=rounded --border-label="zsh history" 
+#          --border-label-pos=bottom)
+#     if [ "$#" -eq 0 ]; then
+#         local cmd=$(history | sed "s/^[ \t]*//" \
+#             | sed "s/^[0-9*]\+\s\+//" | tac | awk '!seen[$0]++' | fzf $fzf_options --tiebreak=index)
+#     else
+#         local cmd=$(history | sed "s/^[ \t]*//" \
+#             | sed "s/^[0-9*]\+\s\+//" | tac | awk '!seen[$0]++' | fzf $fzf_options \
+#             --tiebreak=index -q ${(j[ ])@})
+#     fi
+#     if [[ ! -z $cmd ]]; then
+#         zle -U $cmd 2> /dev/null || print -z $cmd
+#     else
+#         return 2
+#     fi
+# }
+# zle -N interactive-history h
+# bindkey '^[h' interactive-history

@@ -15,30 +15,58 @@ if (( ${+terminfo[smkx]} )) && (( ${+terminfo[rmkx]} )); then
   zle -N zle-line-finish
 fi
 
-# Use emacs key bindings
-bindkey -e
+# Use vim key bindings
+bindkey -v
+
+# Change cursor based on mode
+function zle-line-init zle-keymap-select {
+    # local normal_prompt="%{$bg[blue]%}%{$fg_bold[black]%} NORMAL %{$reset_color%}"
+    # local insert_prompt="%{$bg[green]%}%{$fg_bold[black]%} INSERT %{$reset_color%}"
+    # RPS1="${${KEYMAP/vicmd/$normal_prompt}/(main|viins)/$insert_prompt}"
+    # RPS2=$RPS1
+    # zle reset-prompt
+    if [[ ${KEYMAP} == vicmd ]] ||
+	    [[ $1 = 'block' ]]; then
+	echo -ne '\e[2 q'
+
+    elif [[ ${KEYMAP} == main ]] ||
+	    [[ ${KEYMAP} == viins ]] ||
+	    [[ ${KEYMAP} = '' ]] ||
+	    [[ $1 = 'beam' ]]; then
+	echo -ne '\e[5 q'
+    fi
+}
+
+zle -N zle-line-init
+zle -N zle-keymap-select
+
 
 # [PageUp] - Up a line of history
-if [[ -n "${terminfo[kpp]}" ]]; then
-  bindkey -M emacs "${terminfo[kpp]}" up-line-or-history
-  bindkey -M viins "${terminfo[kpp]}" up-line-or-history
-  bindkey -M vicmd "${terminfo[kpp]}" up-line-or-history
-fi
+# if [[ -n "${terminfo[kpp]}" ]]; then
+#   bindkey -M emacs "${terminfo[kpp]}" up-line-or-history
+#   bindkey -M viins "${terminfo[kpp]}" up-line-or-history
+#   bindkey -M vicmd "${terminfo[kpp]}" up-line-or-history
+# fi
 # [PageDown] - Down a line of history
-if [[ -n "${terminfo[knp]}" ]]; then
-  bindkey -M emacs "${terminfo[knp]}" down-line-or-history
-  bindkey -M viins "${terminfo[knp]}" down-line-or-history
-  bindkey -M vicmd "${terminfo[knp]}" down-line-or-history
-fi
+# if [[ -n "${terminfo[knp]}" ]]; then
+#   bindkey -M emacs "${terminfo[knp]}" down-line-or-history
+#   bindkey -M viins "${terminfo[knp]}" down-line-or-history
+#   bindkey -M vicmd "${terminfo[knp]}" down-line-or-history
+# fi
 
 # Start typing + [Up-Arrow] - fuzzy find history forward
+# There seem to be two different key codes sets for up/down
+# https://invisible-island.net/xterm/manpage/xterm.html#h3-Special-Keys
 if [[ -n "${terminfo[kcuu1]}" ]]; then
   autoload -U up-line-or-beginning-search
   zle -N up-line-or-beginning-search
 
   bindkey -M emacs "${terminfo[kcuu1]}" up-line-or-beginning-search
   bindkey -M viins "${terminfo[kcuu1]}" up-line-or-beginning-search
+  bindkey -M viins "^[[A" up-line-or-beginning-search
+  bindkey -M viins "^K" up-line-or-beginning-search
   bindkey -M vicmd "${terminfo[kcuu1]}" up-line-or-beginning-search
+  bindkey -M vicmd "k" up-line-or-beginning-search
 fi
 # Start typing + [Down-Arrow] - fuzzy find history backward
 if [[ -n "${terminfo[kcud1]}" ]]; then
@@ -47,7 +75,10 @@ if [[ -n "${terminfo[kcud1]}" ]]; then
 
   bindkey -M emacs "${terminfo[kcud1]}" down-line-or-beginning-search
   bindkey -M viins "${terminfo[kcud1]}" down-line-or-beginning-search
+  bindkey -M viins "^[[B" down-line-or-beginning-search
+  bindkey -M viins "^J" down-line-or-beginning-search
   bindkey -M vicmd "${terminfo[kcud1]}" down-line-or-beginning-search
+  bindkey -M vicmd "j" down-line-or-beginning-search
 fi
 
 # [Home] - Go to beginning of line
@@ -118,23 +149,8 @@ bindkey '\C-x\C-e' edit-command-line
 # file rename magick
 bindkey "^[m" copy-prev-shell-word
 
-# consider emacs keybindings:
-
-#bindkey -e  ## emacs key bindings
-#
-#bindkey '^[[A' up-line-or-search
-#bindkey '^[[B' down-line-or-search
-#bindkey '^[^[[C' emacs-forward-word
-#bindkey '^[^[[D' emacs-backward-word
-#
-#bindkey -s '^X^Z' '%-^M'
-#bindkey '^[e' expand-cmd-path
-#bindkey '^[^I' reverse-menu-complete
-#bindkey '^X^N' accept-and-infer-next-history
-#bindkey '^W' kill-region
-#bindkey '^I' complete-word
-## Fix weird sequence that rxvt produces
-#bindkey -s '^[[Z' '\t'
-#
-
+# [Ctrl-backspace] - delete word backwards
 bindkey '^H' backward-kill-word
+bindkey -M viins '^H' backward-kill-word
+
+bindkey -M vicmd 'q' push-line

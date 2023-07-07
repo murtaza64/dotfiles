@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-echo $PLUGIN_DIR
 
 get_tmux_option() {
   local option value default
@@ -173,6 +172,9 @@ main() {
 
   local in_copy_mode
   readonly in_copy_mode="#[bg=${thm_yellow},fg=${thm_bg},bold]#{?#{==:#{pane_mode},copy-mode}, COPY ,}"
+  
+  local in_view_mode
+  readonly in_view_mode="#[bg=${thm_yellow},fg=${thm_bg},bold]#{?#{==:#{pane_mode},view-mode}, VIEW ,}"
 
   local in_prefix_mode
   readonly in_prefix_mode="#[bg=${thm_red},fg=${thm_bg},bold]#{?client_prefix, PREFIX ,}"
@@ -180,7 +182,7 @@ main() {
   tmux bind-key -T prefix ':' "command-prompt -F -p \"#[bg=${thm_cyan}]#[fg=${thm_bg}]#[bold] TMUX CMD #[nobold]#[bg=${thm_gray}]#[fg=${thm_cyan}]:\""
   # tmux bind-key -T prefix ':' "command-prompt -F -p \"#[bg=${thm_cyan}]HELLO\""
 
-  set status-left "${in_copy_mode}${in_prefix_mode}"
+  set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}"
 
   set status-right "${right_column1},${right_column2}"
 
