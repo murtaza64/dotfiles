@@ -41,6 +41,9 @@ P.S. You can delete this when you're done too. It's your config now :)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+require('delta')
+vim.keymap.set({"n"}, "<leader>u", ":UnsavedChanges<CR>")
+
 -- Install package manager
 --    https://github.com/folke/lazy.nvim
 --    `:help lazy.nvim.txt` for more info
@@ -65,6 +68,16 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
   'kmonad/kmonad-vim',
+  {
+    'ggandor/leap.nvim',
+    lazy = false,
+    config = function()
+      require('leap').setup({
+        highlight_unlabeled_phase_one_targets = true
+      })
+      require('leap').add_default_mappings()
+    end
+  },
 
   -- Git related plugins
   'tpope/vim-fugitive',
@@ -78,10 +91,10 @@ require('lazy').setup({
     lazy = false,
     init = function()
       vim.g.tmux_navigator_no_mappings = 1
-      vim.keymap.set({"n", "v", "s", "o"}, "<C-M-h>", ":<C-U>TmuxNavigateLeft<cr>", { silent = true })
-      vim.keymap.set({"n", "v", "s", "o"}, "<C-M-j>", ":<C-U>TmuxNavigateDown<cr>", { silent = true })
-      vim.keymap.set({"n", "v", "s", "o"}, "<C-M-k>", ":<C-U>TmuxNavigateUp<cr>", { silent = true })
-      vim.keymap.set({"n", "v", "s", "o"}, "<C-M-l>", ":<C-U>TmuxNavigateRight<cr>", { silent = true })
+      vim.keymap.set({"n", "v", "s"}, "<C-M-h>", ":<C-U>TmuxNavigateLeft<cr>", { silent = true })
+      vim.keymap.set({"n", "v", "s"}, "<C-M-j>", ":<C-U>TmuxNavigateDown<cr>", { silent = true })
+      vim.keymap.set({"n", "v", "s"}, "<C-M-k>", ":<C-U>TmuxNavigateUp<cr>", { silent = true })
+      vim.keymap.set({"n", "v", "s"}, "<C-M-l>", ":<C-U>TmuxNavigateRight<cr>", { silent = true })
     end,
   },
 
@@ -121,7 +134,15 @@ require('lazy').setup({
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  {
+    'folke/which-key.nvim',
+    opts = {
+      operators = {
+        ys = "Surround"
+      },
+    },
+  },
+
   {
     -- Adds git releated signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -164,6 +185,20 @@ require('lazy').setup({
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
+
+  {
+    "kylechui/nvim-surround",
+    version = "*", -- Use for stability; omit to use `main` branch for the latest features
+    event = "VeryLazy",
+    config = function()
+      require("nvim-surround").setup({
+        keymaps = {
+          visual = "gs",
+          visual_line = "gS"
+        }
+      })
+    end
+  },
 
   -- Fuzzy Finder (files, lsp, etc)
   { 'nvim-telescope/telescope.nvim', branch = '0.1.x', dependencies = { 'nvim-lua/plenary.nvim' } },
@@ -523,8 +558,8 @@ cmp.setup {
   mapping = cmp.mapping.preset.insert {
     ['<C-n>'] = cmp.mapping.select_next_item(),
     ['<C-p>'] = cmp.mapping.select_prev_item(),
-    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-d>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete {},
     ['<CR>'] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Replace,
