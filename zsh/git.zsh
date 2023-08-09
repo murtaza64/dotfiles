@@ -29,7 +29,13 @@ function git_prompt_info() {
     && upstream=" -> ${upstream}"
   fi
 
-  echo "${ZSH_THEME_GIT_PROMPT_PREFIX}${ref:gs/%/%%}${upstream:gs/%/%%}$(parse_git_dirty)$(git_remote_status)${ZSH_THEME_GIT_PROMPT_SUFFIX}"
+  local remote dirty icons
+  dirty=$(parse_git_dirty)
+  remote=$(git_remote_status)
+  if [[ -n "$dirty" ]] || [[ -n "$remote" ]]; then
+    icons=" $dirty$remote"
+  fi
+  echo "${ZSH_THEME_GIT_PROMPT_PREFIX}${ref:gs/%/%%}${upstream:gs/%/%%}${icons}${ZSH_THEME_GIT_PROMPT_SUFFIX}"
 }
 
 # Checks if working tree is dirty
