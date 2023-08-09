@@ -8,7 +8,10 @@ PROMPT+="%(?:%{$fg_bold[green]%}$:%{$FG[168]%}$)%{$reset_color%} "
 
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$FG[225]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%} "
-ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[yellow]%}*"
+ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[yellow]%}  "
+ZSH_THEME_GIT_PROMPT_BEHIND_REMOTE="%{$fg[green]%} 󰭽 "
+ZSH_THEME_GIT_PROMPT_AHEAD_REMOTE="%{$fg[yellow]%} 󰭾 "
+ZSH_THEME_GIT_PROMPT_DIVERGED_REMOTE="%{$fg[red]%} 󰭾 󰭽 "
 ZSH_THEME_GIT_PROMPT_CLEAN=""
 
 ZSH_THEME_GIT_PROMPT_ADDED="%{$fg[cyan]%}+"

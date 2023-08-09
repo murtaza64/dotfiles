@@ -24,6 +24,9 @@ alias less='less --mouse --wheel-lines 3'
 export PAGER='less --mouse --wheel-lines 3'
 alias grep='grep --color=auto'
 
+# don't beep when triggering menu complete
+unsetopt LIST_BEEP
+
 # fuck
 if command -v thefuck >/dev/null; then
     eval $(thefuck --alias)
