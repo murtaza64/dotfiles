@@ -9,7 +9,21 @@ local searchinfo = function()
   end
 
   local denominator = math.min(result.total, result.maxcount)
-  return string.format('🔍 %s [%d/%d]', vim.fn.getreg('/'), result.current, denominator)
+  return string.format('  %s [%d/%d]', vim.fn.getreg('/'), result.current, denominator)
+end
+local indent = function()
+  local out = ''
+  if vim.bo.expandtab then
+    out = out..'et'
+  else
+    out = out..'noet'
+  end
+  out = out..' sw='..vim.bo.shiftwidth
+  out = out..' ts='..vim.bo.tabstop
+  if vim.bo.softtabstop > 0 then
+    out = out..' sts: '..vim.bo.softtabstop
+  end
+  return out
 end
 return {
   {
@@ -20,10 +34,14 @@ return {
       options = {
         icons_enabled = true,
         theme = 'catppuccin',
-        component_separators = '|',
+        component_separators = '│',
         section_separators = '',
       },
       sections = {
+        lualine_b = {
+          'diff',
+          'diagnostics',
+        },
         lualine_c = {
           {
             'filename',
@@ -35,12 +53,12 @@ return {
           }
         },
         lualine_x = {
-          searchinfo
         },
         lualine_y = {
-          'encoding',
-          'fileformat',
-          'filetype',
+          searchinfo,
+          indent,
+        },
+        lualine_z = {
         },
       },
       inactive_sections = {
@@ -49,6 +67,8 @@ return {
             'filename',
             path = 1,
           }
+        },
+        lualine_x = {
         },
       }
     },
