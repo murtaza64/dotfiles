@@ -247,6 +247,9 @@ require('lazy').setup({
 vim.wo.number = true
 vim.wo.relativenumber = true
 
+vim.o.cursorline = true
+-- vim.o.colorcolumn = 80
+
 vim.o.hlsearch = true
 
 vim.opt.listchars = {
@@ -264,7 +267,7 @@ vim.o.mouse = 'a'
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
-if os.getenv("WSL_DITRO_NAME") ~= "" then
+if os.getenv("TMUX") ~= "" then
   vim.g.clipboard = {
     name = 'myClipboard',
     copy = {
@@ -278,7 +281,21 @@ if os.getenv("WSL_DITRO_NAME") ~= "" then
     cache_enabled = 1,
   }
 end
-vim.o.clipboard = 'unnamedplus'
+-- if os.getenv('WSL_DISTRO_NAME') ~= "" then
+--   vim.g.clipboard = {
+--     name = 'WslClipboard',
+--     copy = {
+--       ["+"] = {'clip.exe'},
+--       ["*"] = {'clip.exe'},
+--     },
+--     paste = {
+--       ["+"] = {'powershell.exe', '-c', '[Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))'},
+--       ["*"] = {'powershell.exe', '-c', '[Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))'},
+--     },
+--     cache_enabled = 1,
+--   }
+-- end
+-- vim.o.clipboard = 'unnamedplus'
 
 -- Enable break indent
 vim.o.breakindent = true
@@ -504,11 +521,12 @@ end
 --  Add any additional override configuration in the following tables. They will be passed to
 --  the `settings` field of the server config. You must look up that documentation yourself.
 local servers = {
-  -- clangd = {},
+  clangd = {},
   -- gopls = {},
   -- pyright = {},
   -- rust_analyzer = {},
   -- tsserver = {},
+  html = {},
 
   lua_ls = {
     Lua = {
