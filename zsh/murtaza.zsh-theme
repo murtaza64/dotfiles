@@ -3,12 +3,12 @@ if [[ -v SSH_CLIENT ]]; then
 	PROMPT+='%{$FG[097]%}%n@%m '
 fi
 PROMPT+='%{$FG[247]%}%~%{$reset_color%} $(git_prompt_info)'
-PROMPT+="%(?:%{$fg_bold[green]%}$:%{$FG[168]%}$)%{$reset_color%} "
+PROMPT+="%(?:%{$fg_bold[green]%}$:%{$FG[168]%}%B$%b)%{$reset_color%} "
 
 
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$FG[225]%}"
 ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%} "
-ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[yellow]%}  "
+ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[yellow]%} 󰷬 "
 ZSH_THEME_GIT_PROMPT_BEHIND_REMOTE="%{$fg[green]%} 󰭽 "
 ZSH_THEME_GIT_PROMPT_AHEAD_REMOTE="%{$fg[yellow]%} 󰭾 "
 ZSH_THEME_GIT_PROMPT_DIVERGED_REMOTE="%{$fg[red]%} 󰭾 󰭽 "
