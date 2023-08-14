@@ -38,6 +38,11 @@ P.S. You can delete this when you're done too. It's your config now :)
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
+
+-- disable netrw for nvim-tree
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
@@ -225,6 +230,8 @@ require('lazy').setup({
     build = ':TSUpdate',
   },
 
+  'nvim-tree/nvim-tree.lua',
+
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
   --       Uncomment any of the lines below to enable them.
@@ -357,6 +364,25 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = highlight_group,
   pattern = '*',
 })
+
+require("nvim-tree").setup {
+  update_focused_file = {
+    enable = true
+  },
+  renderer = {
+    icons = {
+      glyphs = {
+        git = {
+          unstaged = '!',
+          staged = '+',
+          untracked = '?',
+        }
+      }
+    }
+  }
+}
+
+vim.keymap.set('n', '<leader>t', require('nvim-tree.api').tree.toggle, { desc = 'Toggle nvim-[t]ree' })
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`

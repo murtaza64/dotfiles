@@ -14,14 +14,16 @@ end
 local indent = function()
   local out = ''
   if vim.bo.expandtab then
-    out = out..'et'
+    out = out..'󱁐 '
   else
-    out = out..'noet'
+    out = out..'󰌒 '
   end
   out = out..' sw='..vim.bo.shiftwidth
-  out = out..' ts='..vim.bo.tabstop
+  if vim.bo.tabstop ~= 8 then
+    out = out..' ts='..vim.bo.tabstop
+  end
   if vim.bo.softtabstop > 0 then
-    out = out..' sts: '..vim.bo.softtabstop
+    out = out..' sts='..vim.bo.softtabstop
   end
   return out
 end
@@ -70,7 +72,10 @@ return {
         },
         lualine_x = {
         },
-      }
+      },
+      extensions = {
+        'nvim-tree'
+      },
     },
   },
 }
