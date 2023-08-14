@@ -86,6 +86,9 @@ function show_colors {
     done
 }
 
+# must be sourced at the end
+source $ZSH_ROOT/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
 # My history widget is made obsolete by builtin fzf functionality :(
 # function h {
 #     local fzf_options=(--border=rounded --border-label="zsh history" 
