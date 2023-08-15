@@ -47,7 +47,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 require('delta')
-vim.keymap.set({"n"}, "<leader>u", ":UnsavedChanges<CR>")
+vim.keymap.set({"n"}, "<leader>u", ":UnsavedChanges<CR>", { silent=true })
 
 -- Install package manager
 --    https://github.com/folke/lazy.nvim
@@ -257,6 +257,8 @@ vim.wo.relativenumber = true
 vim.o.cursorline = true
 -- vim.o.colorcolumn = 80
 
+vim.o.splitright = true
+
 vim.o.hlsearch = true
 
 vim.opt.listchars = {
@@ -276,7 +278,7 @@ vim.o.mouse = 'a'
 --  See `:help 'clipboard'`
 if os.getenv("TMUX") ~= "" then
   vim.g.clipboard = {
-    name = 'myClipboard',
+    name = 'TmuxClipboard',
     copy = {
       ["+"] = {'tmux', 'load-buffer', '-'},
       ["*"] = {'tmux', 'load-buffer', '-'},
@@ -302,6 +304,20 @@ end
 --     cache_enabled = 1,
 --   }
 -- end
+if os.getenv('WSL_DISTRO_NAME') ~= "" then
+  vim.g.clipboard = {
+    name = 'WslClipboard',
+    copy = {
+      ["+"] = {'win32yank.exe', '-i', '--crlf'},
+      ["*"] = {'win32yank.exe', '-i', '--crlf'},
+    },
+    paste = {
+      ["+"] = {'win32yank.exe', '-o', '--lf'},
+      ["*"] = {'win32yank.exe', '-o', '--lf'},
+    },
+    cache_enabled = 0,
+  }
+end
 -- vim.o.clipboard = 'unnamedplus'
 
 -- Enable break indent

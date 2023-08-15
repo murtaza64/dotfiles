@@ -1,4 +1,5 @@
 local function unsaved_delta()
+
   if not vim.bo.modified then
     print("Buffer not modified")
     return
@@ -18,12 +19,28 @@ local function unsaved_delta()
   vim.wo.relativenumber = false
   local win = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(win, bufnr)
+
+  vim.keymap.set('n', 'q', ':q<CR>', { buffer=bufnr })
+  vim.keymap.set('n', 'i', '', { buffer=bufnr })
+  vim.keymap.set('n', 'a', '', { buffer=bufnr })
+  vim.keymap.set('n', 'A', '', { buffer=bufnr })
+  vim.keymap.set('n', 'o', '', { buffer=bufnr })
+  vim.keymap.set('n', 'O', '', { buffer=bufnr })
+  vim.api.nvim_buf_set_option(bufnr, 'filetype', 'UnsavedChanges')
+  vim.api.nvim_buf_set_option(bufnr, 'modifiable', false)
+
   local chan_term = vim.api.nvim_open_term(bufnr, {})
   local chan_job = vim.fn.jobstart({'delta', '--true-color=always', '-n', filename, '-'}, {
     on_stdout = function(_, data)
       -- vim.api.nvim_buf_set_lines(59, -1, -1, false, data)
       for _, line in ipairs(data) do
         vim.api.nvim_chan_send(chan_term, line .. '\n\r')
+      end
+    end,
+    on_exit = function(_, exit_code)
+      if exit_code == 0 then
+        vim.api.nvim_win_close(win, false)
+        print("Buffer not actually modified")
       end
     end
   })

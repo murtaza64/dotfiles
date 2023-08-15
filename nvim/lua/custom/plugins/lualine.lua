@@ -74,7 +74,18 @@ return {
         },
       },
       extensions = {
-        'nvim-tree'
+        'nvim-tree',
+        {
+          sections = {
+            lualine_a = { function() return "Unsaved Changes" end },
+            lualine_b = {},
+            lualine_c = {},
+            lualine_x = {},
+            lualine_y = {},
+            lualine_z = {},
+          },
+          filetypes = { 'UnsavedChanges' }
+        }
       },
     },
   },
