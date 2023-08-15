@@ -111,13 +111,13 @@ main() {
 
   # These variables are the defaults so that the setw and set calls are easier to parse.
   local show_directory
-  readonly show_directory="#[fg=$thm_pink,bg=$thm_bg,nobold,nounderscore,noitalics]$right_separator#[fg=$thm_bg,bg=$thm_pink,nobold,nounderscore,noitalics]$directory_icon  #[fg=$thm_fg,bg=$thm_gray] #{b:pane_current_path} #{?client_prefix,#[fg=$thm_red]"
+  readonly show_directory="#[fg=$thm_pink,bg=$thm_bg,nobold,nounderscore,noitalics]$right_separator#[fg=$thm_bg,bg=$thm_pink,nobold,nounderscore,noitalics]$directory_icon  #[fg=$thm_fg,bg=$thm_gray] #{b:pane_current_path} "
 
   local show_window
   readonly show_window="#[fg=$thm_pink,bg=$thm_bg,nobold,nounderscore,noitalics]$right_separator#[fg=$thm_bg,bg=$thm_pink,nobold,nounderscore,noitalics]$window_icon #[fg=$thm_fg,bg=$thm_gray] #W #{?client_prefix,#[fg=$thm_red]"
 
   local show_session
-  readonly show_session="#[fg=$thm_green]}#[bg=$thm_gray]$right_separator#{?client_prefix,#[bg=$thm_red],#[bg=$thm_green]}#[fg=$thm_bg]$session_icon #[fg=$thm_fg,bg=$thm_gray] #S "
+  readonly show_session="#{?client_prefix,#[fg=$thm_red],#[fg=$thm_green]}#[bg=$thm_gray]$right_separator#{?client_prefix,#[bg=$thm_red],#[bg=$thm_green]}#[fg=$thm_bg]$session_icon #[fg=$thm_fg,bg=$thm_gray] #S "
 
   local show_directory_in_window_status
   readonly show_directory_in_window_status="#[fg=$thm_bg,bg=$thm_blue] #I #[fg=$thm_fg,bg=$thm_gray] #{b:pane_current_path} "
@@ -154,6 +154,7 @@ main() {
   # update the right_column1 and the window_status_* variables.
   if [[ "${wt_enabled}" == "on" ]]; then
     right_column1=$show_directory
+    right_column1=""
     window_status_format=$show_window_in_window_status
     window_status_current_format=$show_window_in_window_status_current
   fi
@@ -184,7 +185,7 @@ main() {
 
   set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}"
 
-  set status-right "${right_column1},${right_column2}"
+  set status-right "${right_column1}${right_column2}"
 
   setw window-status-format "${window_status_format}"
   setw window-status-current-format "${window_status_current_format}"
