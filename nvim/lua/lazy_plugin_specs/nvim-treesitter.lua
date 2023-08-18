@@ -88,7 +88,9 @@ return {
       'nvim-treesitter/nvim-treesitter-textobjects',
     },
     build = ':TSUpdate',
-    opts = opts,
+    config = function()
+      require('nvim-treesitter.configs').setup(opts)
+    end
   },
   'nvim-treesitter/playground',
 }
