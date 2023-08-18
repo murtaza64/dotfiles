@@ -12,6 +12,17 @@ vim.keymap.set('c', '<CR>', "wildmenumode()? '<C-y>' : '<CR>'", { expr = true, s
 -- CR clears search highlighting
 -- vim.keymap.set('n', '<CR>', ":noh<CR><CR>", { silent = true })
 
+vim.keymap.set('n', '<leader>t', require('nvim-tree.api').tree.toggle, { desc = 'Toggle nvim-[t]ree' })
+
+-- Paste from system
+vim.keymap.set('n', '<leader>p', '"*p', { desc = '"*p' })
+vim.keymap.set('n', '<leader>P', '"*P', { desc = '"*P' })
+
+-- Select pasted test
+vim.keymap.set('n', 'gp', "'`[' . strpart(getregtype(), 0, 1) . '`]'", { expr = true })
+-- doesn't seem to work with visual block mode properly
+-- https://vim.fandom.com/wiki/Selecting_your_pasted_text
+
 -- Esc clears search highlighting in normal mode
 vim.keymap.set('n', '<Esc>', function()
   if vim.v.hlsearch ~= 0 then
@@ -33,11 +44,6 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   pattern = '*',
 })
 
-vim.keymap.set('n', '<leader>t', require('nvim-tree.api').tree.toggle, { desc = 'Toggle nvim-[t]ree' })
-
--- Paste from system
-vim.keymap.set('n', '<leader>p', '"*p', { desc = '"*p' })
-vim.keymap.set('n', '<leader>P', '"*P', { desc = '"*P' })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
