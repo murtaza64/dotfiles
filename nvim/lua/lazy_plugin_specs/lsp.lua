@@ -1,3 +1,16 @@
+local signature_opts = {
+  -- floating_window = false,
+  doc_lines = 0,
+  floating_window_off_x = 0,
+
+  hint_enable = false,
+  hint_prefix = '',
+  hint_scheme = 'LspSignatureHint',
+  handler_opts = {
+    border = 'none'
+  }
+}
+
 local on_attach = function(_, bufnr)
   -- NOTE: Remember that lua is a real programming language, and as such it is possible
   -- to define small helper and utility functions so you don't have to repeat yourself
@@ -35,6 +48,8 @@ local on_attach = function(_, bufnr)
     print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
   end, '[W]orkspace [L]ist Folders')
 
+  require('lsp_signature').on_attach(signature_opts, bufnr)
+
   -- Create a command `:Format` local to the LSP buffer
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
     vim.lsp.buf.format()
@@ -50,7 +65,7 @@ local servers = {
   clangd = {},
   -- gopls = {},
   -- pyright = {},
-  -- rust_analyzer = {},
+  rust_analyzer = {},
   -- tsserver = {},
   html = {},
 
@@ -119,6 +134,7 @@ return {
     -- Automatically install LSPs to stdpath for neovim
     { 'williamboman/mason.nvim', config = true },
     'williamboman/mason-lspconfig.nvim',
+    'ray-x/lsp_signature.nvim',
 
     -- Useful status updates for LSP
     -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
@@ -167,5 +183,15 @@ return {
         }
       end,
     }
+
+    vim.diagnostic.config {
+      severity_sort = true,
+      virtual_text = false,
+    }
+    -- local signs = { Error = " ", Warn = " ", Hint = "󱠃", Info = " " }
+    -- for type, icon in pairs(signs) do
+    --   local hl = "DiagnosticSign" .. type
+    --   vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+    -- end
   end
 }

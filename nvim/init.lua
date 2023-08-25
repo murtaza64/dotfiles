@@ -12,8 +12,11 @@ require('delta')
 vim.keymap.set({"n"}, "<leader>u", ":UnsavedChanges<CR>", { silent=true })
 
 require('options')
-
 require('keybindings')
+
+-- Other snippets, autocommands
+require('title')
+require('inactive_cursorline')
 
 
 -- The line beneath this is called `modeline`. See `:help modeline`

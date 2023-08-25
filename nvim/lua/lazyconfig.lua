@@ -21,18 +21,42 @@ vim.opt.rtp:prepend(lazypath)
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
   'kmonad/kmonad-vim',
+  'tpope/vim-repeat',
+
+  -- {
+  --   'ggandor/leap.nvim',
+  --   lazy = false,
+  --   config = function()
+  --     require('leap').setup({
+  --       highlight_unlabeled_phase_one_targets = true
+  --     })
+  --     require('leap').add_default_mappings()
+  --   end
+  -- },
 
   {
-    'ggandor/leap.nvim',
-    lazy = false,
+    'ggandor/lightspeed.nvim',
     config = function()
-      require('leap').setup({
-        highlight_unlabeled_phase_one_targets = true
-      })
-      require('leap').add_default_mappings()
+      require('lightspeed').setup({})
+      local colors = require('catppuccin.palettes').get_palette()
+      vim.api.nvim_set_hl(0, 'LightspeedShortcut', { bg = colors.yellow, fg = 'black', bold = true, nocombine = true })
+      vim.api.nvim_set_hl(0, 'LightspeedLabel', { bg = colors.yellow, fg = 'black', bold = true, nocombine = true })
+      vim.api.nvim_set_hl(0, 'LightspeedGreyWash', {})
     end
   },
 
+  -- {
+  --   'phaazon/hop.nvim',
+  --   config = function()
+  --     require('hop').setup({
+  --       create_hl_autocmd = false,
+  --     })
+  --     vim.keymap.set('n', 's', '<cmd>HopChar2<cr>', { silent = true })
+  --     vim.api.nvim_set_hl(0, 'HopUnmatched', {})
+  --     vim.api.nvim_set_hl(0, 'HopNextKey', { bg = 'yellow', fg = 'black', bold = true, nocombine = true })
+  --   end
+  -- },
+  --
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
@@ -85,38 +109,6 @@ require('lazy').setup({
   },
 
   {
-    'catppuccin/nvim',
-    priority = 1000,
-    opts = {
-      integrations = {
-        native_lsp = {
-          enabled = true,
-          virtual_text = {
-            errors = { "italic" },
-            hints = { "italic" },
-            warnings = { "italic" },
-            information = { "italic" },
-          },
-          underlines = {
-            errors = { "underline" }, -- change these to undercurl when supported
-            hints = { "underline" },
-            warnings = { "underline" },
-            information = { "underline" },
-          },
-          inlay_hints = {
-            background = true,
-          },
-        }
-      },
-    },
-    config = function(_, opts)
-      require('catppuccin').setup(opts)
-      vim.cmd.colorscheme 'catppuccin'
-    end,
-  },
-
-
-  {
     -- Add indentation guides even on blank lines
     'lukas-reineke/indent-blankline.nvim',
     -- Enable `lukas-reineke/indent-blankline.nvim`
@@ -145,16 +137,15 @@ require('lazy').setup({
   },
 
 
-  -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
-  --       These are some example plugins that I've included in the kickstart repository.
-  --       Uncomment any of the lines below to enable them.
   -- require 'kickstart.plugins.autoformat',
   -- require 'kickstart.plugins.debug',
 
-  -- NOTE: The import below automatically adds your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
-  --    You can use this folder to prevent any conflicts with this init.lua if you're interested in keeping
-  --    up-to-date with whatever is in the kickstart repo.
-  --
-  --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
-  { import = 'lazy_plugin_specs' },
+  { import = 'lazy_plugin_specs.colors' },
+  -- noice is too buggy/heavy
+  -- { import = 'lazy_plugin_specs.noice' },
+  { import = 'lazy_plugin_specs.lsp' },
+  { import = 'lazy_plugin_specs.lualine' },
+  { import = 'lazy_plugin_specs.nvim-tree' },
+  { import = 'lazy_plugin_specs.nvim-treesitter' },
+  { import = 'lazy_plugin_specs.telescope' },
 }, {})

@@ -32,6 +32,7 @@ return {
     -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
     -- See `:help lualine.txt`
+    -- dependencies = { 'noice' },
     opts = {
       options = {
         icons_enabled = true,
@@ -55,6 +56,10 @@ return {
           }
         },
         lualine_x = {
+          -- {
+          --   require("noice").api.status.command.get,
+          --   cond = require("noice").api.status.command.has,
+          -- },
         },
         lualine_y = {
           searchinfo,
