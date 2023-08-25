@@ -37,6 +37,8 @@ source $ZSH_ROOT/spectrum.zsh
 source $ZSH_ROOT/termsupport.zsh
 source $ZSH_ROOT/theme-and-appearance.zsh
 
+source $ZSH_ROOT/wezterm.sh
+
 # source $ZSH_ROOT/murtaza.zsh-theme
 
 source $ZSH_ROOT/powerlevel10k/powerlevel10k.zsh-theme
