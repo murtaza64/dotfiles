@@ -13,7 +13,7 @@ local opts = {
       init_selection = '<c-space>',
       node_incremental = '<c-space>',
       scope_incremental = '<c-s>',
-      node_decremental = '<M-space>',
+      node_decremental = '<c-h>',
     },
   },
   textobjects = {
@@ -98,8 +98,8 @@ return {
     config = function()
       require('treesitter-context').setup({})
       local colors = require('catppuccin.palettes').get_palette()
-      vim.api.nvim_set_hl(0, 'TreesitterContext', { bg = colors.mantle })
-      vim.api.nvim_set_hl(0, 'TreesitterContextLineNumber', { bg = colors.mantle, fg = colors.surface1})
+      vim.api.nvim_set_hl(0, 'TreesitterContext', { bg = '#212121' })
+      vim.api.nvim_set_hl(0, 'TreesitterContextLineNumber', { bg = '#212121', fg = colors.surface1})
     end
   }
 }

@@ -7,7 +7,7 @@ local signature_opts = {
   hint_prefix = '',
   hint_scheme = 'LspSignatureHint',
   handler_opts = {
-    border = 'none'
+    border = 'rounded'
   }
 }
 
@@ -64,7 +64,7 @@ end
 local servers = {
   clangd = {},
   -- gopls = {},
-  -- pyright = {},
+  pyright = {},
   rust_analyzer = {},
   -- tsserver = {},
   html = {},

@@ -21,42 +21,10 @@ vim.opt.rtp:prepend(lazypath)
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
   'kmonad/kmonad-vim',
+
+  -- dot repeat plugin commands
   'tpope/vim-repeat',
 
-  -- {
-  --   'ggandor/leap.nvim',
-  --   lazy = false,
-  --   config = function()
-  --     require('leap').setup({
-  --       highlight_unlabeled_phase_one_targets = true
-  --     })
-  --     require('leap').add_default_mappings()
-  --   end
-  -- },
-
-  {
-    'ggandor/lightspeed.nvim',
-    config = function()
-      require('lightspeed').setup({})
-      local colors = require('catppuccin.palettes').get_palette()
-      vim.api.nvim_set_hl(0, 'LightspeedShortcut', { bg = colors.yellow, fg = 'black', bold = true, nocombine = true })
-      vim.api.nvim_set_hl(0, 'LightspeedLabel', { bg = colors.yellow, fg = 'black', bold = true, nocombine = true })
-      vim.api.nvim_set_hl(0, 'LightspeedGreyWash', {})
-    end
-  },
-
-  -- {
-  --   'phaazon/hop.nvim',
-  --   config = function()
-  --     require('hop').setup({
-  --       create_hl_autocmd = false,
-  --     })
-  --     vim.keymap.set('n', 's', '<cmd>HopChar2<cr>', { silent = true })
-  --     vim.api.nvim_set_hl(0, 'HopUnmatched', {})
-  --     vim.api.nvim_set_hl(0, 'HopNextKey', { bg = 'yellow', fg = 'black', bold = true, nocombine = true })
-  --   end
-  -- },
-  --
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
@@ -76,8 +44,6 @@ require('lazy').setup({
     end,
   },
 
-
-
   -- Useful plugin to show you pending keybinds.
   {
     'folke/which-key.nvim',
@@ -88,63 +54,17 @@ require('lazy').setup({
     },
   },
 
-  {
-    -- Adds git releated signs to the gutter, as well as utilities for managing changes
-    'lewis6991/gitsigns.nvim',
-    opts = {
-      -- See `:help gitsigns.txt`
-      signs = {
-        add = { text = '+' },
-        change = { text = '~' },
-        delete = { text = '_' },
-        topdelete = { text = '‾' },
-        changedelete = { text = '~' },
-      },
-      on_attach = function(bufnr)
-        vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk, { buffer = bufnr, desc = '[G]o to [P]revious Hunk' })
-        vim.keymap.set('n', '<leader>gn', require('gitsigns').next_hunk, { buffer = bufnr, desc = '[G]o to [N]ext Hunk' })
-        vim.keymap.set('n', '<leader>ph', require('gitsigns').preview_hunk, { buffer = bufnr, desc = '[P]review [H]unk' })
-      end,
-    },
-  },
-
-  {
-    -- Add indentation guides even on blank lines
-    'lukas-reineke/indent-blankline.nvim',
-    -- Enable `lukas-reineke/indent-blankline.nvim`
-    -- See `:help indent_blankline.txt`
-    opts = {
-      -- char = '┊',
-      show_trailing_blankline_indent = false,
-    },
-  },
-
-  -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim', opts = {} },
-
-  {
-    "kylechui/nvim-surround",
-    version = "*", -- Use for stability; omit to use `main` branch for the latest features
-    event = "VeryLazy",
-    config = function()
-      require("nvim-surround").setup({
-        keymaps = {
-          visual = "gs",
-          visual_line = "gS"
-        }
-      })
-    end
-  },
-
-
   -- require 'kickstart.plugins.autoformat',
   -- require 'kickstart.plugins.debug',
 
   { import = 'lazy_plugin_specs.colors' },
   -- noice is too buggy/heavy
   -- { import = 'lazy_plugin_specs.noice' },
+  { import = 'lazy_plugin_specs.aesthetics' },
+  { import = 'lazy_plugin_specs.editing' },
   { import = 'lazy_plugin_specs.lsp' },
   { import = 'lazy_plugin_specs.lualine' },
+  { import = 'lazy_plugin_specs.motion' },
   { import = 'lazy_plugin_specs.nvim-tree' },
   { import = 'lazy_plugin_specs.nvim-treesitter' },
   { import = 'lazy_plugin_specs.telescope' },

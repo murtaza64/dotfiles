@@ -60,9 +60,9 @@ return {
           --   require("noice").api.status.command.get,
           --   cond = require("noice").api.status.command.has,
           -- },
+          searchinfo,
         },
         lualine_y = {
-          searchinfo,
           indent,
         },
         lualine_z = {

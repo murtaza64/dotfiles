@@ -1,0 +1,27 @@
+rosewater	#f5e0dc
+flamingo	#f2cdcd
+pink	#f5c2e7
+mauve	#cba6f7
+red	#f38ba8
+maroon	#eba0ac
+peach	#fab387
+yellow	#f9e2af
+green	#a6e3a1
+teal	#94e2d5
+sky	#89dceb
+sapphire	#74c7ec
+blue	#89b4fa
+lavender	#b4befe
+
+text	#d0d0d0
+subtext1	#b9b9b9
+subtext0	#a0a0a0
+overlay2	#909090
+overlay1	#797979
+overlay0	#606060
+surface2	#494949
+surface1	#313131
+surface0	#252525
+base	#191919
+mantle	#131313
+crust	#090909

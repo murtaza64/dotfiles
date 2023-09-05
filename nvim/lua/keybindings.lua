@@ -25,7 +25,7 @@ vim.keymap.set('n', '<leader>p', '"*p', { desc = '"*p' })
 vim.keymap.set('n', '<leader>P', '"*P', { desc = '"*P' })
 
 -- Select pasted test
-vim.keymap.set('n', 'gp', "'`[' . strpart(getregtype(), 0, 1) . '`]'", { expr = true })
+vim.keymap.set('n', 'g.', "'`[' . strpart(getregtype(), 0, 1) . '`]'", { expr = true , desc = 'Select last edit' })
 -- doesn't seem to work with visual block mode properly
 -- https://vim.fandom.com/wiki/Selecting_your_pasted_text
 
@@ -41,14 +41,14 @@ end)
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
-local highlight_group = vim.api.nvim_create_augroup('YankHighlight', { clear = true })
-vim.api.nvim_create_autocmd('TextYankPost', {
-  callback = function()
-    vim.highlight.on_yank()
-  end,
-  group = highlight_group,
-  pattern = '*',
-})
+-- local highlight_group = vim.api.nvim_create_augroup('YankHighlight', { clear = true })
+-- vim.api.nvim_create_autocmd('TextYankPost', {
+--   callback = function()
+--     vim.highlight.on_yank()
+--   end,
+--   group = highlight_group,
+--   pattern = '*',
+-- })
 
 
 -- Diagnostic keymaps

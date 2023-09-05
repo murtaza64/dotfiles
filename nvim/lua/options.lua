@@ -4,8 +4,9 @@
 vim.wo.number = true
 vim.wo.relativenumber = true
 
+-- see inactive_cursorline.lua
 -- vim.o.cursorline = true
--- vim.o.colorcolumn = 80
+vim.wo.colorcolumn = '80'
 
 vim.o.splitright = true
 
