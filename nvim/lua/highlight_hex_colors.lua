@@ -65,5 +65,22 @@ local function highlight_colors()
     -- print(match)
   end
 end
-vim.api.nvim_create_user_command("HighlightHexColors", highlight_colors, {})
+
+local function toggle_auto_highlight()
+  local bufnr = vim.fn.bufnr()
+  local grp = vim.api.nvim_create_augroup("HighlightHex", { clear = false })
+  if vim.g.highlight_hex_colors_active then
+    local ns = vim.api.nvim_create_namespace("HighlightHex")
+    vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+    vim.api.nvim_clear_autocmds({ group = grp })
+  else
+    vim.api.nvim_create_autocmd({"BufWrite"}, {
+      group = grp,
+      buffer = bufnr,
+      callback = highlight_colors,
+    })
+    highlight_colors()
+  end
+end
+vim.api.nvim_create_user_command("HighlightHexColors", toggle_auto_highlight, {})
 

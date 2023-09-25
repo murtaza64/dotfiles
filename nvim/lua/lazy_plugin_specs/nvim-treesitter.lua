@@ -1,6 +1,6 @@
 local opts = {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim' },
+  ensure_installed = { 'c', 'css', 'cpp', 'go', 'html', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim' },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = false,
@@ -98,8 +98,8 @@ return {
     config = function()
       require('treesitter-context').setup({})
       local colors = require('catppuccin.palettes').get_palette()
-      vim.api.nvim_set_hl(0, 'TreesitterContext', { bg = '#212121' })
-      vim.api.nvim_set_hl(0, 'TreesitterContextLineNumber', { bg = '#212121', fg = colors.surface1})
+      vim.api.nvim_set_hl(0, 'TreesitterContext', { bg = colors.surface0 })
+      vim.api.nvim_set_hl(0, 'TreesitterContextLineNumber', { bg = colors.surface0, fg = colors.surface2})
     end
   }
 }

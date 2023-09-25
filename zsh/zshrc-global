@@ -73,11 +73,11 @@ fi
 # fzf
 if [[ -d "/usr/share/doc/fzf" ]]; then
     source /usr/share/doc/fzf/examples/completion.zsh
-    source /usr/share/doc/fzf/examples/key-bindings.zsh
+    # source /usr/share/doc/fzf/examples/key-bindings.zsh
     # export FZF_DEFAULT_OPTS="--multi --bind 'ctrl-a:select-all'"
 elif [[ -d "/usr/share/fzf" ]]; then
     source /usr/share/fzf/completion.zsh
-    source /usr/share/fzf/key-bindings.zsh
+    # source /usr/share/fzf/key-bindings.zsh
 else
     log "fzf not found"
 fi
@@ -88,8 +88,31 @@ function show_colors {
     done
 }
 
-# must be sourced at the end
-source $ZSH_ROOT/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+
+fzf-history-widget() {
+    local selected num
+    setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2> /dev/null
+    selected=( $( fc -rlt %s 1 | sed "s/^[ \t]*//" \
+        | awk '!seen[$0]++' \
+        | fzf --with-nth=3.. --preview='echo {1}"\t$(time_ago {2})"' \
+        --preview-window=down:1 \
+        --height=16 --tiebreak=index --query=${LBUFFER} +m) )
+    # selected=( $(fc -rl 1 |
+    #   FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} $FZF_DEFAULT_OPTS -n2..,.. --tiebreak=index --bind=ctrl-r:toggle-sort $FZF_CTRL_R_OPTS --query=${(qqq)LBUFFER} +m" $(__fzfcmd)) )
+    local ret=$?
+    if [ -n "$selected" ]; then
+        echo $selected
+        num=$selected[1]
+        if [ -n "$num" ]; then
+            zle vi-fetch-history -n $num
+        fi
+    fi
+    zle reset-prompt
+    return $ret
+}
+zle     -N   fzf-history-widget
+bindkey '^R' fzf-history-widget
 
 # My history widget is made obsolete by builtin fzf functionality :(
 # function h {
@@ -111,3 +134,6 @@ source $ZSH_ROOT/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 # }
 # zle -N interactive-history h
 # bindkey '^[h' interactive-history
+
+# must be sourced at the end
+# source $ZSH_ROOT/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

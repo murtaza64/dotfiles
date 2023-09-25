@@ -19,6 +19,9 @@ vim.keymap.set('c', '<CR>', "wildmenumode()? '<C-y>' : '<CR>'", { expr = true, s
 -- vim.keymap.set('n', '<CR>', ":noh<CR><CR>", { silent = true })
 
 vim.keymap.set('n', '<leader>t', require('nvim-tree.api').tree.toggle, { desc = 'Toggle nvim-[t]ree' })
+vim.keymap.set('n', '<leader>o', function()
+  vim.cmd.Oil()
+end, { desc = 'Open [o]il' })
 
 -- Paste from system
 vim.keymap.set('n', '<leader>p', '"*p', { desc = '"*p' })
@@ -51,6 +54,10 @@ end)
 -- })
 
 
+vim.keymap.set('n', '[b', '<cmd>bprev<cr>', { desc = 'Previous buffer' })
+vim.keymap.set('n', ']b', '<cmd>bnext<cr>', { desc = 'Next buffer' })
+vim.keymap.set('n', '[c', '<cmd>cprev<cr>', { desc = 'Go to previous quickfix item' })
+vim.keymap.set('n', ']c', '<cmd>cnext<cr>', { desc = 'Go to next quickfix item' })
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })

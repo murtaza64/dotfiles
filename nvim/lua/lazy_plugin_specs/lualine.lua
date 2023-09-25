@@ -38,14 +38,23 @@ return {
         icons_enabled = true,
         theme = 'catppuccin',
         component_separators = '│',
-        section_separators = '',
+        -- section_separators = '',
+        section_separators = { left = '', right = '' },
       },
       sections = {
+        lualine_a = {
+          {
+            'mode',
+            separator = { left = '' },
+            padding = {
+              right = 2,
+              left = 1
+            },
+          },
+        },
         lualine_b = {
           'diff',
           'diagnostics',
-        },
-        lualine_c = {
           {
             'filename',
             symbols = {
@@ -53,7 +62,9 @@ return {
               modified = '󰷬 ',
             },
             path = 1,
-          }
+          },
+        },
+        lualine_c = {
         },
         lualine_x = {
           -- {
@@ -63,7 +74,14 @@ return {
           searchinfo,
         },
         lualine_y = {
-          indent,
+          {
+            indent,
+            separator = { left = '', right = '' },
+            padding = {
+              left = 1,
+              right = 1,
+            },
+          }
         },
         lualine_z = {
         },
@@ -90,7 +108,14 @@ return {
             lualine_z = {},
           },
           filetypes = { 'UnsavedChanges' }
-        }
+        },
+        {
+          sections = {
+            lualine_a = {'mode'},
+            lualine_b = {},
+          },
+          filetypes = { 'oil' }
+        },
       },
     },
   },

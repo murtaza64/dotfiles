@@ -54,6 +54,16 @@ require('lazy').setup({
     },
   },
 
+  {
+    'stevearc/oil.nvim',
+    opts = {
+      win_options = {
+        wrap = true
+      }
+    },
+    -- Optional dependencies
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+  },
   -- require 'kickstart.plugins.autoformat',
   -- require 'kickstart.plugins.debug',
 

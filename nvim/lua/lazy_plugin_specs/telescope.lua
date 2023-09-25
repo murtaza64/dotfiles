@@ -5,6 +5,7 @@ local config_telescope = function()
         i = {
           ['<C-u>'] = false,
           ['<C-d>'] = false,
+          ['<C-v>'] = require('telescope.actions.layout').toggle_preview,
         },
       },
     },
@@ -28,8 +29,13 @@ local config_telescope = function()
   vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, { desc = '[F]ind [F]iles' })
   vim.keymap.set('n', '<leader>fa', function()
     require('telescope.builtin').find_files({
-      find_command = {"find", "-L", "-not", "-path", "**/.git/*"},
+      -- find_command = {"find", "-L", "-not", "-path", "**/.git/*"},
+      find_command = {'fd', '-E', '.git' },
       hidden = true,
+      follow = true,
+      no_ignore = true,
+      no_ignore_parent = true,
+      prompt_title = "Find All Files"
     })
   end, { desc = '[F]ind [A]ll files (hidden and symlink)' })
   vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })

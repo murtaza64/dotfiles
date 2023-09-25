@@ -6,6 +6,8 @@ vim.api.nvim_create_autocmd({"VimEnter","BufModifiedSet", "BufEnter", "BufWinEnt
     local title
     if ev.file == "" then
       title = "nvim"
+    elseif vim.api.nvim_buf_get_option(ev.buf, 'filetype') == 'oil' then
+      title = "oil"
     else
       title = vim.fn.expand("%:t")
     end

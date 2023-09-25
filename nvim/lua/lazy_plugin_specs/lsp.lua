@@ -68,6 +68,7 @@ local servers = {
   rust_analyzer = {},
   -- tsserver = {},
   html = {},
+  cssls = {},
 
   lua_ls = {
     Lua = {

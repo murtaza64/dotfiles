@@ -3,6 +3,7 @@ set -x
 DOTFILES_ROOT=${0:a:h}
 
 echo "export ZSH_ROOT=$DOTFILES_ROOT/zsh" > $HOME/.zshenv
+echo "export PATH=$DOTFILES_ROOT/bin:\$PATH" >> $HOME/.zshenv
 echo 'source $ZSH_ROOT/zshrc-global' >> $HOME/.zshrc
 
 mkdir -p $HOME/.config
