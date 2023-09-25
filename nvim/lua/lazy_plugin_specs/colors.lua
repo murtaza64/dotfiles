@@ -3,26 +3,26 @@ return {
     'catppuccin/nvim',
     priority = 1000,
     opts = {
-      flavour = 'mocha',
+      flavour = 'frappe',
       dim_inactive = {
         -- enabled = true,
         percentage = 0.2,
       },
       color_overrides = {
-        mocha = {
-          text = "#d0d0d0",
-          subtext1 = "#b9b9b9",
-          subtext0 = "#a0a0a0",
-          overlay2 = "#8c8c8c",
-          overlay1 = "#727272",
-          overlay0 = "#5a5a5a",
-          surface2 = "#404040",
-          surface1 = "#272727",
-          surface0 = "#1a1a1a",
-          base = "#131313",
-          mantle = "#0c0c0c",
-          crust = "#040404",
-        }
+        -- mocha = {
+        --   text = "#d0d0d0",
+        --   subtext1 = "#b9b9b9",
+        --   subtext0 = "#a0a0a0",
+        --   overlay2 = "#8c8c8c",
+        --   overlay1 = "#727272",
+        --   overlay0 = "#5a5a5a",
+        --   surface2 = "#404040",
+        --   surface1 = "#272727",
+        --   surface0 = "#1a1a1a",
+        --   base = "#131313",
+        --   mantle = "#0c0c0c",
+        --   crust = "#040404",
+        -- }
       },
       custom_highlights = function(colors)
         return {
