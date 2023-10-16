@@ -38,18 +38,18 @@ return {
         icons_enabled = true,
         theme = 'catppuccin',
         component_separators = '│',
-        -- section_separators = '',
-        section_separators = { left = '', right = '' },
+        section_separators = '',
+        -- section_separators = { left = '', right = '' },
       },
       sections = {
         lualine_a = {
           {
             'mode',
-            separator = { left = '' },
-            padding = {
-              right = 2,
-              left = 1
-            },
+            -- separator = { left = '' },
+            -- padding = {
+            --   right = 2,
+            --   left = 1
+            -- },
           },
         },
         lualine_b = {
@@ -76,11 +76,11 @@ return {
         lualine_y = {
           {
             indent,
-            separator = { left = '', right = '' },
-            padding = {
-              left = 1,
-              right = 1,
-            },
+            -- separator = { left = '', right = '' },
+            -- padding = {
+            --   left = 1,
+            --   right = 1,
+            -- },
           }
         },
         lualine_z = {

@@ -137,6 +137,15 @@ return {
     'williamboman/mason-lspconfig.nvim',
     'ray-x/lsp_signature.nvim',
 
+    -- Couldn't get this to work
+    -- {
+    --   'xbase-lab/xbase',
+    --   build = 'make install',
+    --   config = function()
+    --     require('xbase').setup({})
+    --   end,
+    -- },
+
     -- Useful status updates for LSP
     -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
     {
@@ -174,7 +183,6 @@ return {
     mason_lspconfig.setup {
       ensure_installed = vim.tbl_keys(servers),
     }
-
     mason_lspconfig.setup_handlers {
       function(server_name)
         require('lspconfig')[server_name].setup {
@@ -184,6 +192,8 @@ return {
         }
       end,
     }
+
+    require('lspconfig').sourcekit.setup({})
 
     vim.diagnostic.config {
       severity_sort = true,

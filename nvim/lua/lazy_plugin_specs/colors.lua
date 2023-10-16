@@ -3,7 +3,7 @@ return {
     'catppuccin/nvim',
     priority = 1000,
     opts = {
-      flavour = 'frappe',
+      flavour = 'mocha',
       dim_inactive = {
         -- enabled = true,
         percentage = 0.2,
