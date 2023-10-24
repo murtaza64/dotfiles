@@ -28,6 +28,17 @@ require('lazy').setup({
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
+  {'akinsho/git-conflict.nvim', version = "*", config=true},
+  {
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",         -- required
+      "nvim-telescope/telescope.nvim", -- optional
+      "sindrets/diffview.nvim",        -- optional
+      "ibhagwan/fzf-lua",              -- optional
+    },
+    config = true
+  },
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
@@ -57,6 +68,7 @@ require('lazy').setup({
   {
     'stevearc/oil.nvim',
     opts = {
+      cleanup_delay_ms = false,
       win_options = {
         wrap = true
       }
