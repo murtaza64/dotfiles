@@ -1,6 +1,8 @@
 return {
+
+  "shortcuts/no-neck-pain.nvim",
+
   {
-    'shortcuts/no-neck-pain.nvim',
 
     -- Add indentation guides even on blank lines
     'lukas-reineke/indent-blankline.nvim',
@@ -16,6 +18,19 @@ return {
       vim.api.nvim_set_hl(0, 'IndentBlanklineContextChar', { fg = require('catppuccin.palettes').get_palette('mocha').overlay0})
       vim.api.nvim_set_hl(0, 'IndentBlanklineChar', { fg = require('catppuccin.palettes').get_palette('mocha').surface1})
     end
+  },
+
+  {
+    "utilyre/sentiment.nvim",
+    version = "*",
+    event = "VeryLazy", -- keep for lazy loading
+    opts = {
+      -- config
+    },
+    init = function()
+      -- `matchparen.vim` needs to be disabled manually in case of lazy loading
+      vim.g.loaded_matchparen = 1
+    end,
   },
 
   'xiyaowong/virtcolumn.nvim',

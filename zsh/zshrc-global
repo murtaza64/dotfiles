@@ -43,6 +43,13 @@ source $ZSH_ROOT/wezterm.sh
 
 source $ZSH_ROOT/powerlevel10k/powerlevel10k.zsh-theme
 
+function zvm_config() {
+    ZVM_LINE_INIT_MODE=$ZVM_MODE_INSERT
+}
+
+source $ZSH_ROOT/zsh-vi-mode/zsh-vi-mode.plugin.zsh
+
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f $ZSH_ROOT/.p10k.zsh ]] || source $ZSH_ROOT/.p10k.zsh
 
@@ -111,8 +118,10 @@ fzf-history-widget() {
     zle reset-prompt
     return $ret
 }
-zle     -N   fzf-history-widget
-bindkey '^R' fzf-history-widget
+
+# These are now set in zvm_after_init
+# zle     -N   fzf-history-widget
+# bindkey '^R' fzf-history-widget
 
 # My history widget is made obsolete by builtin fzf functionality :(
 # function h {
@@ -137,3 +146,8 @@ bindkey '^R' fzf-history-widget
 
 # must be sourced at the end
 # source $ZSH_ROOT/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+function zvm_after_init() {
+    zle     -N   fzf-history-widget
+    bindkey '^R' fzf-history-widget
+}

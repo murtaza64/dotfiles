@@ -70,6 +70,9 @@ local servers = {
   html = {},
   cssls = {},
 
+  -- enable if you want:
+  -- sourcekit = {},
+
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
@@ -124,6 +127,7 @@ local config_cmp = function()
     sources = {
       { name = 'nvim_lsp' },
       { name = 'luasnip' },
+      { name = 'buffer' },
     },
   }
 end
@@ -137,6 +141,15 @@ return {
     'williamboman/mason-lspconfig.nvim',
     'ray-x/lsp_signature.nvim',
 
+    -- Couldn't get this to work
+    -- {
+    --   'xbase-lab/xbase',
+    --   build = 'make install',
+    --   config = function()
+    --     require('xbase').setup({})
+    --   end,
+    -- },
+
     -- Useful status updates for LSP
     -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
     {
@@ -148,7 +161,8 @@ return {
 
         -- Adds LSP completion capabilities
         'hrsh7th/cmp-nvim-lsp',
-
+        -- buffer words
+        'hrsh7th/cmp-buffer',
         -- Adds a number of user-friendly snippets
         'rafamadriz/friendly-snippets',
       },
@@ -174,7 +188,6 @@ return {
     mason_lspconfig.setup {
       ensure_installed = vim.tbl_keys(servers),
     }
-
     mason_lspconfig.setup_handlers {
       function(server_name)
         require('lspconfig')[server_name].setup {

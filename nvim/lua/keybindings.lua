@@ -24,13 +24,21 @@ vim.keymap.set('n', '<leader>o', function()
 end, { desc = 'Open [o]il' })
 
 -- Paste from system
-vim.keymap.set('n', '<leader>p', '"*p', { desc = '"*p' })
-vim.keymap.set('n', '<leader>P', '"*P', { desc = '"*P' })
+vim.keymap.set({ 'n', 'v' }, '<leader>p', '"*p', { desc = '"*p', remap = true })
+vim.keymap.set({ 'n', 'v' }, '<leader>P', '"*P', { desc = '"*P', remap = true })
+vim.keymap.set({ 'n', 'v' }, '<leader>y', '"*y', { desc = '"*y', remap = true })
+
+vim.keymap.set('n', '<leader>ay', '<cmd>%y<cr>', { desc = 'yank whole buffer'})
+vim.keymap.set('n', '<leader>a<leader>y', '<cmd>%y *<cr>', { desc = 'yank whole buffer into "*'})
 
 -- Select pasted test
 vim.keymap.set('n', 'g.', "'`[' . strpart(getregtype(), 0, 1) . '`]'", { expr = true , desc = 'Select last edit' })
 -- doesn't seem to work with visual block mode properly
 -- https://vim.fandom.com/wiki/Selecting_your_pasted_text
+
+-- keep indented text selected
+vim.keymap.set('v', '<', '<gv')
+vim.keymap.set('v', '>', '>gv')
 
 -- Esc clears search highlighting in normal mode
 vim.keymap.set('n', '<Esc>', function()
@@ -58,6 +66,8 @@ vim.keymap.set('n', '[b', '<cmd>bprev<cr>', { desc = 'Previous buffer' })
 vim.keymap.set('n', ']b', '<cmd>bnext<cr>', { desc = 'Next buffer' })
 vim.keymap.set('n', '[c', '<cmd>cprev<cr>', { desc = 'Go to previous quickfix item' })
 vim.keymap.set('n', ']c', '<cmd>cnext<cr>', { desc = 'Go to next quickfix item' })
+vim.keymap.set('n', '[t', '<cmd>tabprev<cr>', { desc = 'Go to previous tab' })
+vim.keymap.set('n', ']t', '<cmd>tabnext<cr>', { desc = 'Go to next tab' })
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })

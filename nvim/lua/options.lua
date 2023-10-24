@@ -55,7 +55,8 @@ vim.o.termguicolors = true
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
-if os.getenv("TMUX") ~= "" then
+local tmux = os.getenv("TMUX")
+if tmux and tmux ~= "" then
   vim.g.clipboard = {
     name = 'TmuxClipboard',
     copy = {
@@ -83,7 +84,8 @@ end
 --     cache_enabled = 1,
 --   }
 -- end
-if os.getenv('WSL_DISTRO_NAME') ~= "" then
+local distro_name = os.getenv('WSL_DISTRO_NAME')
+if distro_name and distro_name ~= "" then
   vim.g.clipboard = {
     name = 'WslClipboard',
     copy = {
