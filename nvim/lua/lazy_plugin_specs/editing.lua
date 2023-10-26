@@ -58,7 +58,6 @@ return {
       })
     end
   },
-
   {
     "chrisgrieser/nvim-spider",
     init = function ()
@@ -112,4 +111,5 @@ return {
     event = "InsertEnter",
     opts = {}
   },
+  "lambdalisue/suda.vim",
 }
