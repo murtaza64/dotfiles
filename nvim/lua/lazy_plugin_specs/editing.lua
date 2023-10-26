@@ -1,10 +1,12 @@
 return {
   {
     'Wansmer/treesj',
-    keys = { '<space>m', '<space>j', '<space>s' },
     dependencies = { 'nvim-treesitter/nvim-treesitter' },
-    config = function()
-      require('treesj').setup({--[[ your config ]]})
+    opts = {
+      use_default_keymaps = false
+    },
+    init = function()
+      vim.keymap.set('n', '<leader>m', require('treesj').toggle, { desc = "split/join (TreeSJ)"})
     end,
   },
   {
@@ -84,6 +86,12 @@ return {
         "<cmd>lua require('spider').motion('ge')<CR>",
         { desc = "Spider-ge" }
       )
+      -- retain access to classic iw
+      vim.keymap.set({ 'n', 'o', 'x' }, 'gw', 'w')
+      -- clashes with comment blockwise
+      -- vim.keymap.set({ 'n', 'o', 'x' }, 'gb', 'b')
+      vim.keymap.set({ 'o', 'x' }, 'igw', 'iw')
+      vim.keymap.set({ 'o', 'x' }, 'agw', 'aw')
     end
   },
 

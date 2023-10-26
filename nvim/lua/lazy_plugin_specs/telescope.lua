@@ -47,21 +47,25 @@ local config_telescope = function()
   end, { desc = '[/] Fuzzily search in current buffer' })
 
   vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
-  vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, { desc = '[F]ind [F]iles' })
-  vim.keymap.set('n', '<leader>fa', function()
+  -- vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, { desc = '[F]ind [F]iles' })
+  vim.keymap.set('n', '<leader>ff', function()
     require('telescope.builtin').find_files({
       -- find_command = {"find", "-L", "-not", "-path", "**/.git/*"},
-      find_command = {'fd', '-E', '.git' },
+      find_command = {'fd', '-E', '.git', '-E', '.build' },
       hidden = true,
       follow = true,
-      no_ignore = true,
-      no_ignore_parent = true,
-      prompt_title = "Find All Files"
+      no_ignore = false,
+      no_ignore_parent = false,
+      prompt_title = "Find Files"
     })
-  end, { desc = '[F]ind [A]ll files (hidden and symlink)' })
+  end, { desc = '[F]ind [F]iles' })
   vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
   vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
   vim.keymap.set('n', '<leader>sg', require('telescope').extensions.live_grep_args.live_grep_args, { desc = '[S]earch by [G]rep' })
+  vim.keymap.set('v', '<leader>sg', function ()
+    local text = table.concat(require('utils').get_visual_text(), '\n')
+    require('telescope').extensions.live_grep_args.live_grep_args({ default_text = text })
+  end, { desc = '[S]earch by [G]rep selection' })
   vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
 end
 return {

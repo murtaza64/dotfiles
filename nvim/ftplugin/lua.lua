@@ -1,0 +1,2 @@
+-- make filetype specific configs!
+-- print('hello world')

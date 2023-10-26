@@ -18,6 +18,9 @@ vim.opt.listchars = {
   tab = '» ',
 }
 
+-- treat hyphens as part of words
+vim.opt.iskeyword:append('-')
+
 -- Don't show default search progress
 vim.o.shortmess = vim.o.shortmess .. 'S'
 
