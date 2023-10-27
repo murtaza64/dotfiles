@@ -15,5 +15,13 @@ M.get_visual_text = function()
   local _, le, ce = unpack(vim.fn.getpos('.'))
   return vim.api.nvim_buf_get_text(0, ls-1, cs-1, le-1, ce, {})
 end
+M.tableContains = function(table, value)
+  for _, v in pairs(table) do
+    if v == value then
+      return true
+    end
+  end
+  return false
+end
 
 return M

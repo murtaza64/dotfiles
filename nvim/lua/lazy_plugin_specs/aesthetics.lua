@@ -3,7 +3,6 @@ return {
   "shortcuts/no-neck-pain.nvim",
 
   {
-
     -- Add indentation guides even on blank lines
     'lukas-reineke/indent-blankline.nvim',
     opts = {
@@ -20,6 +19,7 @@ return {
     end
   },
 
+  -- highlight surrounding braces
   {
     "utilyre/sentiment.nvim",
     version = "*",
@@ -77,5 +77,12 @@ return {
         -- vim.keymap.set('n', '<leader>ph', require('gitsigns').preview_hunk, { buffer = bufnr, desc = '[P]review [H]unk' })
       end,
     },
+  },
+  {
+    'goolord/alpha-nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function ()
+      require'alpha'.setup(require'alpha-theme'.config)
+    end
   },
 }

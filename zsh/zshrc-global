@@ -49,6 +49,16 @@ function zvm_config() {
 
 source $ZSH_ROOT/zsh-vi-mode/zsh-vi-mode.plugin.zsh
 
+function push-and-insert() {
+    zle push-line
+    zle vi-insert
+}
+zle -N push-and-insert
+function zvm_after_lazy_keybindings() {
+    bindkey -M vicmd 'dd' push-and-insert
+    bindkey -s -M vicmd 'n' "ddnvim^M"
+}
+
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f $ZSH_ROOT/.p10k.zsh ]] || source $ZSH_ROOT/.p10k.zsh

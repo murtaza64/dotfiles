@@ -5,6 +5,9 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 -- ctrl-backspace to kill word
 vim.keymap.set({ 'i', 'c' }, '<C-H>', '<C-W>')
 
+vim.keymap.set('n', '<leader>q', '<cmd>:q<cr>', { desc = 'Quit window'})
+vim.keymap.set('n', '<leader>w', '<cmd>:w<cr>', { desc = 'Write buffer'})
+
 -- Remap for dealing with word wrap
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
@@ -40,6 +43,9 @@ vim.keymap.set('n', 'g.', "'`[' . strpart(getregtype(), 0, 1) . '`]'", { expr = 
 vim.keymap.set('v', '<', '<gv')
 vim.keymap.set('v', '>', '>gv')
 
+-- open URLs under cursor
+vim.keymap.set("n", "gx", ":silent execute '!open ' . shellescape(expand('<cfile>'), 1)<CR>")
+
 -- Esc clears search highlighting in normal mode
 vim.keymap.set('n', '<Esc>', function()
   if vim.v.hlsearch ~= 0 then
@@ -71,5 +77,4 @@ vim.keymap.set('n', ']t', '<cmd>tabnext<cr>', { desc = 'Go to next tab' })
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
+vim.keymap.set('n', '<leader>d', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })

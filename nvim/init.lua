@@ -19,6 +19,7 @@ require('keybindings')
 require('title')
 require('inactive_cursorline')
 require('oil_winbar')
+require('autocmds')
 
 -- vim.cmd('hi Normal guibg=#131313')
 -- vim.cmd('hi EndOfBuffer guifg=#191919 guibg=#191919')
