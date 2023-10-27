@@ -8,7 +8,7 @@ local handle = io.popen("hostname")  -- Run the hostname command
 local hostname = handle:read("*a")  -- Read the output
 handle:close()  -- Close the handle
 hostname = hostname:gsub("%s+", "")  -- Remove any whitespace (including newlines)
-local current_time = os.date("%H-%M")
+local current_time = os.date("%H:%M")
 local current_date = os.date("%a %b %d")
 
 local leader = "SPC"
@@ -16,16 +16,31 @@ local leader = "SPC"
 local margin = 3
 local align = 80
 
+local colors = require('catppuccin.palettes').get_palette()
+vim.api.nvim_set_hl(0, "AlphaButtonLabel", {
+  fg = colors.pink,
+  bold = true,
+})
+vim.api.nvim_set_hl(0, "AlphaButtonSides", {
+  fg = colors.surface2,
+})
+vim.api.nvim_set_hl(0, "AlphaHeader", {
+  fg = colors.lavender,
+})
+vim.api.nvim_set_hl(0, "AlphaDivider", {
+  fg = colors.yellow,
+})
+
 local asciis = require('neovim_ascii')
 local art = asciis[math.random(#asciis)]
-if #art < 5 then
-    for i = 1, 5 - #art do
+if #art < 3 then
+    for _ = 1, 3 - #art do
         table.insert(art, "")
     end
 end
-art[3] = art[3] .. string.rep(" ", align - #art[3] - #hostname) .. hostname
-art[4] = art[4] .. string.rep(" ", align - #art[4] - #current_date) .. current_date
-art[5] = art[5] .. string.rep(" ", align - #art[5] - #current_time) .. current_time
+art[#art - 2] = art[#art - 2] .. string.rep(" ", align - #art[#art - 2] - #hostname) .. hostname
+art[#art - 1] = art[#art - 1] .. string.rep(" ", align - #art[#art - 1] - #current_date) .. current_date
+art[#art - 0] = art[#art - 0] .. string.rep(" ", align - #art[#art - 0] - #current_time) .. current_time
 
 
 local default_header = {
@@ -40,7 +55,7 @@ local default_header = {
     -- },
     val = art,
     opts = {
-        hl = "Type",
+        hl = "AlphaHeader",
         shrink_margin = false,
         -- wrap = "overflow";
     },
@@ -61,7 +76,9 @@ local truncate_path = function(fname, max_length)
     return fname
 end
 
+
 local function button(sc, txt, keybind, opts)
+    -- print(sc, txt, keybind, vim.inspect(opts))
     local sc_ = sc:gsub("%s", ""):gsub(leader, "<leader>")
     local left_padding = if_nil(opts.left_padding, align - #txt)
     -- print(txt, left_padding, align - #txt, #txt)
@@ -70,20 +87,26 @@ local function button(sc, txt, keybind, opts)
         left_padding_txt = string.rep(" ", left_padding)
     end
 
-    local icon_txt = "  " .. opts.icon .. " "
+    local icon_txt = opts.icon
 
     local out_opts = {
         position = "left",
-        shortcut = " [" .. sc .. "] ",
-        cursor = align + 10,
+        -- shortcut = " " .. sc .. " ",
+        -- shortcut = " █" .. sc .. "█",
+        shortcut = " [" .. sc .. "] " .. icon_txt,
+        cursor = align + 5,
         -- width = 50,
         align_shortcut = "right",
-        hl_shortcut = { { "Operator", 1, 2 }, { "Number", 2, #sc + 2 }, { "Operator", #sc + 2, #sc + 3 } },
+        hl_shortcut = {
+            { "AlphaButtonSides", 0, 2 },
+            { "AlphaButtonLabel", 2, #sc + 2 },
+            { "AlphaButtonSides", #sc + 2, #sc + 4 },
+        },
         shrink_margin = false,
         hl = {}
     }
     if opts.icon_hl then
-        table.insert(out_opts.hl, { opts.icon_hl, margin + align, margin + align + 7 })
+        table.insert(out_opts.hl_shortcut, { opts.icon_hl, #sc + 4, #sc + 10 })
     end
     if opts.text_hl then
         table.insert(out_opts.hl, { opts.text_hl, margin, margin + align })
@@ -100,7 +123,8 @@ local function button(sc, txt, keybind, opts)
 
     return {
         type = "button",
-        val = left_padding_txt .. txt .. icon_txt,
+        -- val = left_padding_txt .. txt .. icon_txt,
+        val = left_padding_txt .. txt,
         on_press = on_press,
         opts = out_opts,
     }
@@ -133,15 +157,7 @@ local function file_button(fn, shortcut_key, short_fn, autocd, row, col)
     local final_fn = short_fn .. position_txt
     local fb_hl = {}
     local ico, hl = icon(fn)
-    -- local left_padding = align - #short_fn - #ico_txt
-    local left_padding = align - #final_fn -- sometimes ico_txt isn't 7 for some reason
-    local ico_start = margin + left_padding + #final_fn
-    table.insert(fb_hl, {
-        hl,
-        ico_start,
-        ico_start + 7,
-    })
-    -- print(#ico_txt)
+    local left_padding = align - #final_fn
     local cursor_cmd = ""
     if row then
         if col then
@@ -164,6 +180,7 @@ local function file_button(fn, shortcut_key, short_fn, autocd, row, col)
         "<cmd>e " .. vim.fn.fnameescape(fn) .. cd_cmd .. cursor_cmd .." <CR>",
         {
             icon = ico .. " ",
+            icon_hl = hl,
             left_padding = left_padding
         }
     )
@@ -237,7 +254,7 @@ local function mru()
         {
             type = "text",
             val = function () return align_center(vim.fn.getcwd()) end,
-            opts = { hl = "SpecialComment", shrink_margin = false },
+            opts = { hl = "AlphaDivider", shrink_margin = false },
         },
         -- { type = "padding", val = 1 },
         {
@@ -249,7 +266,7 @@ local function mru()
         {
             type = "text",
             val = align_center("other oldfiles"),
-            opts = { hl = "SpecialComment", shrink_margin = false },
+            opts = { hl = "AlphaDivider", shrink_margin = false },
         },
         -- { type = "padding", val = 1 },
         {
@@ -266,16 +283,16 @@ local global_marks = function()
         local mark = string.char(i)
         local row, col, _, fn = unpack(vim.api.nvim_get_mark(mark, {}))
         if fn ~= "" then
-            print(("%s:%d:%d"):format(fn, row, col))
+            -- print(("%s:%d:%d"):format(fn, row, col))
             table.insert(tbl, file_button(fn, mark, fnamemodify(fn, ":~"), nil, row, col))
         end
     end
-    print(vim.inspect(tbl))
+    -- print(vim.inspect(tbl))
     return {
         {
             type = "text",
             val = align_center("global marks"),
-            opts = { hl = "SpecialComment", shrink_margin = false },
+            opts = { hl = "AlphaDivider", shrink_margin = false },
         },
         { type = "group", val = tbl },
     }
@@ -293,7 +310,7 @@ local section = {
                 {
                     icon = "󰻭 ",
                     icon_hl = "String",
-                    text_hl = "SpecialComment",
+                    text_hl = "AlphaDivider",
                 }
             ),
             button(
@@ -302,7 +319,7 @@ local section = {
                 "<cmd>Oil <CR>",
                 {
                     icon = "󰼙 ",
-                    text_hl = "SpecialComment",
+                    text_hl = "AlphaDivider",
                 }
             ),
             button(
@@ -311,7 +328,7 @@ local section = {
                 "<leader>ff",
                 {
                     icon = "󰱽 ",
-                    text_hl = "SpecialComment",
+                    text_hl = "AlphaDivider",
                     keybind_opts = { noremap = false }
                 }
             ),
@@ -337,7 +354,7 @@ local section = {
         --     {
         --         type = "text",
         --         val = mru_title,
-        --         opts = { hl = "SpecialComment", shrink_margin = false },
+        --         opts = { hl = "AlphaDivider", shrink_margin = false },
         --     },
         --     { type = "padding", val = 1 },
         --     {
@@ -356,7 +373,7 @@ local section = {
                 "?",
                 "more oldfiles",
                 "<leader>?",
-                { icon = "󱋢 ", keybind_opts = { noremap = false }, text_hl = "SpecialComment"}
+                { icon = "󱋢 ", keybind_opts = { noremap = false }, text_hl = "AlphaDivider"}
             ),
             button(
                 "q",
