@@ -3,6 +3,9 @@ return {
   event = "VeryLazy",
   name = 'noice',
   opts = {
+    -- cmdline = {
+    --   opts = { position = "50%" }
+    -- },
     lsp = {
       -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
       progress = { enabled = false },

@@ -5,17 +5,13 @@ return {
   {
     -- Add indentation guides even on blank lines
     'lukas-reineke/indent-blankline.nvim',
+    main = 'ibl',
     opts = {
       -- char = '┊',
-      -- char = '▏',
-      -- context_char = '▏',
-      show_trailing_blankline_indent = false,
-      context_start_priority = 1,
-      show_current_context = true,
+      indent = { char = '▏' },
     },
     init = function()
-      vim.api.nvim_set_hl(0, 'IndentBlanklineContextChar', { fg = require('catppuccin.palettes').get_palette('mocha').overlay0})
-      vim.api.nvim_set_hl(0, 'IndentBlanklineChar', { fg = require('catppuccin.palettes').get_palette('mocha').surface1})
+      vim.api.nvim_set_hl(0, 'IblIndent', { fg = require('catppuccin.palettes').get_palette('mocha').surface1})
     end
   },
 

@@ -4,6 +4,8 @@
 # move prompt to bottom
 printf '\n%.0s' {1..100}
 
+export PATH=$(dirname $ZSH_ROOT)/bin:$PATH
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -27,10 +29,10 @@ ZSH_ALIAS_FINDER_AUTOMATIC=true
 #     source $zshfile
 # done
 
-source $ZSH_ROOT/aliases.plugin.zsh
+source $ZSH_ROOT/aliases.zsh
 source $ZSH_ROOT/completion.zsh
 source $ZSH_ROOT/git.zsh
-source $ZSH_ROOT/git.plugin.zsh
+# source $ZSH_ROOT/git.plugin.zsh
 source $ZSH_ROOT/history.zsh
 source $ZSH_ROOT/key-bindings.zsh
 source $ZSH_ROOT/spectrum.zsh
@@ -157,7 +159,18 @@ fzf-history-widget() {
 # must be sourced at the end
 # source $ZSH_ROOT/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
+commit-search() {
+    local res=$(git log "origin/master" HEAD --pretty=oneline-custom --date=short --color=always \
+        | fzf --ansi | cut -d' ' -f1)
+    if [ -n "$res" ]; then
+        local commit=$(echo $res | awk '{print $1}')
+        LBUFFER+="$commit"
+    fi
+    zle reset-prompt
+}
+
 function zvm_after_init() {
     zle     -N   fzf-history-widget
     bindkey '^R' fzf-history-widget
+    zle     -N   commit-search
 }

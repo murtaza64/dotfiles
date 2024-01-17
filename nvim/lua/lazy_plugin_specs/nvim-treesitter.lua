@@ -1,6 +1,20 @@
 local opts = {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'css', 'cpp', 'go', 'html', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim' },
+  ensure_installed = {
+    'c',
+    'css',
+    'cpp',
+    'go',
+    'html',
+    'javascript',
+    'lua',
+    'python',
+    'rust',
+    'tsx',
+    'typescript',
+    'vimdoc',
+    'vim',
+  },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = false,
@@ -90,6 +104,17 @@ return {
     build = ':TSUpdate',
     config = function()
       require('nvim-treesitter.configs').setup(opts)
+      local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
+      parser_config.jenkins = {
+        install_info = {
+          url = "~/tree-sitter-jenkins", -- local path or git repo
+          files = {"src/parser.c"}, -- note that some parsers also require src/scanner.c or src/scanner.cc
+          -- optional entries:
+          generate_requires_npm = false, -- if stand-alone parser without npm dependencies
+          requires_generate_from_grammar = false, -- if folder contains pre-generated src/parser.c
+        },
+        filetype = "jenkins", -- if filetype does not match the parser name
+      }
     end
   },
   'nvim-treesitter/playground',

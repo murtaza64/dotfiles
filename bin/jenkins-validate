@@ -1,0 +1,5 @@
+#!/bin/bash
+JENKINS_URL="https://jenkins-ci.duolingo.com"
+JENKINS_CRUMB=$(curl -s "$JENKINS_URL/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)")
+curl --silent -X POST -H "$JENKINS_CRUMB" -F "jenkinsfile=<$1" $JENKINS_URL/pipeline-model-converter/validate \
+	| grep Workflow | sed -E 's/WorkflowScript\: [0-9]+: (.*) @ line ([0-9]+), column ([0-9]+)./\2:\3: \1/'

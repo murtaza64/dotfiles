@@ -21,6 +21,7 @@ vim.opt.rtp:prepend(lazypath)
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
   'kmonad/kmonad-vim',
+  'github/copilot.vim',
 
   -- dot repeat plugin commands
   'tpope/vim-repeat',
@@ -28,6 +29,10 @@ require('lazy').setup({
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
+
+  -- git blame
+  'emmanueltouzery/agitator.nvim',
+
   {'akinsho/git-conflict.nvim', version = "*", config=true},
   {
     "NeogitOrg/neogit",
@@ -38,6 +43,39 @@ require('lazy').setup({
       "ibhagwan/fzf-lua",              -- optional
     },
     config = true
+  },
+
+  {
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "sindrets/diffview.nvim",
+
+      "nvim-telescope/telescope.nvim",
+    },
+    config = true
+  },
+
+  {
+    'knsh14/vim-github-link',
+    init = function()
+      vim.keymap.set({"n", "v"}, "<leader>gl", ":GetCurrentBranchLink<cr>", {
+        silent = true,
+        desc = "Get [G]itHub [L]ink"
+      })
+    end
+  },
+
+  {
+    'pwntester/octo.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-telescope/telescope.nvim',
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function ()
+      require("octo").setup()
+    end
   },
 
   -- Detect tabstop and shiftwidth automatically
@@ -83,6 +121,7 @@ require('lazy').setup({
   -- noice is too buggy/heavy
   -- { import = 'lazy_plugin_specs.noice' },
   { import = 'lazy_plugin_specs.aesthetics' },
+  { import = 'lazy_plugin_specs.ai' },
   { import = 'lazy_plugin_specs.editing' },
   { import = 'lazy_plugin_specs.lsp' },
   { import = 'lazy_plugin_specs.lualine' },

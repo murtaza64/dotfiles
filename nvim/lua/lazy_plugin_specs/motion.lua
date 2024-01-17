@@ -42,9 +42,9 @@ return {
     config = function()
       vim.keymap.set(
         { 'n', 'x', 'o' },
-        '<leader>n',
+        '<leader>l',
         function() require'leap-ast'.leap() end,
-        { desc = "Leap to AST [n]ode" }
+        { desc = "[L]eap to AST node" }
       )
     end,
   },

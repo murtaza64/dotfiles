@@ -66,7 +66,7 @@ local servers = {
   -- gopls = {},
   pyright = {},
   rust_analyzer = {},
-  -- tsserver = {},
+  tsserver = {},
   html = {},
   cssls = {},
 
@@ -128,6 +128,7 @@ local config_cmp = function()
       { name = 'nvim_lsp' },
       { name = 'luasnip' },
       { name = 'buffer' },
+      { name = 'path' },
     },
   }
 end
@@ -163,6 +164,7 @@ return {
         'hrsh7th/cmp-nvim-lsp',
         -- buffer words
         'hrsh7th/cmp-buffer',
+        'hrsh7th/cmp-path',
         -- Adds a number of user-friendly snippets
         'rafamadriz/friendly-snippets',
       },
@@ -196,6 +198,57 @@ return {
           settings = servers[server_name],
         }
       end,
+    }
+
+    local shellcheck = {
+      prefix = 'shellcheck',
+      -- lintCommand = 'shellcheck --color=never --format=gcc -',
+      lintIgnoreExitCode = true,
+      rootMarkers = {},
+      lintCommand = 'shellcheck -f gcc -x',
+      lintSource = 'shellcheck',
+      lintFormats = {
+        '%f:%l:%c: %trror: %m',
+        '%f:%l:%c: %tarning: %m',
+        '%f:%l:%c: %tote: %m'
+      }
+    }
+    local jenkins = {
+      prefix = 'jenkins',
+      lintSource = 'jenkins',
+      lintCommand = 'jenkins-validate',
+      lintIgnoreExitCode = true,
+      lintFormats = {
+        '%l:%c: %m'
+      }
+    }
+    require('lspconfig')['efm'].setup {
+      init_options = {documentFormatting = true},
+      filetypes = { 'sh', 'groovy' },
+      -- capabilities = capabilities,
+      on_attach = on_attach,
+      settings = {
+        logLevel = 1,
+        logFile = '/Users/murtaza/efm-nvim.log',
+        rootMarkers = {".git/"},
+        languages = {
+          -- lua = {
+          --   -- {formatCommand = "lua-format -i", formatStdin = true}
+          -- },
+          sh = {
+            shellcheck
+          },
+          groovy = {
+            jenkins
+          },
+          jenkins = {
+            jenkins
+          },
+        }
+      }
+    }
+    require('lspconfig')['hls'].setup{
+      filetypes = { 'haskell', 'lhaskell', 'cabal' },
     }
 
     vim.diagnostic.config {

@@ -14,7 +14,7 @@ local current_date = os.date("%a %b %d")
 local leader = "SPC"
 
 local margin = 3
-local align = 80
+local align = 70
 
 local colors = require('catppuccin.palettes').get_palette()
 vim.api.nvim_set_hl(0, "AlphaButtonLabel", {
@@ -68,7 +68,7 @@ end
 
 local truncate_path = function(fname, max_length)
     if #fname > max_length then
-        fname = vim.fn.pathshorten(fname, 1)
+        fname = vim.fn.pathshorten(fname, 3)
         if #fname > max_length then
             fname = '...' .. string.sub(fname, - (max_length-3))
         end
@@ -153,7 +153,7 @@ local function file_button(fn, shortcut_key, short_fn, autocd, row, col)
     if row and col then
         position_txt = (":%d:%d"):format(row, col)
     end
-    short_fn = truncate_path(short_fn, align - 7 - #position_txt)
+    short_fn = truncate_path(short_fn, align - 0 - #position_txt)
     local final_fn = short_fn .. position_txt
     local fb_hl = {}
     local ico, hl = icon(fn)

@@ -8,6 +8,9 @@ vim.g.maplocalleader = ' '
 
 require('lazyconfig')
 
+vim.g.copilot_no_tab_map = true
+vim.api.nvim_set_keymap("i", "<C-J>", 'copilot#Accept("<CR>")', { silent = true, expr = true })
+
 require('delta')
 vim.keymap.set({"n"}, "<leader>u", ":UnsavedChanges<CR>", { silent=true })
 require('highlight_hex_colors')
@@ -20,6 +23,11 @@ require('title')
 require('inactive_cursorline')
 require('oil_winbar')
 require('autocmds')
+
+vim.filetype.add({
+  pattern = { ['.*pipeline'] = 'jenkins' },
+  extension = { fastfile = 'ruby' },
+})
 
 -- vim.cmd('hi Normal guibg=#131313')
 -- vim.cmd('hi EndOfBuffer guifg=#191919 guibg=#191919')

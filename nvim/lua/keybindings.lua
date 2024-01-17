@@ -25,6 +25,7 @@ vim.keymap.set('n', '<leader>t', require('nvim-tree.api').tree.toggle, { desc = 
 vim.keymap.set('n', '<leader>o', function()
   vim.cmd.Oil()
 end, { desc = 'Open [o]il' })
+vim.keymap.set('n', '<leader>n', '<cmd>:Neogit<cr>', { desc = 'Open [n]eogit' })
 
 -- Paste from system
 vim.keymap.set({ 'n', 'v' }, '<leader>p', '"*p', { desc = '"*p', remap = true })
