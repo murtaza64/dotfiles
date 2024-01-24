@@ -7,3 +7,6 @@
 [submodule "zsh/zsh-vi-mode"]
 	path = zsh/zsh-vi-mode
 	url = https://github.com/jeffreytse/zsh-vi-mode.git
+[submodule "easyjump.tmux"]
+	path = easyjump.tmux
+	url = https://github.com/roy2220/easyjump.tmux.git
