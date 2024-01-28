@@ -1,0 +1,171 @@
+#!/Users/murtaza/.pyenv/versions/3.11.5/bin/python
+
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+
+import os
+import pickle
+from datetime import datetime, timedelta, timezone
+import click
+import rich, rich.console
+
+def humanize_time_delta(t: datetime, now: datetime | None = None):
+    if now is None:
+        now = datetime.now(tz=timezone.utc)
+    delta = t - now
+    past = delta < timedelta(0)
+    if past:
+        delta = -delta
+    seconds = delta.total_seconds()
+    if seconds < 60:
+        return 'just now' if past else 'now'
+    minutes = delta / timedelta(minutes=1)
+    if minutes < 60:
+        return f'{round(minutes)} minutes ago' if past else f'in {round(minutes)} minutes'
+    hours = delta / timedelta(hours=1)
+    if hours < 1.5:
+        return f'an hour ago' if past else f'in an hour'
+    if hours < 24:
+        return f'{round(hours)} hours ago' if past else f'in {round(hours)} hours'
+    days = delta / timedelta(days=1)
+    if days < 1.5:
+        return f'yesterday' if past else f'tomorrow'
+    if days < 7:
+        return f'{round(days)} days ago' if past else f'in {round(days)} days'
+    weeks = delta / timedelta(weeks=1)
+    if weeks < 1.5:
+        return f'last week' if past else f'next week'
+    if weeks < 4:
+        return f'{round(weeks)} weeks ago' if past else f'in {round(weeks)} weeks'
+    months = delta / timedelta(days=30)
+    if months < 1.5:
+        return f'last month' if past else f'next month'
+    if months < 12:
+        return f'{round(months)} months ago' if past else f'in {round(months)} months'
+    years = delta / timedelta(days=365)
+    if years < 1.5:
+        return f'last year' if past else f'next year'
+    return f'{round(years)} years ago' if past else f'in {round(years)} years'
+
+def event_in_progress(event):
+    now = datetime.now(tz=timezone.utc)
+    start = datetime.fromisoformat(event['start'].get('dateTime', event['start'].get('date')))
+    end = datetime.fromisoformat(event['end'].get('dateTime', event['end'].get('date')))
+    return start <= now <= end
+
+
+# If modifying these SCOPES, delete the file token.pickle.
+SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+
+def authenticate_and_create_service():
+    creds = None
+    if os.path.exists('/Users/murtaza/env/gcal_token.pickle'):
+        with open('/Users/murtaza/env/gcal_token.pickle', 'rb') as token:
+            creds = pickle.load(token)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                '/Users/murtaza/env/gcal_api_credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('/Users/murtaza/env/gcal_token.pickle', 'wb') as token:
+            pickle.dump(creds, token)
+
+    return build('calendar', 'v3', credentials=creds)
+
+class Event:
+    def __init__(self, event):
+        self.event = event
+        self.start = datetime.fromisoformat(event['start'].get('dateTime', event['start'].get('date')))
+        self.end = datetime.fromisoformat(event['end'].get('dateTime', event['end'].get('date')))
+        self.summary = event['summary']
+        self.conference = event.get('conferenceData', {}).get('entryPoints', [{}])[0].get('uri')
+        self.location = event.get('location')
+        self.in_progress = self.start <= datetime.now(tz=timezone.utc) <= self.end
+        self.minutes_till = (self.start - datetime.now(tz=timezone.utc)) / timedelta(minutes=1)
+        self.minutes_till_end = (self.end - datetime.now(tz=timezone.utc)) / timedelta(minutes=1)
+
+@click.group(invoke_without_command=True)
+@click.option('--max-events-loaded', '-m', default=10)
+@click.pass_context
+def cli(ctx, max_events_loaded):
+    service = authenticate_and_create_service()
+    now = datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+    events_result = service.events().list(
+        calendarId='primary',
+        timeMin=now,
+        maxResults=max_events_loaded,
+        singleEvents=True,
+        orderBy='startTime'
+    ).execute()
+    ctx.obj['events'] = [Event(e) for e in events_result.get('items', [])]
+    ctx.obj['con'] = rich.console.Console(highlight=False)
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(upcoming)
+
+@cli.command()
+@click.pass_obj
+def tmux(obj):
+    events = obj['events'] 
+    # if there are events starting in less than 10 minutes, show only that
+    for event in events:
+        if not event.in_progress and event.minutes_till < 10:
+            delta = humanize_time_delta(event.start)
+            print(f"#[fg=colour5,bold]{event.summary} #[fg=colour1,nobold]{delta}")
+            return
+             
+    # if there is an event in progress, show that
+    for event in events:
+        if event.in_progress:
+            delta_ends = humanize_time_delta(event.end)
+            delta_starts = humanize_time_delta(event.start)
+            if event.minutes_till_end < 10:
+                print(f"#[fg=colour5,bold]{event.summary} #[fg=colour3,nobold]ends {delta_ends}")
+                return
+            elif abs(event.minutes_till) < 10:
+                print(f"#[fg=colour5,bold]{event.summary} #[fg=colour1,nobold]started {delta_starts}")
+                return
+            elif abs(event.minutes_till) < event.minutes_till_end:
+                print(f"#[fg=colour5,bold]{event.summary} #[fg=colour3,nobold]started {delta_starts}")
+                return
+            else:
+                print(f"#[fg=colour5,bold]{event.summary} #[fg=colour3,nobold]ends {delta_ends}")
+                return
+    
+    # show an upcoming event in the next half hour
+    for event in events:
+        if event.minutes_till < 30:
+            delta = humanize_time_delta(event.start)
+            print(f"#[fg=colour5,bold]{event.summary} #[fg=colour3,nobold]{delta}")
+            return
+            
+
+@cli.command()
+@click.option('--number', '-n', default=3)
+@click.pass_obj
+def upcoming(obj, number):
+    events = obj['events']
+    con = obj['con']
+    if not events:
+        print('No upcoming events found.')
+    for event in events[:number]:
+        # print(start, event['summary'])
+        # print(start_dt)
+        humanized = humanize_time_delta(event.start)
+        if event.in_progress:
+            con.print(f'[bold blue]{event.summary}[/bold blue][yellow] started {humanized}[/yellow]')
+        else:
+            con.print(f'[bold blue]{event.summary}[/bold blue] {humanized}')
+        if event.conference:
+            con.print(f'[grey66 underline]{event.conference}[/grey66 underline]')
+        if event.location:
+            print(event.location)
+            con.print(f'[grey66]{event.location}[/grey66]')
+
+if __name__ == '__main__':
+    cli(obj={})
+

@@ -1,0 +1,12 @@
+#! /usr/bin/env bash
+
+duo_gpt_cmd=(
+  duo gpt
+  "--prompt-file=/Users/murtaza/cli/short.prompt" 
+  "--postprocess-command=python3 /Users/murtaza/scratch/murtaza/postprocess_gpt_output.py"
+  ask
+)
+tmpfile=$(mktemp /tmp/pane-question.XXXXXX)
+echo -e "# ask an AI assistant a question\n" > $tmpfile
+nvim -c 'startinsert | normal G' $tmpfile
+cat $tmpfile | "${duo_gpt_cmd[@]}"

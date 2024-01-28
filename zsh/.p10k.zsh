@@ -104,8 +104,10 @@
     taskwarrior             # taskwarrior task count (https://taskwarrior.org/)
     per_directory_history   # Oh My Zsh per-directory-history local/global indicator
     # cpu_arch              # CPU architecture
+    # tmux
+    # example
+    # context
     os_icon
-    context
     time                    # current time
     # =========================[ Line #2 ]=========================
     newline
@@ -1659,6 +1661,22 @@
   # Type `p10k help segment` for documentation and a more sophisticated example.
   function prompt_example() {
     p10k segment -f 208 -i '⭐' -t 'hello, %n'
+  }
+
+  function prompt_tmux() {
+    # check if TMUX is set
+    if [[ -z $TMUX ]]; then
+      return
+    fi
+    local YELLOW="\x1b[33m"
+    local RESET="\x1b[0m"
+    current=$(tmux display-message -p '#I')
+    # total=$(tmux display-message -p '#{session_windows}')
+    sed_pattern="s/\\($current\\)/%F{blue}\\1%F{244}/"
+    highlighted=$(tmux list-windows | cut -d: -f1 | xargs echo | sed $sed_pattern)
+    session=$(tmux display-message -p '#S')
+    p10k segment -f 244 -i ' ' -t "$session $highlighted"
+    # p10k segment -f 208 -i '⭐' -t 'hello world'
   }
 
   # User-defined prompt segments may optionally provide an instant_prompt_* function. Its job

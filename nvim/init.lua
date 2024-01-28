@@ -26,7 +26,10 @@ require('autocmds')
 
 vim.filetype.add({
   pattern = { ['.*pipeline'] = 'jenkins' },
-  extension = { fastfile = 'ruby' },
+  extension = {
+    fastfile = 'ruby',
+    xsh = 'xsh',
+  },
 })
 
 -- vim.cmd('hi Normal guibg=#131313')

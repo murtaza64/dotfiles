@@ -55,6 +55,9 @@ vim.o.completeopt = 'menuone,noselect'
 -- NOTE: You should make sure your terminal supports this
 vim.o.termguicolors = true
 
+-- save more oldfiles
+vim.opt.shada = "!,'1000,<50,s10,h"
+
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
@@ -63,8 +66,8 @@ if tmux and tmux ~= "" then
   vim.g.clipboard = {
     name = 'TmuxClipboard',
     copy = {
-      ["+"] = {'tmux', 'load-buffer', '-'},
-      ["*"] = {'tmux', 'load-buffer', '-'},
+      ["+"] = {'tmux-copy'},
+      ["*"] = {'tmux-copy'},
     },
     paste = {
       ["+"] = {'tmux', 'save-buffer', '-'},

@@ -8,10 +8,18 @@ if (( $# < 1 )); then
     echo "usage: time_ago ${u}timestamp_ago${n} [${u}timestamp_now${n}]"
     exit 1
 fi
+
 local minutes=60
 local hours=$(( 60 * minutes ))
 local days=$(( 24 * hours ))
 local diff=$(( ${2:-$(date +%s)} - $1 ))
+template="%s ago"
+
+if (( diff < 0 )); then
+    diff=$(( -diff ))
+    template="in %s"
+fi
+
 local human
 if (( diff < 30 )); then
     human="${diff} seconds"
@@ -20,7 +28,7 @@ elif (( diff < 90 )); then
 elif (( diff < 1 * hours )); then
     human="$(( (diff + minutes / 2) / minutes )) minutes"
 elif (( diff < 1 * hours + 30 * minutes )); then
-    human="about 1 hour"
+    human="about an hour"
 elif (( diff < 1 * days )); then
     human="about $(( (diff + hours / 2) / hours )) hours"
 elif (( diff < 2 * days)); then
@@ -29,4 +37,4 @@ else
     human="$(( (diff + days / 2) / days)) days"
 fi
 
-echo "$human ago"
+printf "$template\n" "$human"

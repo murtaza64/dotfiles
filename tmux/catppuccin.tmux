@@ -40,8 +40,8 @@ main() {
 
   # status
   set status "on"
-  set status-bg "${thm_black}"
-  set status-justify "left"
+  set status-bg "${thm_bg}"
+  set status-justify "absolute-centre"
   set status-left-length "100"
   set status-right-length "100"
 
@@ -117,7 +117,8 @@ main() {
   readonly show_window="#[fg=$thm_pink,bg=$thm_bg,nobold,nounderscore,noitalics]$right_separator#[fg=$thm_bg,bg=$thm_pink,nobold,nounderscore,noitalics]$window_icon #[fg=$thm_fg,bg=$thm_gray] #W #{?client_prefix,#[fg=$thm_red]"
 
   local show_session
-  readonly show_session="#{?client_prefix,#[fg=$thm_red],#[fg=$thm_green]}#[bg=$thm_gray]$right_separator#{?client_prefix,#[bg=$thm_red],#[bg=$thm_green]}#[fg=$thm_bg]$session_icon #[fg=$thm_fg,bg=$thm_gray] #S "
+  # readonly show_session="#{?client_prefix,#[fg=$thm_red],#[fg=$thm_green]}#[bg=$thm_bg] #S #{?client_prefix,#[fg=$thm_red],#[fg=$thm_green]}#[bg=$thm_gray]$right_separator#{?client_prefix,#[bg=$thm_red],#[bg=$thm_green]}#[fg=$thm_bg]$session_icon "
+  readonly show_session="#{?client_prefix,#[fg=$thm_red],#[fg=$thm_magenta]}#[bg=$thm_bg] #S "
 
   local show_directory_in_window_status
   readonly show_directory_in_window_status="#[fg=$thm_bg,bg=$thm_blue] #I #[fg=$thm_fg,bg=$thm_gray] #{b:pane_current_path} "
@@ -126,10 +127,12 @@ main() {
   readonly show_directory_in_window_status_current="#[fg=$thm_bg,bg=$thm_orange] #I #[fg=$thm_fg,bg=$thm_bg] #{b:pane_current_path} "
 
   local show_window_in_window_status
-  readonly show_window_in_window_status="#[fg=$thm_fg,bg=$thm_black] #W #[fg=$thm_bg,bg=$thm_blue] #I#[fg=$thm_blue,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
+  # readonly show_window_in_window_status="#[fg=$thm_fg,bg=$thm_bg] #W #[fg=$thm_bg,bg=$thm_blue] #I#[fg=$thm_blue,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
+  readonly show_window_in_window_status="#[fg=$thm_black4,bg=$thm_bg] #I #W "
 
   local show_window_in_window_status_current
-  readonly show_window_in_window_status_current="#[fg=$thm_fg,bg=$thm_gray] #W #[fg=$thm_bg,bg=$thm_orange] #I#[fg=$thm_orange,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
+  readonly show_window_in_window_status_current="#[fg=$thm_pink,bg=$thm_bg] #I #W "
+  # readonly show_window_in_window_status_current="#[fg=$thm_orange,bg=$thm_gray] #W #[fg=$thm_bg,bg=$thm_orange] #I#[fg=$thm_orange,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
 
   local show_user
   readonly show_user="#[fg=$thm_blue,bg=$thm_gray]$right_separator#[fg=$thm_bg,bg=$thm_blue]$user_icon #[fg=$thm_fg,bg=$thm_gray] #(whoami) "
@@ -154,7 +157,7 @@ main() {
   # update the right_column1 and the window_status_* variables.
   if [[ "${wt_enabled}" == "on" ]]; then
     right_column1=$show_directory
-    right_column1=""
+    right_column1=" "
     window_status_format=$show_window_in_window_status
     window_status_current_format=$show_window_in_window_status_current
   fi
@@ -182,8 +185,10 @@ main() {
 
   tmux bind-key -T prefix ':' "command-prompt -F -p \"#[bg=${thm_cyan}]#[fg=${thm_bg}]#[bold] TMUX CMD #[nobold]#[bg=${thm_gray}]#[fg=${thm_cyan}]:\""
   # tmux bind-key -T prefix ':' "command-prompt -F -p \"#[bg=${thm_cyan}]HELLO\""
+  local cal_next
+  readonly cal_next="#[fg=${thm_fg},bg=${thm_bg}]#(gcal tmux)"
 
-  set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}"
+  set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}${cal_next}"
 
   set status-right "${right_column1}${right_column2}"
 

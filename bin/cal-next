@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+IFS='|' read -r start_date start_time end_date end_time _ conference title location \
+  < <(gcalcli --calendar 'murtaza@duolingo.com' agenda \
+    'now' 'tomorrow 12pm' --tsv --detail location --detail conference | sed 's/\t/|/g' | head -n 1)
+
+# echo $start_date
+# echo $start_time
+# echo $end_date
+# echo $end_time
+# echo $title
+# echo $location
+# echo $conference
+if [[ -z $title ]]; then
+  [[ $1 == "tmux" ]] || echo "No upcoming events today"
+  exit 1
+fi
+
+BLACK="\x1b[0;30m"
+RED="\x1b[0;31m"
+GREEN="\x1b[0;32m"
+YELLOW="\x1b[0;33m"
+BLUE="\x1b[0;34m"
+MAGENTA="\x1b[0;35m"
+CYAN="\x1b[0;36m"
+GRAY="\x1b[0;37m"
+BOLD_MAGENTA="\x1b[1;35m"
+NC="\x1b[0m"
+
+if [[ -z $conference ]]; then
+  conference="${YELLOW}no zoom info${NC}"
+fi
+
+if [[ -z $location ]]; then
+  location="${YELLOW}no location info${NC}"
+fi
+
+start_timestamp=$(date -j -f "%Y-%m-%d %H:%M" "$start_date $start_time" "+%s")
+end_timestamp=$(date -j -f "%Y-%m-%d %H:%M" "$end_date $end_time" "+%s")
+length=$((end_timestamp - start_timestamp))
+friendly_time=$(time_ago $start_timestamp)
+minutes_till=$(((start_timestamp - $(date +%s)) / 60))
+
+if [[ $1 == "tmux" ]]; then
+  if [[ $minutes_till -le 15 ]]; then
+    echo -e "#[fg=colour5,bold]$title #[fg=colour1,nobold]$friendly_time"
+  elif [[ $minutes_till -le 30 ]]; then
+    echo -e "#[fg=colour5,bold]$title #[fg=colour3,nobold]$friendly_time"
+  fi
+  exit 0
+fi
+
+output="${BOLD_MAGENTA}$title ${NC}"
+if [[ $minutes_till -lt 15 ]]; then
+  output+="${RED}$friendly_time${NC}"
+elif [[ $minutes_till -lt 30 ]]; then
+  output+="${YELLOW}$friendly_time${NC}"
+else
+  output+="$friendly_time"
+fi
+
+output+="\n${BLUE}$conference${NC}"
+output+="\n$location"
+
+echo -e $output
+

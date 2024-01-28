@@ -1,0 +1,8 @@
+#! /bin/sh
+
+repo_url=$(git remote get-url origin | sed 's_^git@github.com:\(.*\)\.git$_https://github.com/\1_g')
+sed1='s_\(.*\)_'
+sed2='pull/\1_'
+git show $1 -q --pretty=oneline \
+| grep '(#\d\+)' -o | grep -o '\d\+' \
+| sed "${sed1}${repo_url}/${sed2}"

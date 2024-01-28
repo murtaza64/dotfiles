@@ -5,6 +5,21 @@ return {
     opts = {
       use_default_keymaps = false
     },
+    config = function(opts)
+      local lang_utils = require('treesj.langs.utils')
+      opts.langs = {
+        groovy = {
+          map = lang_utils.set_preset_for_dict({
+            join = { space_in_brackets = false }
+          }),
+          argument_list = lang_utils.set_preset_for_args(),
+          list = lang_utils.set_preset_for_list({
+            join = { space_in_brackets = false }
+          }),
+        }
+      }
+      require('treesj').setup(opts)
+    end,
     init = function()
       vim.keymap.set('n', '<leader>m', require('treesj').toggle, { desc = "split/join (TreeSJ)"})
     end,

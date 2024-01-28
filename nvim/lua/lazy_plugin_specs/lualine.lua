@@ -11,6 +11,13 @@ local searchinfo = function()
   local denominator = math.min(result.total, result.maxcount)
   return string.format('  %s [%d/%d]', vim.fn.getreg('/'), result.current, denominator)
 end
+local jenkins_filename = function()
+  -- job name is parent of file
+  local job_name = vim.fn.expand('%:p:h:t')
+  -- filename is 1234.log (build number)
+  local build_number = vim.fn.expand('%:t:r')
+  return job_name ..' #'.. build_number
+end
 local indent = function()
   local out = ''
   if vim.bo.expandtab then
@@ -55,6 +62,8 @@ return {
         lualine_b = {
           'diff',
           'diagnostics',
+        },
+        lualine_c = {
           {
             'filename',
             symbols = {
@@ -63,8 +72,6 @@ return {
             },
             path = 1,
           },
-        },
-        lualine_c = {
         },
         lualine_x = {
           -- {
@@ -108,6 +115,17 @@ return {
             lualine_z = {},
           },
           filetypes = { 'UnsavedChanges' }
+        },
+        {
+          sections = {
+            lualine_a = { function() return "Jenkins Log" end },
+            lualine_b = { jenkins_filename },
+            lualine_c = {},
+            lualine_x = {},
+            lualine_y = { 'location' },
+            lualine_z = { 'progress' },
+          },
+          filetypes = { 'jenkins_log' }
         },
         {
           sections = {

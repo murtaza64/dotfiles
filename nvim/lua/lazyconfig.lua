@@ -31,7 +31,26 @@ require('lazy').setup({
   'tpope/vim-rhubarb',
 
   -- git blame
-  'emmanueltouzery/agitator.nvim',
+  {
+    'emmanueltouzery/agitator.nvim',
+    init = function()
+      vim.keymap.set({"n", "v"}, "<leader>gb", require("agitator").git_blame_toggle, {
+        silent = true,
+        desc = "Git [B]lame"
+      })
+
+      function open_blame_pr()
+        local commit = require("agitator").git_blame_commit_for_line()
+        local link = vim.fn.system("pr-for-commit " .. commit)
+        print(link)
+        vim.cmd("silent !open " .. link)
+      end
+      vim.keymap.set({"n", "v"}, "<leader>gB", open_blame_pr, {
+        silent = true,
+        desc = "Open blame PR for current line"
+      })
+    end
+  },
 
   {'akinsho/git-conflict.nvim', version = "*", config=true},
   {
@@ -106,10 +125,21 @@ require('lazy').setup({
   {
     'stevearc/oil.nvim',
     opts = {
-      cleanup_delay_ms = false,
+      -- cleanup_delay_ms = false,
       win_options = {
         wrap = true
-      }
+      },
+      -- keymaps = {
+      --   ["q"] = function ()
+      --     print("hello")
+      --     -- require('oil.actions').preview.callback()
+      --     -- vim.api.nvim_feedkeys("", "n", false)
+      --     vim.wait(500)
+      --     -- vim.api.nvim_feedkeys("", "n", false)
+      --     require('oil.actions').close.callback()
+      --     -- vim.api.nvim_win_close(0, false)
+      --   end,
+      -- }
     },
     -- Optional dependencies
     dependencies = { "nvim-tree/nvim-web-devicons" },

@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+tee >(tmux load-buffer -) >(pbcopy) > /dev/null

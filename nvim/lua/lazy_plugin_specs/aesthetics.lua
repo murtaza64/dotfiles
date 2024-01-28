@@ -2,6 +2,22 @@ return {
 
   "shortcuts/no-neck-pain.nvim",
 
+  -- {
+  --   "petertriho/nvim-scrollbar",
+  --   config = function(opts)
+  --     require("scrollbar").setup(opts)
+  --     require("scrollbar.handlers.gitsigns").setup()
+  --     require("scrollbar.handlers.search").setup({
+  --       override_lens = function() end,
+  --     })
+  --   end,
+  --   dependencies = {
+  --     "lewis6991/gitsigns.nvim",
+  --     "kevinhwang91/nvim-hlslens"
+  --   },
+  -- },
+  -- "lewis6991/satellite.nvim",
+
   {
     -- Add indentation guides even on blank lines
     'lukas-reineke/indent-blankline.nvim',

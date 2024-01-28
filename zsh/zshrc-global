@@ -57,8 +57,9 @@ function push-and-insert() {
 }
 zle -N push-and-insert
 function zvm_after_lazy_keybindings() {
-    bindkey -M vicmd 'dd' push-and-insert
-    bindkey -s -M vicmd 'n' "ddnvim^M"
+    bindkey -M vicmd 'D' push-and-insert
+    bindkey -s -M vicmd 'n' "Dnvim^M"
+    bindkey -s '^N' "\evv"
 }
 
 
@@ -69,6 +70,8 @@ function zvm_after_lazy_keybindings() {
 alias less='less --mouse --wheel-lines 3'
 export PAGER='less --mouse --wheel-lines 3'
 alias grep='grep --color=auto'
+
+export MANPAGER='nvim +Man!'
 
 # don't beep when triggering menu complete
 unsetopt LIST_BEEP
@@ -169,8 +172,16 @@ commit-search() {
     zle reset-prompt
 }
 
+clear-and-move-bottom() {
+    clear
+    printf '\n%.0s' {1..100}
+    zle reset-prompt
+}
+
 function zvm_after_init() {
     zle     -N   fzf-history-widget
     bindkey '^R' fzf-history-widget
+    zle     -N   clear-and-move-bottom
+    bindkey '^L' clear-and-move-bottom
     zle     -N   commit-search
 }
