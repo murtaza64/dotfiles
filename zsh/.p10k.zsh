@@ -108,6 +108,7 @@
     # example
     # context
     os_icon
+    tabtitle 
     time                    # current time
     # =========================[ Line #2 ]=========================
     newline
@@ -1661,6 +1662,10 @@
   # Type `p10k help segment` for documentation and a more sophisticated example.
   function prompt_example() {
     p10k segment -f 208 -i '⭐' -t 'hello, %n'
+  }
+
+  function prompt_tabtitle() {
+    # p10k segment -f 208 -i 'H' -t 'kHELLO'
   }
 
   function prompt_tmux() {

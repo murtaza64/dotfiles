@@ -96,8 +96,8 @@ local config_cmp = function()
       end,
     },
     mapping = cmp.mapping.preset.insert {
-      ['<C-n>'] = cmp.mapping.select_next_item(),
-      ['<C-p>'] = cmp.mapping.select_prev_item(),
+      ['<C-n>'] = function(fallback) fallback() end,
+      ['<C-p>'] = function(fallback) fallback() end,
       ['<C-u>'] = cmp.mapping.scroll_docs(-4),
       ['<C-d>'] = cmp.mapping.scroll_docs(4),
       ['<C-Space>'] = cmp.mapping.complete {},

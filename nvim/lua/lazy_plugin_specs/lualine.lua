@@ -1,3 +1,9 @@
+local colors = require('catppuccin.palettes').get_palette('mocha')
+local custom_catppuccin = require('lualine.themes.catppuccin')
+-- custom_catppuccin.normal.c.bg = colors.base
+custom_catppuccin.insert.c = { fg = colors.green, bg = colors.mantle }
+custom_catppuccin.visual.c = { fg = colors.mauve, bg = colors.mantle }
+
 local searchinfo = function()
   if vim.v.hlsearch == 0 then
     return ''
@@ -11,6 +17,66 @@ local searchinfo = function()
   local denominator = math.min(result.total, result.maxcount)
   return string.format('  %s [%d/%d]', vim.fn.getreg('/'), result.current, denominator)
 end
+
+local harpoon = function()
+  local status = require('harpoon.mark').status()
+  if status == '' then
+    return ''
+  end
+  -- strip leading M from response
+  status = string.sub(status, 2)
+  return ' '..status
+end
+
+local lsp = function()
+    local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
+    local clients = vim.lsp.get_active_clients()
+    if next(clients) == nil then
+      return ''
+    end
+    for _, client in ipairs(clients) do
+      local filetypes = client.config.filetypes
+      if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
+        return '󰧑 '
+      end
+    end
+    return ''
+  end
+
+local treesitter = function()
+  if not require('nvim-treesitter').statusline() then
+    return ''
+  end
+  return '󰹩'
+end
+
+local treesitter_color = function()
+  if not require('nvim-treesitter').statusline() then
+    return { fg = colors.surface2 }
+  end
+  return { fg = colors.green }
+end
+
+local lsp_color = function()
+  local clients = vim.lsp.get_active_clients()
+  -- confirm that the client is attached to the current buffer and supports the current filetype
+  local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
+  for _, client in ipairs(clients) do
+    local filetypes = client.config.filetypes
+    if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
+      return { fg = colors.mauve }
+    end
+  end
+  return { fg = colors.surface2 }
+end
+
+local lsp_and_treesitter = function()
+  if not require('nvim-treesitter').statusline() then
+    return lsp()
+  end
+  return '󰹩 '..lsp()
+end
+
 local jenkins_filename = function()
   -- job name is parent of file
   local job_name = vim.fn.expand('%:p:h:t')
@@ -43,27 +109,28 @@ return {
     opts = {
       options = {
         icons_enabled = true,
-        theme = 'catppuccin',
-        component_separators = '│',
+        theme = custom_catppuccin,
+        -- component_separators = '│',
+        component_separators = '',
         section_separators = '',
         -- section_separators = { left = '', right = '' },
       },
       sections = {
         lualine_a = {
-          {
-            'mode',
-            -- separator = { left = '' },
-            -- padding = {
-            --   right = 2,
-            --   left = 1
-            -- },
-          },
+          -- 'mode',
+          -- separator = { left = '' },
+          -- padding = {
+          --   right = 2,
+          --   left = 1
+          -- },
         },
         lualine_b = {
-          'diff',
-          'diagnostics',
         },
         lualine_c = {
+          {
+            harpoon,
+            color = { fg = colors.flamingo },
+          },
           {
             'filename',
             symbols = {
@@ -72,6 +139,8 @@ return {
             },
             path = 1,
           },
+          'diff',
+          'diagnostics',
         },
         lualine_x = {
           -- {
@@ -79,10 +148,51 @@ return {
           --   cond = require("noice").api.status.command.has,
           -- },
           searchinfo,
+          -- lsp_and_treesitter,
+          {
+            'copilot',
+            symbols = {
+              status = {
+                icons = {
+                  enabled = " ",
+                  sleep = " ",   -- auto-trigger disabled
+                  disabled = " ",
+                  warning = " ",
+                  unknown = " "
+                },
+                hl = {
+                  enabled = colors.sky,
+                  disabled = colors.surface2,
+                  sleep = colors.pink,
+                  warning = colors.yellow,
+                  unknown = colors.red,
+                },
+              },
+            },
+            show_colors = true,
+            padding = { left = 1, right = 0 },
+          },
+          {
+            function() return '󰹩' end,
+            color = treesitter_color,
+            separator = { right = '' },
+            padding = { left = 1, right = 1 },
+          },
+          {
+            function() return '󰧑 ' end,
+            color = lsp_color,
+            padding = { left = 0, right = 1 },
+          },
+          {
+            'filetype',
+            colored = true,
+            -- icon_only = true,
+            padding = { left = 1, right = 1 },
+          },
+          indent,
         },
         lualine_y = {
           {
-            indent,
             -- separator = { left = '', right = '' },
             -- padding = {
             --   left = 1,
@@ -129,7 +239,7 @@ return {
         },
         {
           sections = {
-            lualine_a = {'mode'},
+            lualine_a = {},
             lualine_b = {},
           },
           filetypes = { 'oil' }

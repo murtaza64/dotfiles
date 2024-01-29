@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# trim whitespace
+session=$(tmux display-message -p '#S' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+# get directory relative to ~
+dir=$(tmux display-message -p "#{pane_current_path}" \
+  | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
+  | sed -e "s|^$HOME/||")
+if [ $dir != $session ]; then
+  absolute_dir=$(realpath $HOME/$dir)
+  if echo $absolute_dir | grep -q "^$HOME/$session"; then
+    relative_dir=$(echo $dir | sed -e "s|^$session/||")
+    echo "/$relative_dir "
+  else
+    echo " $dir"
+  fi
+fi

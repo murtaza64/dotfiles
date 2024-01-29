@@ -86,4 +86,23 @@ return {
   --   end
   -- },
   --
+  {
+    'ThePrimeagen/harpoon',
+    config = function(opts) 
+      -- require('harpoon').setup(opts)
+      vim.keymap.set('n', '<leader>h', require("harpoon.ui").toggle_quick_menu, { silent = true, desc = "Toggle [H]arpoon" })
+      vim.keymap.set('n', ']h', require("harpoon.ui").nav_next, { silent = true, desc = "Next [H]arpoon" })
+      vim.keymap.set('n', '[h', require("harpoon.ui").nav_prev, { silent = true, desc = "Previous [H]arpoon" })
+      vim.keymap.set('n', 'mh', require("harpoon.mark").add_file, { silent = true, desc = "[M]ark [H]arpoon" })
+      vim.keymap.set('n', '<leader>1', function() require("harpoon.ui").nav_file(1) end, { silent = true, desc = "Harpoon 1" })
+      vim.keymap.set('n', '<leader>2', function() require("harpoon.ui").nav_file(2) end, { silent = true, desc = "Harpoon 2" })
+      vim.keymap.set('n', '<leader>3', function() require("harpoon.ui").nav_file(3) end, { silent = true, desc = "Harpoon 3" })
+      vim.keymap.set('n', '<leader>4', function() require("harpoon.ui").nav_file(4) end, { silent = true, desc = "Harpoon 4" })
+      vim.keymap.set('n', '<leader>5', function() require("harpoon.ui").nav_file(5) end, { silent = true, desc = "Harpoon 5" })
+      vim.keymap.set('n', '<leader>6', function() require("harpoon.ui").nav_file(6) end, { silent = true, desc = "Harpoon 6" })
+      vim.keymap.set('n', '<leader>7', function() require("harpoon.ui").nav_file(7) end, { silent = true, desc = "Harpoon 7" })
+      vim.keymap.set('n', '<leader>8', function() require("harpoon.ui").nav_file(8) end, { silent = true, desc = "Harpoon 8" })
+      vim.keymap.set('n', '<leader>9', function() require("harpoon.ui").nav_file(9) end, { silent = true, desc = "Harpoon 9" })
+    end
+  },
 }

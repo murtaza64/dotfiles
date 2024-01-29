@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+REPO_ROOT="$HOME"
+cd "$REPO_ROOT" || exit 1
+pwd
+# iterate through directories in REPO_ROOT
+for REPO in *; do
+    echo "Fetching $REPO..."
+    # if directory is not a git repo, skip it
+    if [ ! -d "$REPO_ROOT/$REPO/.git" ]; then
+        continue
+    fi
+    cd "$REPO_ROOT/$REPO" && git fetch --all \
+        || echo "Failed to fetch $REPO"
+done

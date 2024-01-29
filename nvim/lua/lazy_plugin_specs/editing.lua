@@ -1,4 +1,5 @@
 return {
+  'mbbill/undotree',
   {
     'Wansmer/treesj',
     dependencies = { 'nvim-treesitter/nvim-treesitter' },
@@ -118,7 +119,9 @@ return {
       vim.keymap.set({ "o", "x" }, "iw", '<cmd>lua require("various-textobjs").subword("inner")<CR>')
       vim.keymap.set({ "o", "x" }, "ii", '<cmd>lua require("various-textobjs").indentation("inner", "inner")<CR>')
       vim.keymap.set({ "o", "x" }, "ai", '<cmd>lua require("various-textobjs").indentation("outer", "inner")<CR>')
-    end
+      vim.keymap.set({ "o", "x" }, "i|", '<cmd>lua require("various-textobjs").shellPipe("inner")<CR>')
+      vim.keymap.set({ "o", "x" }, "a|", '<cmd>lua require("various-textobjs").shellPipe("outer")<CR>')
+    end,
   },
 
   {
@@ -127,4 +130,47 @@ return {
     opts = {}
   },
   "lambdalisue/suda.vim",
+  {
+    "monaqa/dial.nvim",
+    init = function()
+      vim.keymap.set("n", "<C-a>", function() require("dial.map").manipulate("increment", "normal") end, { noremap = false })
+      vim.keymap.set("n", "<C-x>", function() require("dial.map").manipulate("decrement", "normal") end, { noremap = false })
+      vim.keymap.set("v", "<C-a>", function() require("dial.map").manipulate("increment", "visual") end, { noremap = false })
+      vim.keymap.set("v", "<C-x>", function() require("dial.map").manipulate("decrement", "visual") end, { noremap = false })
+      vim.keymap.set("n", "g<C-a>", function() require("dial.map").manipulate("increment", "gnormal") end, { noremap = false })
+      vim.keymap.set("n", "g<C-x>", function() require("dial.map").manipulate("decrement", "gnormal") end, { noremap = false })
+      vim.keymap.set("v", "g<C-a>", function() require("dial.map").manipulate("increment", "gvisual") end, { noremap = false })
+      vim.keymap.set("v", "g<C-x>", function() require("dial.map").manipulate("decrement", "gvisual") end, { noremap = false })
+    end,
+    config = function()
+      local augend = require("dial.augend")
+      require("dial.config").augends:register_group{
+        default = {
+          augend.integer.alias.decimal,
+          augend.integer.alias.hex,
+          augend.date.alias["%Y/%m/%d"],
+          augend.constant.alias.bool,
+        },
+        typescript = {
+          augend.integer.alias.decimal,
+          augend.integer.alias.hex,
+          augend.constant.alias.bool,
+          augend.constant.new{ elements = {"let", "const"} },
+        },
+        python = {
+          augend.integer.alias.decimal,
+          augend.integer.alias.hex,
+          augend.constant.new{ elements = {"True", "False"} },
+        },
+      }
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "typescript",
+        callback = function()
+          vim.api.nvim_buf_set_keymap(0, "n", "<C-a>", require("dial.map").inc_normal("typescript"), { noremap = true })
+          vim.api.nvim_buf_set_keymap(0, "n", "<C-x>", require("dial.map").dec_normal("typescript"), { noremap = true })
+        end
+      }
+      )
+    end
+  },
 }

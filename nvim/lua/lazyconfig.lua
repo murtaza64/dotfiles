@@ -21,7 +21,6 @@ vim.opt.rtp:prepend(lazypath)
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
   'kmonad/kmonad-vim',
-  'github/copilot.vim',
 
   -- dot repeat plugin commands
   'tpope/vim-repeat',
@@ -127,7 +126,8 @@ require('lazy').setup({
     opts = {
       -- cleanup_delay_ms = false,
       win_options = {
-        wrap = true
+        wrap = true,
+        signcolumn = "yes:2",
       },
       -- keymaps = {
       --   ["q"] = function ()
@@ -143,6 +143,15 @@ require('lazy').setup({
     },
     -- Optional dependencies
     dependencies = { "nvim-tree/nvim-web-devicons" },
+  },
+  {
+    "refractalize/oil-git-status.nvim",
+
+    dependencies = {
+      "stevearc/oil.nvim",
+    },
+
+    config = true,
   },
   -- require 'kickstart.plugins.autoformat',
   -- require 'kickstart.plugins.debug',
