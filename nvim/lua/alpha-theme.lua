@@ -145,7 +145,7 @@ local function icon(fn)
     return nwd.get_icon(fn, ext, { default = true })
 end
 
-local shortcuts = '0123456789abcdegimprstuvwxyz'
+local shortcuts = '056789abcdegimprstuvwxyz'
 
 local function file_button(fn, shortcut_key, short_fn, autocd, row, col)
     short_fn = if_nil(short_fn, fn)
@@ -298,6 +298,25 @@ local global_marks = function()
     }
 end
 
+local harpoon_marks = function()
+    local tbl = {}
+    for i = 1, 10 do
+        local filename = require("harpoon.mark").get_marked_file_name(i)
+        if filename ~= nil then
+            shortcut = string.format("%d", i)
+            table.insert(tbl, file_button(filename, shortcut, fnamemodify(filename, ":."), nil))
+        end
+    end
+    return {
+        {
+            type = "text",
+            val = align_center("harpoon marks"),
+            opts = { hl = "AlphaDivider", shrink_margin = false },
+        },
+        { type = "group", val = tbl },
+    }
+end
+
 local section = {
     header = default_header,
     top_buttons = {
@@ -333,6 +352,10 @@ local section = {
                 }
             ),
         },
+    },
+    harpoon_marks = {
+        type = "group",
+        val = function() return harpoon_marks() end
     },
     global_marks = {
         type = "group",
@@ -395,6 +418,8 @@ local config = {
         section.header,
         { type = "padding", val = 1 },
         section.top_buttons,
+        { type = "padding", val = 1 },
+        section.harpoon_marks,
         { type = "padding", val = 1 },
         section.mru,
         { type = "padding", val = 1 },

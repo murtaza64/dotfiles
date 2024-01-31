@@ -18,6 +18,20 @@ local searchinfo = function()
   return string.format('  %s [%d/%d]', vim.fn.getreg('/'), result.current, denominator)
 end
 
+local git_dirty_color = function()
+  local filename = vim.fn.expand('%:p')
+  local ignored = vim.fn.system("git check-ignore --quiet "..filename.." && echo -n 'ignored'")
+  if ignored == 'ignored' then
+    return { fg = colors.surface2 }
+  end
+  local resp = vim.fn.system('git diff --quiet '..filename.." && echo -n 'clean' || echo -n 'dirty'")
+  if resp == 'clean' then
+    return { fg = colors.green }
+  else
+    return { fg = colors.peach }
+  end
+end
+
 local harpoon = function()
   local status = require('harpoon.mark').status()
   if status == '' then
@@ -100,6 +114,43 @@ local indent = function()
   end
   return out
 end
+
+local noice_macro = {
+  function()
+    local mode = require("noice").api.statusline.mode.get()
+    -- if mode starts with recording
+    if string.find(mode, 'recording') then
+      return string.gsub(mode, 'recording @', '󰑋 ')
+    end
+    return mode
+  end,
+  cond = require("noice").api.statusline.mode.has,
+  color = { fg = colors.red, gui = 'bold' },
+}
+
+local copilot = {
+  'copilot',
+  symbols = {
+    status = {
+      icons = {
+        enabled = " ",
+        sleep = " ",   -- auto-trigger disabled
+        disabled = " ",
+        warning = " ",
+        unknown = " "
+      },
+      hl = {
+        enabled = colors.sky,
+        disabled = colors.surface2,
+        sleep = colors.pink,
+        warning = colors.yellow,
+        unknown = colors.surface2,
+      },
+    },
+  },
+  show_colors = true,
+  padding = { left = 1, right = 0 },
+}
 return {
   {
     -- Set lualine as statusline
@@ -127,9 +178,10 @@ return {
         lualine_b = {
         },
         lualine_c = {
+          noice_macro,
           {
             harpoon,
-            color = { fg = colors.flamingo },
+            color = { fg = colors.flamingo, gui = 'italic' },
           },
           {
             'filename',
@@ -139,39 +191,26 @@ return {
             },
             path = 1,
           },
-          'diff',
-          'diagnostics',
+          -- 'diff',
+          -- {
+          --   function() return '' end,
+          --   color = git_dirty_color,
+          -- },
+          {
+            'diagnostics',
+            sections = { 'error', 'warn' },
+            symbols = { error = 'E', warn = 'W' },
+          }
         },
         lualine_x = {
           -- {
           --   require("noice").api.status.command.get,
           --   cond = require("noice").api.status.command.has,
+          --   color = { fg = "#ff9e64" },
           -- },
-          searchinfo,
-          -- lsp_and_treesitter,
-          {
-            'copilot',
-            symbols = {
-              status = {
-                icons = {
-                  enabled = " ",
-                  sleep = " ",   -- auto-trigger disabled
-                  disabled = " ",
-                  warning = " ",
-                  unknown = " "
-                },
-                hl = {
-                  enabled = colors.sky,
-                  disabled = colors.surface2,
-                  sleep = colors.pink,
-                  warning = colors.yellow,
-                  unknown = colors.red,
-                },
-              },
-            },
-            show_colors = true,
-            padding = { left = 1, right = 0 },
-          },
+          -- searchinfo,
+
+          copilot,
           {
             function() return '󰹩' end,
             color = treesitter_color,
@@ -193,11 +232,8 @@ return {
         },
         lualine_y = {
           {
-            -- separator = { left = '', right = '' },
-            -- padding = {
-            --   left = 1,
-            --   right = 1,
-            -- },
+            'datetime',
+            style = '%H:%M',
           }
         },
         lualine_z = {
@@ -215,6 +251,7 @@ return {
       },
       extensions = {
         'nvim-tree',
+        'man',
         {
           sections = {
             lualine_a = { function() return "Unsaved Changes" end },
@@ -243,6 +280,17 @@ return {
             lualine_b = {},
           },
           filetypes = { 'oil' }
+        },
+        {
+          sections = {
+            lualine_a = {},
+            lualine_b = {},
+            lualine_c = {},
+            lualine_x = {},
+            lualine_y = {},
+            lualine_z = {},
+          },
+          filetypes = { 'alpha' }
         },
       },
     },

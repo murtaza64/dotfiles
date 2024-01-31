@@ -34,9 +34,10 @@ return {
           LineNr = { fg = colors.surface2 },
           -- NormalNC = { bg = colors.surface0 },
           -- lualine_c_normal = { bg = colors.surface0 },
-          DiagnosticUnderlineError = { bg = '#421B26' },
+          DiagnosticUnderlineError = { undercurl = true, sp = '#421B26' },
           DiagnosticUnderlineWarn = { bg = '#423a1b' },
           LspSignatureHint = { bg = colors.surface1, fg = colors.peach },
+          NoiceCmdline = { bg = colors.base },
         }
       end,
       integrations = {

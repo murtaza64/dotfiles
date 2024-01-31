@@ -48,7 +48,7 @@ local on_attach = function(_, bufnr)
     print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
   end, '[W]orkspace [L]ist Folders')
 
-  require('lsp_signature').on_attach(signature_opts, bufnr)
+  -- require('lsp_signature').on_attach(signature_opts, bufnr)
 
   -- Create a command `:Format` local to the LSP buffer
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
@@ -62,13 +62,15 @@ end
 --  Add any additional override configuration in the following tables. They will be passed to
 --  the `settings` field of the server config. You must look up that documentation yourself.
 local servers = {
-  clangd = {},
+  -- clangd = {},
   -- gopls = {},
   pyright = {},
+  ruby_ls = {},
   rust_analyzer = {},
   tsserver = {},
   html = {},
   cssls = {},
+  -- terraform_lsp = {},
 
   -- enable if you want:
   -- sourcekit = {},
@@ -151,8 +153,6 @@ return {
     --   end,
     -- },
 
-    -- Useful status updates for LSP
-    -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
     {
       'hrsh7th/nvim-cmp',
       dependencies = {
@@ -171,7 +171,7 @@ return {
       config = config_cmp,
     },
 
-    { 'j-hui/fidget.nvim', tag = 'legacy', opts = {} },
+    -- { 'j-hui/fidget.nvim', tag = 'legacy', opts = {} },
 
     -- Additional lua configuration, makes nvim stuff amazing!
     'folke/neodev.nvim',
@@ -198,6 +198,11 @@ return {
           settings = servers[server_name],
         }
       end,
+    }
+    require('lspconfig').clangd.setup {
+      on_attach = on_attach,
+      capabilities = capabilities,
+      cmd = { 'clangd', '--offset-encoding=utf-16' },
     }
 
     local shellcheck = {
@@ -254,6 +259,9 @@ return {
     vim.diagnostic.config {
       severity_sort = true,
       virtual_text = false,
+      float = {
+        header = false,
+      }
     }
     -- local signs = { Error = " ", Warn = " ", Hint = "󱠃", Info = " " }
     -- for type, icon in pairs(signs) do

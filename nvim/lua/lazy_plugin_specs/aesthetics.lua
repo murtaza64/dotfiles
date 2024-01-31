@@ -97,4 +97,13 @@ return {
       require'alpha'.setup(require'alpha-theme'.config)
     end
   },
+  -- {
+  --   "folke/trouble.nvim",
+  --   dependencies = { "nvim-tree/nvim-web-devicons" },
+  --   opts = { },
+  -- }
+  {
+    'kevinhwang91/nvim-bqf',
+    ft = 'qf'
+  },
 }

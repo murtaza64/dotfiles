@@ -158,7 +158,7 @@ require('lazy').setup({
 
   { import = 'lazy_plugin_specs.colors' },
   -- noice is too buggy/heavy
-  -- { import = 'lazy_plugin_specs.noice' },
+  { import = 'lazy_plugin_specs.noice' },
   { import = 'lazy_plugin_specs.aesthetics' },
   { import = 'lazy_plugin_specs.ai' },
   { import = 'lazy_plugin_specs.editing' },
@@ -168,4 +168,7 @@ require('lazy').setup({
   { import = 'lazy_plugin_specs.nvim-tree' },
   { import = 'lazy_plugin_specs.nvim-treesitter' },
   { import = 'lazy_plugin_specs.telescope' },
-}, {})
+},
+{
+  change_detection = { enabled = false },
+})

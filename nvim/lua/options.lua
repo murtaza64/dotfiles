@@ -22,7 +22,7 @@ vim.opt.listchars = {
 vim.opt.iskeyword:append('-')
 
 -- Don't show default search progress
-vim.o.shortmess = vim.o.shortmess .. 'S'
+-- vim.o.shortmess = vim.o.shortmess .. 'S'
 
 vim.o.showmode = false
 

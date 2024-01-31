@@ -1,6 +1,7 @@
 local opts = {
   -- Add languages to be installed here that you want installed for treesitter
   ensure_installed = {
+    'bash',
     'c',
     'css',
     'cpp',
@@ -10,10 +11,13 @@ local opts = {
     'lua',
     'python',
     'rust',
+    'terraform',
     'tsx',
     'typescript',
     'vimdoc',
     'vim',
+    'xml',
+    'yaml',
   },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
