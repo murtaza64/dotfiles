@@ -7,9 +7,10 @@ local signature_opts = {
   hint_prefix = '',
   hint_scheme = 'LspSignatureHint',
   handler_opts = {
-    border = 'rounded'
+    border = 'none'
   }
 }
+
 
 local on_attach = function(_, bufnr)
   -- NOTE: Remember that lua is a real programming language, and as such it is possible
@@ -48,7 +49,7 @@ local on_attach = function(_, bufnr)
     print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
   end, '[W]orkspace [L]ist Folders')
 
-  -- require('lsp_signature').on_attach(signature_opts, bufnr)
+  require('lsp_signature').on_attach(signature_opts, bufnr)
 
   -- Create a command `:Format` local to the LSP buffer
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)

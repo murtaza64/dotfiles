@@ -35,7 +35,8 @@
     dir                     # current directory
     vcs                     # git status
     # =========================[ Line #2 ]=========================
-    newline                 # \n
+    # newline                 # \n
+    # space
     prompt_char             # prompt symbol
   )
 
@@ -120,8 +121,8 @@
     time                    # current time
   )
 
-  function p10k-on-pre-prompt() { p10k display '1'=show '2/right/time'=hide}
-  function p10k-on-post-prompt() { p10k display '1'=hide '2/right/time'=show}
+  function p10k-on-pre-prompt() { p10k display '1'=show '2/right/time'=hide }
+  # function p10k-on-post-prompt() { p10k display '1/left/dir'=hide '2/right/time'=show }
 
   # Defines character set used by powerlevel10k. It's best to let `p10k configure` set it for you.
   typeset -g POWERLEVEL9K_MODE=nerdfont-v3
@@ -179,7 +180,8 @@
   # the number of prompt lines. You'll probably want to set POWERLEVEL9K_SHOW_RULER=false
   # if using this. You might also like POWERLEVEL9K_PROMPT_ADD_NEWLINE=false for more compact
   # prompt.
-  typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_GAP_CHAR='─'
+  # typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_GAP_CHAR='─'
+  typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_GAP_CHAR=' '
   if [[ $POWERLEVEL9K_MULTILINE_FIRST_PROMPT_GAP_CHAR != ' ' ]]; then
     # The color of the filler.
     typeset -g POWERLEVEL9K_MULTILINE_FIRST_PROMPT_GAP_FOREGROUND=238
@@ -1661,6 +1663,10 @@
   # Type `p10k help segment` for documentation and a more sophisticated example.
   function prompt_example() {
     p10k segment -f 208 -i '⭐' -t 'hello, %n'
+  }
+
+  function prompt_space() {
+    p10k segment -f 244 -t '                              '
   }
 
   function prompt_tmux() {

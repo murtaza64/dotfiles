@@ -1,27 +1,38 @@
 #!/usr/bin/env bash
 
-if [[ $# -eq 1 ]]; then
-    selected=$1
-else
-    selected=$(fd . ~ --max-depth=1 | fzf)
-fi
+# get dirs and sessions
+tmp=$(mktemp)
+fd . ~ --max-depth=1 --type d > $tmp
+sessions=$(tmux list-sessions -F "#{session_name}")
+# remove dirs that already have a matching session
+for session in $sessions; do
+    sed -e "\\#/$session/\$#d" -i '' "$tmp"
+done
+# filter out dirs without git repos
+# for dir in $dirs; do
+#     if [ ! -d "$dir/.git" ]; then
+#         sed "\\_/$dir\$_d" -i'' $tmp
+#     fi
+# done
+while read -r line; do
+    if [ ! -d "$line/.git" ]; then
+        sed -e "\#$line#d" -i '' $tmp
+    fi
+done < tmp
+# split sessions into lines
+selected=$( (echo $sessions | tr ' ' '\n'; cat $tmp) | fzf )
 
-if [[ -z $selected ]]; then
+# if selected is a session, switch to it
+if echo $sessions | tr ' ' '\n' | grep -q "^$selected$"; then
+    tmux switch-client -t $selected
     exit 0
 fi
-# remove trailing slash
+# create a new session
+if [ ! -d "$selected" ]; then
+    echo "No such directory: $selected"
+    exit 1
+fi
 selected=${selected%/}
-
 selected_name=$(basename "$selected" | tr . _)
-tmux_running=$(pgrep tmux)
-
-if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
-    tmux new-session -s $selected_name -c $selected
-    exit 0
-fi
-
-if ! tmux has-session -t=$selected_name 2> /dev/null; then
-    tmux new-session -ds $selected_name -c $selected
-fi
-
+tmux new-session -ds $selected_name -c $selected
 tmux switch-client -t $selected_name

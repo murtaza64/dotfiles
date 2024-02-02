@@ -4,7 +4,7 @@ local if_nil = vim.F.if_nil
 local fnamemodify = vim.fn.fnamemodify
 local filereadable = vim.fn.filereadable
 
-local handle = io.popen("hostname")  -- Run the hostname command
+local handle = io.popen("hostname -s")  -- Run the hostname command
 local hostname = handle:read("*a")  -- Read the output
 handle:close()  -- Close the handle
 hostname = hostname:gsub("%s+", "")  -- Remove any whitespace (including newlines)

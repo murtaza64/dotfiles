@@ -29,7 +29,10 @@ vim.keymap.set('n', '<leader>o', function()
   -- vim.wait(50)
   -- vim.api.nvim_feedkeys('L', 'n', false)
 end, { desc = 'Open [o]il' })
-vim.keymap.set('n', '<leader>n', '<cmd>:Neogit<cr>', { desc = 'Open [n]eogit' })
+vim.keymap.set('n', '<leader>gg', '<cmd>:Neogit<cr>', { silent=true, desc = 'Open [n]eogit' })
+vim.keymap.set("n", "<leader>uc", ":UnsavedChanges<CR>", { silent=true, desc = 'Show unsaved changes' })
+vim.keymap.set("n", "<leader>ut", ":UndotreeToggle<CR>", { silent=true, desc = 'Toggle [U]ndo [T]ree' })
+vim.keymap.set("n", "<leader>nnp", ":NoNeckPain<CR>", { silent=true, desc = 'Toggle [N]o [N]eck [P]ain' })
 
 -- Paste from system
 vim.keymap.set({ 'n', 'v' }, '<leader>p', '"*p', { desc = '"*p', remap = true })

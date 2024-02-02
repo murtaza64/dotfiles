@@ -1,0 +1,8 @@
+#! /bin/bash
+
+gh pr view --jq .number --json number > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+	gh pr create --web
+else
+	gh pr view --web
+fi

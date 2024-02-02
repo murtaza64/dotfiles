@@ -9,6 +9,8 @@ import pickle
 from datetime import datetime, timedelta, timezone
 import click
 import rich, rich.console
+local_tz = datetime.now().astimezone().tzinfo
+tz_suffix = datetime.now(local_tz).strftime('%z')
 
 def humanize_time_delta(t: datetime, now: datetime | None = None):
     if now is None:
@@ -80,14 +82,26 @@ def authenticate_and_create_service():
 class Event:
     def __init__(self, event):
         self.event = event
-        self.start = datetime.fromisoformat(event['start'].get('dateTime', event['start'].get('date')))
-        self.end = datetime.fromisoformat(event['end'].get('dateTime', event['end'].get('date')))
+        self.all_day = False
+        start_iso = event['start'].get('dateTime', event['start'].get('date'))
+        end_iso = event['end'].get('dateTime', event['end'].get('date'))
         self.summary = event['summary']
+        if not start_iso or not end_iso:
+            print(self.summary, "no start and end")
+        if len(start_iso) == 10 and len(end_iso) == 10:
+            self.all_day = True
+        self.start = datetime.fromisoformat(
+            start_iso + 'T00:00:00' + tz_suffix if len(start_iso) == 10 else start_iso
+        )
+        self.end = datetime.fromisoformat(
+            end_iso + 'T00:00:00' + tz_suffix if len(end_iso) == 10 else end_iso
+        )
         self.conference = event.get('conferenceData', {}).get('entryPoints', [{}])[0].get('uri')
         self.location = event.get('location')
-        self.in_progress = self.start <= datetime.now(tz=timezone.utc) <= self.end
-        self.minutes_till = (self.start - datetime.now(tz=timezone.utc)) / timedelta(minutes=1)
-        self.minutes_till_end = (self.end - datetime.now(tz=timezone.utc)) / timedelta(minutes=1)
+        if self.start and self.end:
+            self.in_progress = self.start <= datetime.now(tz=timezone.utc) <= self.end
+            self.minutes_till = (self.start - datetime.now(tz=timezone.utc)) / timedelta(minutes=1)
+            self.minutes_till_end = (self.end - datetime.now(tz=timezone.utc)) / timedelta(minutes=1)
 
 @click.group(invoke_without_command=True)
 @click.option('--max-events-loaded', '-m', default=10)
@@ -114,12 +128,14 @@ def tmux(obj):
     # if there are events starting in less than 10 minutes, show only that
     for event in events:
         if not event.in_progress and event.minutes_till < 10:
+            print(event.summary, event.start, event.end, event.minutes_till)
             delta = humanize_time_delta(event.start)
             print(f"#[fg=colour5,bold]{event.summary} #[fg=colour1,nobold]{delta}")
             return
              
     # if there is an event in progress, show that
     for event in events:
+        if event.all_day: continue
         if event.in_progress:
             delta_ends = humanize_time_delta(event.end)
             delta_starts = humanize_time_delta(event.start)
@@ -138,6 +154,7 @@ def tmux(obj):
     
     # show an upcoming event in the next half hour
     for event in events:
+        if event.all_day: continue
         if event.minutes_till < 30:
             delta = humanize_time_delta(event.start)
             print(f"#[fg=colour5,bold]{event.summary} #[fg=colour3,nobold]{delta}")
@@ -156,7 +173,9 @@ def upcoming(obj, number):
         # print(start, event['summary'])
         # print(start_dt)
         humanized = humanize_time_delta(event.start)
-        if event.in_progress:
+        if event.all_day:
+            con.print(f'[bold blue]{event.summary}[/bold blue] all day today')
+        elif event.in_progress:
             con.print(f'[bold blue]{event.summary}[/bold blue][yellow] started {humanized}[/yellow]')
         else:
             con.print(f'[bold blue]{event.summary}[/bold blue] {humanized}')

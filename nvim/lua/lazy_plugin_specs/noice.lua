@@ -5,7 +5,7 @@ return {
   opts = {
     cmdline = {
       enabled = true,
-      view = "cmdline",
+      view = "cmdline_popup",
       opts = {},
       format = {
         -- conceal: (default=true) This will hide the text in the cmdline that matches the pattern.
@@ -14,8 +14,8 @@ return {
         -- icon_hl_group: optional hl_group for the icon
         -- title: set to anything or empty string to hide
         cmdline = { pattern = "^:", icon = ":", lang = "vim" },
-        search_down = { kind = "search", pattern = "^/", icon = " ", lang = "regex" },
-        search_up = { kind = "search", pattern = "^%?", icon = " ", lang = "regex" },
+        search_down = { view = "cmdline", kind = "search", pattern = "^/", icon = " ", lang = "regex" },
+        search_up = { view = "cmdline", kind = "search", pattern = "^%?", icon = " ", lang = "regex" },
         filter = { pattern = "^:%s*!", icon = "$", lang = "bash" },
         lua = { pattern = { "^:%s*lua%s+", "^:%s*lua%s*=%s*", "^:%s*=%s*" }, icon = "", lang = "lua" },
         help = false,
@@ -27,6 +27,9 @@ return {
       -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
       progress = {
         view = "mini",
+      },
+      signature = {
+        enabled = false
       },
       override = {
         ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
@@ -58,7 +61,11 @@ return {
           row = -1,
           col = "100%",
         }
-      }
+      },
+      hover = {
+        anchor = "SW",
+        position = { row = 0, col = 0 },
+      },
     },
     presets = {
       bottom_search = false, -- use a classic bottom cmdline for search

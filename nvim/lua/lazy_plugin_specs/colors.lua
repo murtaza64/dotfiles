@@ -4,6 +4,7 @@ return {
     priority = 1000,
     opts = {
       flavour = 'mocha',
+      transparent_background = true,
       dim_inactive = {
         -- enabled = true,
         percentage = 0.2,
@@ -29,6 +30,7 @@ return {
           VerticalSplit = { fg = colors.surface1 },
           WinSeparator = { fg = colors.surface1 },
           MsgArea = { bg = colors.base },
+          NormalFloat = { bg = colors.base },
           CursorLine = { bg = colors.surface0 },
           CursorColumn = { bg = colors.surface0 },
           LineNr = { fg = colors.surface2 },

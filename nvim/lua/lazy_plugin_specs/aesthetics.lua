@@ -1,6 +1,15 @@
 return {
 
-  "shortcuts/no-neck-pain.nvim",
+  {
+    "shortcuts/no-neck-pain.nvim",
+    opts = {
+      buffers = {
+        wo = {
+          fillchars = "eob: ",
+        },
+      },
+    },
+  },
 
   -- {
   --   "petertriho/nvim-scrollbar",
@@ -25,6 +34,7 @@ return {
     opts = {
       -- char = '┊',
       indent = { char = '▏' },
+      scope = { enabled = false },
     },
     init = function()
       vim.api.nvim_set_hl(0, 'IblIndent', { fg = require('catppuccin.palettes').get_palette('mocha').surface1})
@@ -102,8 +112,8 @@ return {
   --   dependencies = { "nvim-tree/nvim-web-devicons" },
   --   opts = { },
   -- }
-  {
-    'kevinhwang91/nvim-bqf',
-    ft = 'qf'
-  },
+  -- {
+  --   'kevinhwang91/nvim-bqf',
+  --   ft = 'qf'
+  -- },
 }

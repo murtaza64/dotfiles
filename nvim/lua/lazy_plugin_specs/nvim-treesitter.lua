@@ -124,13 +124,13 @@ return {
     end
   },
   'nvim-treesitter/playground',
-  {
-    'nvim-treesitter/nvim-treesitter-context',
-    config = function()
-      require('treesitter-context').setup({})
-      local colors = require('catppuccin.palettes').get_palette()
-      vim.api.nvim_set_hl(0, 'TreesitterContext', { bg = colors.surface0 })
-      vim.api.nvim_set_hl(0, 'TreesitterContextLineNumber', { bg = colors.surface0, fg = colors.surface2})
-    end
-  }
+  -- {
+  --   'nvim-treesitter/nvim-treesitter-context',
+  --   config = function()
+  --     require('treesitter-context').setup({})
+  --     local colors = require('catppuccin.palettes').get_palette()
+  --     vim.api.nvim_set_hl(0, 'TreesitterContext', { bg = colors.surface0 })
+  --     vim.api.nvim_set_hl(0, 'TreesitterContextLineNumber', { bg = colors.surface0, fg = colors.surface2})
+  --   end
+  -- }
 }

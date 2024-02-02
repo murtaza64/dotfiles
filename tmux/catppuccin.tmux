@@ -40,8 +40,10 @@ main() {
 
   # status
   set status "on"
-  set status-bg "${thm_bg}"
-  set status-justify "absolute-centre"
+  set status-bg default
+  setw window-status-style bg=default
+  set status-style bg=default
+  set status-justify "left"
   set status-left-length "100"
   set status-right-length "100"
 
@@ -56,7 +58,7 @@ main() {
   # windows
   setw window-status-activity-style "fg=${thm_fg},bg=${thm_bg},none"
   setw window-status-separator ""
-  setw window-status-style "fg=${thm_fg},bg=${thm_bg},none"
+  # setw window-status-style "fg=${thm_fg},bg=${thm_bg},none"
 
   # --------=== Statusline
 
@@ -119,12 +121,13 @@ main() {
   # local show_session_1
   # readonly show_session_1="#{?#{==:#{b:pane_current_path}_#{pane_current_command},#S_zsh},#S,}"
   local show_session_2
-  readonly show_session_2="#{?#{!=:#{pane_current_command},zsh},#S,}"
+  # readonly show_session_2="#{?#{!=:#{pane_current_command},zsh},#S,}"
+  readonly show_session_2="#S"
   # local show_dir
   # readonly show_dir="#{?#{!=:#{b:pane_current_path},#S},#{pane_current_path},}"
   local show_session
   # readonly show_session="#{?client_prefix,#[fg=$thm_red],#[fg=$thm_green]}#[bg=$thm_bg] #S #{?client_prefix,#[fg=$thm_red],#[fg=$thm_green]}#[bg=$thm_gray]$right_separator#{?client_prefix,#[bg=$thm_red],#[bg=$thm_green]}#[fg=$thm_bg]$session_icon "
-  readonly show_session="#{?client_prefix,#[fg=$thm_red],#[fg=$thm_magenta]}#[bg=$thm_bg,nobold]$show_session_2"
+  readonly show_session="#{?client_prefix,#[fg=$thm_red],#[fg=$thm_magenta]}#[bg=default,nobold]$show_session_2"
 
   local show_directory_in_window_status
   readonly show_directory_in_window_status="#[fg=$thm_bg,bg=$thm_blue] #I #[fg=$thm_fg,bg=$thm_gray] #{b:pane_current_path} "
@@ -135,10 +138,10 @@ main() {
   local show_window_in_window_status
   # readonly show_window_in_window_status="#[fg=$thm_fg,bg=$thm_bg] #W #[fg=$thm_bg,bg=$thm_blue] #I#[fg=$thm_blue,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
   # readonly show_window_in_window_status="#[fg=$thm_black4,bg=$thm_bg] #I #W "
-  readonly show_window_in_window_status="#[fg=$thm_black4,bg=$thm_bg] #I #{?#{==:#W,~/#S},zsh,#W} "
+  readonly show_window_in_window_status="#[fg=$thm_black4,bg=default] #I #{?#{==:#W,~/#S},zsh,#W} "
 
   local show_window_in_window_status_current
-  readonly show_window_in_window_status_current="#[fg=$thm_green,bg=$thm_bg] #I #{?#{==:#W,~/#S},zsh,#W} "
+  readonly show_window_in_window_status_current="#[fg=$thm_green,bg=default] #I #{?#{==:#W,~/#S},zsh,#W} "
   # readonly show_window_in_window_status_current="#[fg=$thm_orange,bg=$thm_gray] #W #[fg=$thm_bg,bg=$thm_orange] #I#[fg=$thm_orange,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
 
   local show_user
@@ -153,7 +156,8 @@ main() {
   # Right column 1 by default shows the Window name.
   local right_column1=$show_window
   local show_git_branch
-  readonly show_git_branch="#[fg=$thm_pink,bg=$thm_bg,nobold,nounderscore,noitalics]#{?#{!=:#{pane_current_command},zsh},  #(git branch --show-current) ,}"
+  # readonly show_git_branch="#[fg=$thm_pink,bg=$thm_bg,nobold,nounderscore,noitalics]#{?#{!=:#{pane_current_command},zsh},  #(git branch --show-current) ,}"
+  readonly show_git_branch="#[fg=$thm_pink,bg=default,nobold,nounderscore,noitalics]  #(git branch --show-current) "
 
   window_status_format=$show_window_in_window_status
   window_status_current_format=$show_window_in_window_status_current
@@ -175,9 +179,9 @@ main() {
   local current_dir
   readonly current_dir="#[fg=${thm_orange},bg=${thm_bg},nobold]#(tmux-dir)"
 
-  set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}${show_session}${show_git_branch}"
+  set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}"
 
-  set status-right "${cal_next}"
+  set status-right "${cal_next}${show_session}${show_git_branch}"
 
   setw window-status-format "${window_status_format}"
   setw window-status-current-format "${window_status_current_format}"

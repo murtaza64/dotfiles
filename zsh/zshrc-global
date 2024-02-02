@@ -56,10 +56,16 @@ function push-and-insert() {
     zle vi-insert
 }
 zle -N push-and-insert
+function copy-command-line-to-tmux() {
+    echo -n $BUFFER | tmux-copy
+    tmux display-message "Copied: $BUFFER"
+}
+zle -N copy-command-line-to-tmux
 function zvm_after_lazy_keybindings() {
     bindkey -M vicmd 'D' push-and-insert
+    bindkey -M vicmd 'yy' copy-command-line-to-tmux
     bindkey -s -M vicmd 'n' "Dnvim^M"
-    bindkey -s '^N' "\evv"
+    bindkey -s -M vicmd '^N' "vv"
 }
 
 
@@ -184,4 +190,5 @@ function zvm_after_init() {
     zle     -N   clear-and-move-bottom
     bindkey '^L' clear-and-move-bottom
     zle     -N   commit-search
+    bindkey -s '^N' "\evv"
 }

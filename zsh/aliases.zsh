@@ -4,6 +4,7 @@ alias gs="git status"
 alias gf="git fetch"
 alias gpl="git pull"
 alias ga.="git add ."
+alias pr="create-or-open-pr"
 alias merge-master="git checkout master && git pull && git checkout - && git merge master"
 gcam() {
   git commit -am "$*"

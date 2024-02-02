@@ -1,8 +1,10 @@
 local colors = require('catppuccin.palettes').get_palette('mocha')
 local custom_catppuccin = require('lualine.themes.catppuccin')
--- custom_catppuccin.normal.c.bg = colors.base
-custom_catppuccin.insert.c = { fg = colors.green, bg = colors.mantle }
-custom_catppuccin.visual.c = { fg = colors.mauve, bg = colors.mantle }
+custom_catppuccin.normal.c.bg = "none"
+custom_catppuccin.insert.c = { fg = colors.green, bg = "none" }
+custom_catppuccin.visual.c = { fg = colors.mauve, bg = "none" }
+custom_catppuccin.normal.b.bg = "none"
+custom_catppuccin.normal.b.gui = "bold"
 
 local searchinfo = function()
   if vim.v.hlsearch == 0 then
