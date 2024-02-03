@@ -180,10 +180,9 @@ def upcoming(obj, number):
         else:
             con.print(f'[bold blue]{event.summary}[/bold blue] {humanized}')
         if event.conference:
-            con.print(f'[grey66 underline]{event.conference}[/grey66 underline]')
+            con.print(f'    [grey66 underline]{event.conference}[/grey66 underline]')
         if event.location:
-            print(event.location)
-            con.print(f'[grey66]{event.location}[/grey66]')
+            con.print(f'    [grey66]{event.location}[/grey66]')
 
 if __name__ == '__main__':
     cli(obj={})

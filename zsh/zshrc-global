@@ -109,6 +109,13 @@ elif [[ -d "/usr/share/fzf" ]]; then
 else
     log "fzf not found"
 fi
+export FZF_DEFAULT_OPTS=" \
+ --prompt='  ' --pointer=' ' \
+--color=spinner:#f5e0dc,gutter:-1,bg+:-1,hl:red,hl+:red \
+--color=header:#f38ba8,info:magenta,fg+:yellow,pointer:yellow \
+--color=marker:#f5e0dc,prompt:magenta,query:magenta \
+--info inline-right"
+
 
 function show_colors {
     for i in {0..255}; do 

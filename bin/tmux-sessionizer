@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+export FZF_DEFAULT_OPTS=" \
+ --prompt='  ' --pointer=' ' \
+--color=spinner:#f5e0dc,gutter:-1,bg+:-1,hl:red,hl+:red \
+--color=header:#f38ba8,info:magenta,fg+:yellow,pointer:yellow \
+--color=marker:#f5e0dc,prompt:magenta,query:magenta \
+--info inline-right"
 # get dirs and sessions
 tmp=$(mktemp)
 fd . ~ --max-depth=1 --type d > $tmp
@@ -18,21 +24,27 @@ while read -r line; do
     if [ ! -d "$line/.git" ]; then
         sed -e "\#$line#d" -i '' $tmp
     fi
-done < tmp
-# split sessions into lines
+done < $tmp
+# replace home directory with ~ in tmp
+sed -e "s#^$HOME#~#" -i '' $tmp
 selected=$( (echo $sessions | tr ' ' '\n'; cat $tmp) | fzf )
+    # --border rounded --border-label "switch or create session" )
 
+if [ -z "$selected" ]; then
+    exit 0
+fi
 # if selected is a session, switch to it
 if echo $sessions | tr ' ' '\n' | grep -q "^$selected$"; then
     tmux switch-client -t $selected
     exit 0
 fi
 # create a new session
+selected=${selected/#\~/$HOME}
 if [ ! -d "$selected" ]; then
     echo "No such directory: $selected"
     exit 1
 fi
 selected=${selected%/}
 selected_name=$(basename "$selected" | tr . _)
-tmux new-session -ds $selected_name -c $selected
+tmux new-session -ds $selected_name -c "$selected"
 tmux switch-client -t $selected_name

@@ -2,10 +2,18 @@ local colors = require('catppuccin.palettes').get_palette('mocha')
 local custom_catppuccin = require('lualine.themes.catppuccin')
 custom_catppuccin.normal.c.bg = "none"
 custom_catppuccin.insert.c = { fg = colors.green, bg = "none" }
+custom_catppuccin.command.c = { fg = colors.peach, bg = "none" }
 custom_catppuccin.visual.c = { fg = colors.mauve, bg = "none" }
-custom_catppuccin.normal.b.bg = "none"
-custom_catppuccin.normal.b.gui = "bold"
 
+-- local filename_gray
+
+-- local custom_filename = function()
+--   local filename = vim.fn.expand('%:t')
+--   local basename = vim.fn.expand('%:t:r')
+--   local dir = vim.fn.expand('%:.:h')
+--   dir = highlight.component_format_highlight(filename_gray) .. dir
+--   return dir .. ' ' .. basename
+-- end
 local searchinfo = function()
   if vim.v.hlsearch == 0 then
     return ''
@@ -159,6 +167,13 @@ return {
     'nvim-lualine/lualine.nvim',
     -- See `:help lualine.txt`
     -- dependencies = { 'noice' },
+    config = function(_, opts)
+      require('lualine').setup(opts)
+      -- local highlight = require 'lualine.highlight'
+      -- filename_gray = highlight.create_component_highlight_group({
+      --   fg = colors.surface2, gui = 'italic'
+      -- }, "filename_gray", {})
+    end,
     opts = {
       options = {
         icons_enabled = true,
@@ -180,19 +195,25 @@ return {
         lualine_b = {
         },
         lualine_c = {
+          {
+            function() return "" end,
+          },
           noice_macro,
           {
             harpoon,
             color = { fg = colors.flamingo, gui = 'italic' },
           },
-          {
-            'filename',
-            symbols = {
-              readonly = '󰷪 ',
-              modified = '󰷬 ',
-            },
-            path = 1,
-          },
+          -- custom_filename,
+          "fancy_filename",
+          -- {
+          --   'filename',
+          --   symbols = {
+          --     readonly = '󰷪 ',
+          --     modified = '󰷬 ',
+          --   },
+          --   color = { fg = colors.surface2, gui = 'italic' },
+          --   path = 1,
+          -- },
           -- 'diff',
           -- {
           --   function() return '' end,
@@ -233,10 +254,10 @@ return {
           indent,
         },
         lualine_y = {
-          {
-            'datetime',
-            style = '%H:%M',
-          }
+          -- {
+          --   'datetime',
+          --   style = '%H:%M',
+          -- }
         },
         lualine_z = {
         },
@@ -253,7 +274,27 @@ return {
       },
       extensions = {
         'nvim-tree',
-        'man',
+        {
+          sections = {
+            lualine_a = {},
+            lualine_b = {},
+            lualine_c = {
+              {
+                function() return "man" end,
+                color = { fg = colors.blue, gui = 'italic' },
+              },
+              function()
+                local filename = vim.fn.expand('%')
+                return string.sub(filename, 7)
+              end,
+              'progress' 
+            },
+            lualine_x = {},
+            lualine_y = {},
+            lualine_z = {},
+          },
+          filetypes = { 'man' }
+        },
         {
           sections = {
             lualine_a = { function() return "Unsaved Changes" end },

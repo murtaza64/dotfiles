@@ -51,6 +51,12 @@ vim.keymap.set('n', 'g.', "'`[' . strpart(getregtype(), 0, 1) . '`]'", { expr = 
 vim.keymap.set('v', '<', '<gv')
 vim.keymap.set('v', '>', '>gv')
 
+-- vscode-style move line/selection
+vim.keymap.set('v', '<m-j>', 'djPg.=gv', { desc = 'Move selection down', remap = true })
+vim.keymap.set('v', '<m-k>', 'dkPg.=gv', { desc = 'Move selection up', remap = true })
+vim.keymap.set('n', '<m-j>', 'ddp==', { desc = 'Move line down', remap = true })
+vim.keymap.set('n', '<m-k>', 'ddkP==', { desc = 'Move line up', remap = true })
+
 -- open URLs under cursor
 vim.keymap.set("n", "gx", ":silent execute '!open ' . shellescape(expand('<cfile>'), 1)<CR>")
 

@@ -5,6 +5,8 @@ alias gf="git fetch"
 alias gpl="git pull"
 alias ga.="git add ."
 alias pr="create-or-open-pr"
+alias ls="eza --icons"
+alias ll="eza --icons -al --git"
 alias merge-master="git checkout master && git pull && git checkout - && git merge master"
 gcam() {
   git commit -am "$*"

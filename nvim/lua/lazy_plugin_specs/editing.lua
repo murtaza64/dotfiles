@@ -6,7 +6,7 @@ return {
     opts = {
       use_default_keymaps = false
     },
-    config = function(opts)
+    config = function(_, opts)
       local lang_utils = require('treesj.langs.utils')
       opts.langs = {
         groovy = {

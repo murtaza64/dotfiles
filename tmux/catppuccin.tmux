@@ -122,7 +122,7 @@ main() {
   # readonly show_session_1="#{?#{==:#{b:pane_current_path}_#{pane_current_command},#S_zsh},#S,}"
   local show_session_2
   # readonly show_session_2="#{?#{!=:#{pane_current_command},zsh},#S,}"
-  readonly show_session_2="#S"
+  readonly show_session_2=" #S"
   # local show_dir
   # readonly show_dir="#{?#{!=:#{b:pane_current_path},#S},#{pane_current_path},}"
   local show_session
@@ -141,7 +141,7 @@ main() {
   readonly show_window_in_window_status="#[fg=$thm_black4,bg=default] #I #{?#{==:#W,~/#S},zsh,#W} "
 
   local show_window_in_window_status_current
-  readonly show_window_in_window_status_current="#[fg=$thm_green,bg=default] #I #{?#{==:#W,~/#S},zsh,#W} "
+  readonly show_window_in_window_status_current="#[fg=#b4befe,bg=default] #I #{?#{==:#W,~/#S},zsh,#W} "
   # readonly show_window_in_window_status_current="#[fg=$thm_orange,bg=$thm_gray] #W #[fg=$thm_bg,bg=$thm_orange] #I#[fg=$thm_orange,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
 
   local show_user
@@ -179,9 +179,12 @@ main() {
   local current_dir
   readonly current_dir="#[fg=${thm_orange},bg=${thm_bg},nobold]#(tmux-dir)"
 
-  set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}"
+  local show_time
+  readonly show_time="#[fg=${thm_blue},bg=${thm_bg},bold]#(date +\"%H:%M\") "
 
-  set status-right "${cal_next}${show_session}${show_git_branch}"
+  set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}${show_session} "
+
+  set status-right "${cal_next}${show_git_branch}${show_time}"
 
   setw window-status-format "${window_status_format}"
   setw window-status-current-format "${window_status_current_format}"

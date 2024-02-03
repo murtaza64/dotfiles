@@ -35,7 +35,7 @@
     dir                     # current directory
     vcs                     # git status
     # =========================[ Line #2 ]=========================
-    # newline                 # \n
+    newline                 # \n
     # space
     prompt_char             # prompt symbol
   )
@@ -109,7 +109,7 @@
     # example
     # context
     os_icon
-    time                    # current time
+    # time                    # current time
     # =========================[ Line #2 ]=========================
     newline
     # ip                    # ip address and bandwidth usage for a specified network interface
@@ -118,11 +118,11 @@
     # battery               # internal battery
     # wifi                  # wifi speed
     # example               # example user-defined segment (see prompt_example function below)
-    time                    # current time
+    # time                    # current time
   )
 
-  function p10k-on-pre-prompt() { p10k display '1'=show '2/right/time'=hide }
-  # function p10k-on-post-prompt() { p10k display '1/left/dir'=hide '2/right/time'=show }
+  function p10k-on-pre-prompt() { p10k display '1'=show }
+  function p10k-on-post-prompt() { p10k display '1'=hide }
 
   # Defines character set used by powerlevel10k. It's best to let `p10k configure` set it for you.
   typeset -g POWERLEVEL9K_MODE=nerdfont-v3
