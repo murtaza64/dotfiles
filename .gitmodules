@@ -10,3 +10,9 @@
 [submodule "tmux/easyjump.tmux"]
 	path = tmux/easyjump.tmux
 	url = https://github.com/roy2220/easyjump.tmux.git
+[submodule "alacritty/catppuccin"]
+	path = alacritty/catppuccin
+	url = https://github.com/catppuccin/alacritty
+[submodule "awesome/net_widgets"]
+	path = awesome/net_widgets
+	url = https://github.com/pltanton/net_widgets
