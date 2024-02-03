@@ -14,3 +14,15 @@ size = 14.0
 [font.normal]
 family = "UbuntuMono Nerd Font"
 style = "SemiLight"
+
+[window]
+opacity = 0.85
+decorations = "None"
+
+[keyboard]
+bindings = [
+	{ key = "L", mods = "Super", chars = "\u0000\t"},
+	{ key = "H", mods = "Super", chars = "\u0000\u001b[Z"},
+	{ key = "T", mods = "Super", chars = "\u0000c"},
+]
+
