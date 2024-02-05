@@ -30,7 +30,7 @@ theme.fg_focus      = c("text")
 theme.fg_urgent     = c("text")
 theme.fg_minimize   = c("text")
 
-theme.useless_gap   = dpi(4)
+-- theme.useless_gap   = dpi(4)
 theme.border_width  = 1
 theme.border_normal = c("base")
 theme.border_focus  = c("lavender")

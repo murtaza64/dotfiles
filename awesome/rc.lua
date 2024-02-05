@@ -19,6 +19,10 @@ local net_widgets = require("net_widgets")
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
 
+-- scale pixels by dpi
+local xresources = require("beautiful.xresources")
+local dpi = xresources.apply_dpi
+
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
 -- another config (This code will only ever execute for the fallback config)
@@ -203,7 +207,7 @@ awful.screen.connect_for_each_screen(function(s)
     -- }
 
     -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s, height=30})
+    s.mywibox = awful.wibar({ position = "top", screen = s, height=dpi(30)})
 
     -- Add widgets to the wibox
     s.mywibox:setup {
@@ -218,6 +222,7 @@ awful.screen.connect_for_each_screen(function(s)
         -- s.mytasklist, -- Middle widget
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
+            spacing = 10,
             -- mykeyboardlayout,
             mynet_wireless,
             wibox.widget.systray(),
@@ -290,18 +295,18 @@ globalkeys = gears.table.join(
     awful.key({ modkey, "Shift"   }, "e", awesome.quit,
               {description = "quit awesome", group = "awesome"}),
 
-    -- awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)          end,
-              -- {description = "increase master width factor", group = "layout"}),
-    -- awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)          end,
-              -- {description = "decrease master width factor", group = "layout"}),
-    awful.key({ modkey, "Shift"   }, "h",     function () awful.tag.incnmaster( 1, nil, true) end,
+    awful.key({ modkey, "Shift"}, "l",     function () awful.tag.incmwfact( 0.05)          end,
+              {description = "increase master width factor", group = "layout"}),
+    awful.key({ modkey, "Shift"}, "h",     function () awful.tag.incmwfact(-0.05)          end,
+              {description = "decrease master width factor", group = "layout"}),
+    awful.key({ modkey, "Mod1"   }, "l",     function () awful.tag.incnmaster( 1, nil, true) end,
               {description = "increase the number of master clients", group = "layout"}),
-    awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1, nil, true) end,
+    awful.key({ modkey, "Mod1"   }, "h",     function () awful.tag.incnmaster(-1, nil, true) end,
               {description = "decrease the number of master clients", group = "layout"}),
-    awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1, nil, true)    end,
-              {description = "increase the number of columns", group = "layout"}),
-    awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1, nil, true)    end,
-              {description = "decrease the number of columns", group = "layout"}),
+    -- awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1, nil, true)    end,
+    --           {description = "increase the number of columns", group = "layout"}),
+    -- awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1, nil, true)    end,
+    --           {description = "decrease the number of columns", group = "layout"}),
     awful.key({ modkey,           }, "space", function () awful.layout.inc( 1)                end,
               {description = "select next", group = "layout"}),
     awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(-1)                end,
@@ -595,60 +600,60 @@ client.connect_signal("request::titlebars", function(c)
             botextend=0
         }
     end
-    awful.titlebar(c, {
-        position="top",
-        bg_normal=colors.top,
-        bg_focus=colors.top,
-        size=padding_size
-    })
-    awful.titlebar(c, {
-        position="left",
-        bg_normal=colors.left,
-        bg_focus=colors.left,
-        size=padding_size
-    }) : setup {
-        {
-            wibox.widget.base.make_widget(),
-            bg=colors.top,
-            forced_height=colors.topextend,
-            widget=wibox.container.background
-        },
-        nil,
-        {
-            wibox.widget.base.make_widget(),
-            bg=colors.bottom,
-            forced_height=colors.botextend,
-            widget=wibox.container.background
-        },
-        layout=wibox.layout.align.vertical
-    }
-    awful.titlebar(c, {
-        position="right",
-        bg_normal=colors.right,
-        bg_focus=colors.right,
-        size=padding_size
-    }): setup {
-        {
-            wibox.widget.base.make_widget(),
-            bg=colors.top,
-            forced_height=colors.topextend,
-            widget=wibox.container.background
-        },
-        nil,
-        {
-            wibox.widget.base.make_widget(),
-            bg=colors.bottom,
-            forced_height=colors.botextend,
-            widget=wibox.container.background
-        },
-        layout=wibox.layout.align.vertical
-    }
-    awful.titlebar(c, {
-        position="bottom",
-        bg_normal=colors.bottom,
-        bg_focus=colors.bottom,
-        size=padding_size
-    })
+    -- awful.titlebar(c, {
+    --     position="top",
+    --     bg_normal=colors.top,
+    --     bg_focus=colors.top,
+    --     size=padding_size
+    -- })
+    -- awful.titlebar(c, {
+    --     position="left",
+    --     bg_normal=colors.left,
+    --     bg_focus=colors.left,
+    --     size=padding_size
+    -- }) : setup {
+    --     {
+    --         wibox.widget.base.make_widget(),
+    --         bg=colors.top,
+    --         forced_height=colors.topextend,
+    --         widget=wibox.container.background
+    --     },
+    --     nil,
+    --     {
+    --         wibox.widget.base.make_widget(),
+    --         bg=colors.bottom,
+    --         forced_height=colors.botextend,
+    --         widget=wibox.container.background
+    --     },
+    --     layout=wibox.layout.align.vertical
+    -- }
+    -- awful.titlebar(c, {
+    --     position="right",
+    --     bg_normal=colors.right,
+    --     bg_focus=colors.right,
+    --     size=padding_size
+    -- }): setup {
+    --     {
+    --         wibox.widget.base.make_widget(),
+    --         bg=colors.top,
+    --         forced_height=colors.topextend,
+    --         widget=wibox.container.background
+    --     },
+    --     nil,
+    --     {
+    --         wibox.widget.base.make_widget(),
+    --         bg=colors.bottom,
+    --         forced_height=colors.botextend,
+    --         widget=wibox.container.background
+    --     },
+    --     layout=wibox.layout.align.vertical
+    -- }
+    -- awful.titlebar(c, {
+    --     position="bottom",
+    --     bg_normal=colors.bottom,
+    --     bg_focus=colors.bottom,
+    --     size=padding_size
+    -- })
     
 end)
 
@@ -663,11 +668,11 @@ client.connect_signal("unfocus", function(c) c.border_color = "#00000000" end)
 -- }}}
 
 -- window rounding
-client.connect_signal("manage", function (c)
-    c.shape = function(cr,w,h)
-        gears.shape.rounded_rect(cr,w,h,15)
-    end
-end)
+-- client.connect_signal("manage", function (c)
+--     c.shape = function(cr,w,h)
+--         gears.shape.rounded_rect(cr,w,h,15)
+--     end
+-- end)
 
 -- awesome.connect_signal("spawn::completed", function(a)
 --     naughty.notify({ preset = naughty.config.presets.normal,

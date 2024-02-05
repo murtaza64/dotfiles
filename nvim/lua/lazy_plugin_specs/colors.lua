@@ -63,10 +63,10 @@ return {
             information = { "italic" },
           },
           underlines = {
-            errors = { "underline" }, -- change these to undercurl when supported
-            hints = { "underline" },
-            warnings = { "underline" },
-            information = { "underline" },
+            errors = { "undercurl" }, -- change these to undercurl when supported
+            hints = { "undercurl" },
+            warnings = { "undercurl" },
+            information = { "undercurl" },
           },
           inlay_hints = {
             background = true,

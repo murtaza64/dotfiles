@@ -10,6 +10,8 @@ shape = "Beam"
 
 [font]
 size = 14.0
+offset = { x = 0, y = 8 }
+glyph_offset = { x = 0, y = 4 }
 
 [font.normal]
 family = "UbuntuMono Nerd Font"
@@ -24,5 +26,6 @@ bindings = [
 	{ key = "L", mods = "Super", chars = "\u0000\t"},
 	{ key = "H", mods = "Super", chars = "\u0000\u001b[Z"},
 	{ key = "T", mods = "Super", chars = "\u0000c"},
+	{ key = "V", mods = "Super", action = "Paste"},
 ]
 
