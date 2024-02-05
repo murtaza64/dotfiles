@@ -127,7 +127,7 @@ main() {
   # readonly show_dir="#{?#{!=:#{b:pane_current_path},#S},#{pane_current_path},}"
   local show_session
   # readonly show_session="#{?client_prefix,#[fg=$thm_red],#[fg=$thm_green]}#[bg=$thm_bg] #S #{?client_prefix,#[fg=$thm_red],#[fg=$thm_green]}#[bg=$thm_gray]$right_separator#{?client_prefix,#[bg=$thm_red],#[bg=$thm_green]}#[fg=$thm_bg]$session_icon "
-  readonly show_session="#{?client_prefix,#[fg=$thm_red],#[fg=$thm_magenta]}#[bg=default,nobold]$show_session_2"
+  readonly show_session="#{?client_prefix,#[fg=1],#[fg=5]}#[bg=default,nobold]$show_session_2"
 
   local show_directory_in_window_status
   readonly show_directory_in_window_status="#[fg=$thm_bg,bg=$thm_blue] #I #[fg=$thm_fg,bg=$thm_gray] #{b:pane_current_path} "
@@ -141,7 +141,7 @@ main() {
   readonly show_window_in_window_status="#[fg=$thm_black4,bg=default] #I #{?#{==:#W,~/#S},zsh,#W} "
 
   local show_window_in_window_status_current
-  readonly show_window_in_window_status_current="#[fg=#b4befe,bg=default] #I #{?#{==:#W,~/#S},zsh,#W} "
+  readonly show_window_in_window_status_current="#[fg=4,bg=default] #I #{?#{==:#W,~/#S},zsh,#W} "
   # readonly show_window_in_window_status_current="#[fg=$thm_orange,bg=$thm_gray] #W #[fg=$thm_bg,bg=$thm_orange] #I#[fg=$thm_orange,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
 
   local show_user
@@ -157,19 +157,19 @@ main() {
   local right_column1=$show_window
   local show_git_branch
   # readonly show_git_branch="#[fg=$thm_pink,bg=$thm_bg,nobold,nounderscore,noitalics]#{?#{!=:#{pane_current_command},zsh},  #(git branch --show-current) ,}"
-  readonly show_git_branch="#[fg=$thm_pink,bg=default,nobold,nounderscore,noitalics]  #(git branch --show-current) "
+  readonly show_git_branch="#[fg=6,bg=default,nobold,nounderscore,noitalics]  #(git branch --show-current) "
 
   window_status_format=$show_window_in_window_status
   window_status_current_format=$show_window_in_window_status_current
 
   local in_copy_mode
-  readonly in_copy_mode="#[bg=${thm_yellow},fg=${thm_bg},bold]#{?#{==:#{pane_mode},copy-mode}, COPY ,}"
+  readonly in_copy_mode="#[bg=3,fg=${thm_bg},bold]#{?#{==:#{pane_mode},copy-mode}, COPY ,}"
   
   local in_view_mode
-  readonly in_view_mode="#[bg=${thm_yellow},fg=${thm_bg},bold]#{?#{==:#{pane_mode},view-mode}, VIEW ,}"
+  readonly in_view_mode="#[bg=3,fg=${thm_bg},bold]#{?#{==:#{pane_mode},view-mode}, VIEW ,}"
 
   local in_prefix_mode
-  readonly in_prefix_mode="#[bg=${thm_red},fg=${thm_bg},bold]#{?client_prefix, PREFIX ,}"
+  readonly in_prefix_mode="#[bg=1,fg=${thm_bg},bold]#{?client_prefix, PREFIX ,}"
 
   tmux bind-key -T prefix ':' "command-prompt -F -p \"#[bg=${thm_cyan}]#[fg=${thm_bg}]#[bold] TMUX CMD #[nobold]#[bg=${thm_gray}]#[fg=${thm_cyan}]:\""
   # tmux bind-key -T prefix ':' "command-prompt -F -p \"#[bg=${thm_cyan}]HELLO\""
@@ -180,7 +180,7 @@ main() {
   readonly current_dir="#[fg=${thm_orange},bg=${thm_bg},nobold]#(tmux-dir)"
 
   local show_time
-  readonly show_time="#[fg=${thm_blue},bg=${thm_bg},bold]#(date +\"%H:%M\") "
+  readonly show_time="#[fg=4,bold]#(date +\"%H:%M\") "
 
   set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}${show_session} "
 
