@@ -77,9 +77,13 @@ require('lazy').setup({
   {
     'knsh14/vim-github-link',
     init = function()
-      vim.keymap.set({"n", "v"}, "<leader>gl", ":GetCurrentBranchLink<cr>", {
+      vim.keymap.set({"n", "v"}, "<leader>gl", ":GetCommitLink<cr>", {
         silent = true,
         desc = "Get [G]itHub [L]ink"
+      })
+      vim.keymap.set({"n", "v"}, "<leader>gL", ":GetCurrentCommitLink<cr>", {
+        silent = true,
+        desc = "Get [G]itHub [L]ink (current commit)"
       })
     end
   },
