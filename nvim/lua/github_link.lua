@@ -1,7 +1,16 @@
-local function github_link()
+local function github_link(args)
     local filename = vim.fn.expand('%:p')
     filename = vim.trim(vim.fn.system('git ls-files --full-name -- ' .. filename))
-    local line = vim.fn.line('.')
+    -- if in visual mode get range of lines
+    local linepart
+    local start = args.line1
+    local finish = args.line2
+    if start ~= finish then
+        linepart = '#L' .. start .. '-L' .. finish
+    else
+        linepart = '#L' .. start
+    end
+    print(linepart)
     local remote = vim.trim(vim.fn.system('git remote get-url origin'))
     -- print(filename, line)
     -- make sure file is tracked
@@ -32,14 +41,14 @@ local function github_link()
     local pushed = branch ~= ''
 
     if file_on_master and same_as_master then
-        local url = remote .. '/blob/master/' .. filename .. '#L' .. line
+        local url = remote .. '/blob/master/' .. filename .. linepart
         vim.notify("copied " .. url)
         vim.fn.setreg('+', url)
         return
     end
 
     if committed and pushed then
-        local url = remote .. '/blob/' .. vim.fn.system('git rev-parse HEAD') .. '/' .. filename .. '#L' .. line
+        local url = remote .. '/blob/' .. vim.fn.system('git rev-parse HEAD') .. '/' .. filename .. linepart
         vim.notify("copied " .. url)
         vim.fn.setreg('+', url)
         return
@@ -47,6 +56,7 @@ local function github_link()
 
     if file_on_master then
         -- skip line number if file is not committed
+        vim.notify('File has uncommitted changes, skipping line numbers', vim.log.levels.WARN)
         local url = remote .. '/blob/master/' .. filename
         vim.notify("copied " .. url)
         vim.fn.setreg('+', url)
@@ -55,4 +65,5 @@ local function github_link()
     
     vim.notify('File is uncommitted or unpushed and doesn\'t exist on master', vim.log.levels.ERROR)
 end
-vim.api.nvim_create_user_command('GithubLink', github_link, {})
+vim.api.nvim_create_user_command('GithubLink', github_link, { range = true } )
+vim.keymap.set({ 'n', 'v' }, '<leader>gl', ':GithubLink<CR>', { noremap = true, silent = true })
