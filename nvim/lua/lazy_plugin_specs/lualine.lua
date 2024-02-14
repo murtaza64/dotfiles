@@ -1,3 +1,5 @@
+math.randomseed(os.time())
+local neovim_icon = math.random() > 0.5
 local colors = require('catppuccin.palettes').get_palette('mocha')
 local custom_catppuccin = require('lualine.themes.catppuccin')
 custom_catppuccin.normal.c.bg = "none"
@@ -196,7 +198,12 @@ return {
         },
         lualine_c = {
           {
-            function() return "" end,
+            function()
+              if neovim_icon then
+                return ""
+              end
+              return ""
+            end,
           },
           noice_macro,
           {

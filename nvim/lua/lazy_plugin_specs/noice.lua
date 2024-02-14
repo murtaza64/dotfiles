@@ -67,6 +67,12 @@ return {
         position = { row = 0, col = 0 },
       },
     },
+    routes = {
+      {
+        filter = { event = "msg_show", find = "Do you really want to" },
+        view = "popup",
+      },
+    },
     presets = {
       bottom_search = false, -- use a classic bottom cmdline for search
       command_palette = false, -- position the cmdline and popupmenu together

@@ -5,6 +5,7 @@ local opts = {
     'c',
     'css',
     'cpp',
+    'groovy',
     'go',
     'html',
     'javascript',

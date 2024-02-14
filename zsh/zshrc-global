@@ -64,7 +64,7 @@ zle -N copy-command-line-to-tmux
 function zvm_after_lazy_keybindings() {
     bindkey -M vicmd 'D' push-and-insert
     bindkey -M vicmd 'yy' copy-command-line-to-tmux
-    bindkey -s -M vicmd 'n' "Dnvim^M"
+    bindkey -s -M vicmd 'n' "D^M"
     bindkey -s -M vicmd '^N' "vv"
 }
 
@@ -180,7 +180,9 @@ commit-search() {
         | fzf --ansi | cut -d' ' -f1)
     if [ -n "$res" ]; then
         local commit=$(echo $res | awk '{print $1}')
-        LBUFFER+="$commit"
+        # first char of RBUFFER + commit + rest of RBUFFER
+        RBUFFER="${RBUFFER:0:1}$commit${RBUFFER:1}"
+        # LBUFFER+="$commit"
     fi
     zle reset-prompt
 }

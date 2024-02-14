@@ -10,7 +10,6 @@ local function github_link(args)
     else
         linepart = '#L' .. start
     end
-    print(linepart)
     local remote = vim.trim(vim.fn.system('git remote get-url origin'))
     -- print(filename, line)
     -- make sure file is tracked
@@ -56,8 +55,8 @@ local function github_link(args)
 
     if file_on_master then
         -- skip line number if file is not committed
-        vim.notify('File has uncommitted changes, skipping line numbers', vim.log.levels.WARN)
-        local url = remote .. '/blob/master/' .. filename
+        vim.notify('File has uncommitted or unpushed changes, check line number', vim.log.levels.WARN)
+        local url = remote .. '/blob/master/' .. filename .. linepart
         vim.notify("copied " .. url)
         vim.fn.setreg('+', url)
         return

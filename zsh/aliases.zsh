@@ -8,8 +8,10 @@ alias gd="git diff"
 alias gds="git diff --staged"
 alias gl="git log --pretty=oneline-custom"
 alias pr="create-or-open-pr"
-alias ls="eza --icons always"
-alias ll="eza --icons -al --git"
+if which eza > /dev/null; then
+  alias ls="eza --icons always"
+  alias ll="eza --icons -al --git"
+fi
 alias merge-master="git checkout master && git pull && git checkout - && git merge master"
 gcam() {
   git commit -am "$*"
@@ -20,25 +22,24 @@ gcamp() {
 
 alias glorms='git fetch && git log "origin/master" "origin/stable" "origin/release" --graph --decorate --pretty="%Cblue%h%Creset %Cgreen%ad%Creset %s %C(bold red)%d%Creset" --date=format-local:"%a %H:%M:%S"'
 
-# repo-url() {
-#   git remote get-url origin | sed 's_^git@github.com:\(.*\)\.git$_https://github.com/\1_g'
-# }
-# pr-for-commit() {
-#   git show $1 -q --pretty=oneline \
-#     | grep '(#\d\+)' -o | grep -o '\d\+' \
-#     | sed 's_\(.*\)_https://github.com/duolingo/duolingo-web/pull/\1_'
-# }
+alias ''='nvim'
 
-duo_gpt_cmd="duo gpt --prompt-file='/Users/murtaza/cli/short.prompt' --postprocess-command='python3 /Users/murtaza/scratch/murtaza/postprocess_gpt_output.py'"
-alias '?'="$duo_gpt_cmd ask"
+duo_gpt_cmd="python3 ~/gpt.py --prompt='short-md' --postprocess-command='glow -w 100 -s /Users/murtaza/dotfiles/glow-custom.json'"
+# alias '?'="$duo_gpt_cmd ask"
 alias '??'="$duo_gpt_cmd continue"
 alias '?!'="$duo_gpt_cmd clear"
 alias '?.'="$duo_gpt_cmd"
+alias '?y'="$duo_gpt_cmd copy"
 duo_gpt_cmd=(
-  duo gpt
-  --prompt-file='/Users/murtaza/cli/short.prompt' 
-  --postprocess-command='python3 /Users/murtaza/scratch/murtaza/postprocess_gpt_output.py'
+  python3 ~/gpt.py 
+  --prompt='short-md' 
+  --postprocess-command='glow -w 100 -s /Users/murtaza/dotfiles/glow-custom.json'
 )
+
+ask_and_pipe_glow() {
+  gum spin --show-output -- python3 ~/gpt.py --prompt='short-md' ask $* | glow -w 100 -s ~/dotfiles/glow-custom.json
+}
+alias '?'=ask_and_pipe_glow
 
 ask_and_put_cmdline() {
   # ${=duo_gpt_cmd} ask | tee /tmp/gpt_command.txt

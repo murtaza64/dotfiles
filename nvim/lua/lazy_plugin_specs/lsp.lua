@@ -73,9 +73,6 @@ local servers = {
   cssls = {},
   -- terraform_lsp = {},
 
-  -- enable if you want:
-  -- sourcekit = {},
-
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
@@ -230,7 +227,7 @@ return {
     }
     require('lspconfig')['efm'].setup {
       init_options = {documentFormatting = true},
-      filetypes = { 'sh', 'groovy' },
+      filetypes = { 'sh', 'groovy', 'jenkins' },
       -- capabilities = capabilities,
       on_attach = on_attach,
       settings = {
@@ -256,6 +253,11 @@ return {
     require('lspconfig')['hls'].setup{
       filetypes = { 'haskell', 'lhaskell', 'cabal' },
     }
+
+    -- require'lspconfig'.sourcekit.setup{
+    --   cmd = {'xcrun', 'sourcekit-lsp'},
+    --   on_attach = on_attach,
+    -- }
 
     vim.diagnostic.config {
       severity_sort = true,
