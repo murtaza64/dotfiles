@@ -26,7 +26,7 @@ return {
     lsp = {
       -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
       progress = {
-        view = "mini",
+        view = "mini_lsp_progress",
       },
       signature = {
         enabled = false
@@ -52,14 +52,44 @@ return {
         replace = true,
         merge = false,
       },
+      mini_lsp_progress = {
+        backend = "mini",
+        relative = "editor",
+        align = "message-right",
+        timeout = 2000,
+        reverse = true,
+        focusable = false,
+        position = {
+          row = -1,
+          col = "100%",
+          -- col = 0,
+        },
+        size = "auto",
+        border = {
+          style = "none",
+        },
+        zindex = 59,
+        win_options = {
+          winbar = "",
+          foldenable = false,
+          winblend = 30,
+          winhighlight = {
+            Normal = "NoiceMini",
+            IncSearch = "",
+            CurSearch = "",
+            Search = "",
+          },
+        },
+      },
       mini_showmode = {
         backend = "mini",
       },
       mini = {
-        align = "message-right",
+        align = "message-left",
+        timeout = 4000,
         position = {
           row = -1,
-          col = "100%",
+          col = 0,
         }
       },
       hover = {
@@ -70,6 +100,10 @@ return {
     routes = {
       {
         filter = { event = "msg_show", find = "Do you really want to" },
+        view = "popup",
+      },
+      {
+        filter = { event = "msg_show", find = "!!!" },
         view = "popup",
       },
     },

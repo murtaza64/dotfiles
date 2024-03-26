@@ -11,6 +11,11 @@ local function github_link(args)
         linepart = '#L' .. start
     end
     local remote = vim.trim(vim.fn.system('git remote get-url origin'))
+    -- convert remote to https
+    if remote:find('git@') == 1 then
+        remote = remote:gsub('git@github.com:', 'https://github.com/')
+        remote = remote:gsub('%.git', '')
+    end
     -- print(filename, line)
     -- make sure file is tracked
     if filename == '' then
@@ -47,7 +52,9 @@ local function github_link(args)
     end
 
     if committed and pushed then
-        local url = remote .. '/blob/' .. vim.fn.system('git rev-parse HEAD') .. '/' .. filename .. linepart
+        local commit = vim.fn.system('git rev-parse HEAD')
+        commit = commit:gsub('%s*$', '')
+        local url = remote .. '/blob/' .. commit .. '/' .. filename .. linepart
         vim.notify("copied " .. url)
         vim.fn.setreg('+', url)
         return

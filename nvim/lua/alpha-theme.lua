@@ -344,7 +344,7 @@ local section = {
             button(
                 "f",
                 "find files",
-                "<leader>ff",
+                "<cmd>Telescope find_files<CR>",
                 {
                     icon = "󰱽 ",
                     text_hl = "AlphaDivider",
@@ -395,7 +395,7 @@ local section = {
             button(
                 "?",
                 "more oldfiles",
-                "<leader>?",
+                "<cmd>Telescope oldfiles<CR>",
                 { icon = "󱋢 ", keybind_opts = { noremap = false }, text_hl = "AlphaDivider"}
             ),
             button(

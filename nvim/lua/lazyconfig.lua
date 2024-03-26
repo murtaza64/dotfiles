@@ -33,6 +33,34 @@ require('lazy').setup({
   {
     'emmanueltouzery/agitator.nvim',
     init = function()
+      -- local gb_open = false
+      -- vim.keymap.set({"n", "v"}, "<leader>gb", function()
+      --   if _G.NoNeckPain.state.enabled then
+      --     if gb_open then
+      --       require("agitator").git_blame_toggle()
+      --       vim.cmd("NoNeckPainToggleLeftSide")
+      --       gb_open = false
+      --       vim.wo.wrap = true
+      --     else
+      --       vim.cmd("NoNeckPainToggleLeftSide")
+      --       require("agitator").git_blame_toggle()
+      --       gb_open = true
+      --       vim.api.nvim_create_autocmd({ "BufHidden", "BufUnload" },
+      --       {
+      --         callback = function()
+      --           if gb_open then
+      --             gb_open = false
+      --             vim.cmd("NoNeckPainToggleLeftSide")
+      --             vim.wo.wrap = true
+      --           end
+      --         end,
+      --         pattern = "<buffer>",
+      --       })
+      --     end
+      --   else
+      --     require("agitator").git_blame_toggle()
+      --   end
+      -- end, {
       vim.keymap.set({"n", "v"}, "<leader>gb", require("agitator").git_blame_toggle, {
         silent = true,
         desc = "Git [B]lame"
@@ -159,6 +187,7 @@ require('lazy').setup({
   },
   -- require 'kickstart.plugins.autoformat',
   -- require 'kickstart.plugins.debug',
+  'ThePrimeagen/vim-be-good',
 
   { import = 'lazy_plugin_specs.colors' },
   -- noice is too buggy/heavy

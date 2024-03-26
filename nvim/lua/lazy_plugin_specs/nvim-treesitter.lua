@@ -9,6 +9,7 @@ local opts = {
     'go',
     'html',
     'javascript',
+    'kotlin',
     'lua',
     'python',
     'rust',

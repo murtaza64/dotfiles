@@ -138,10 +138,10 @@ main() {
   local show_window_in_window_status
   # readonly show_window_in_window_status="#[fg=$thm_fg,bg=$thm_bg] #W #[fg=$thm_bg,bg=$thm_blue] #I#[fg=$thm_blue,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
   # readonly show_window_in_window_status="#[fg=$thm_black4,bg=$thm_bg] #I #W "
-  readonly show_window_in_window_status="#[fg=$thm_black4,bg=default] #I #{?#{==:#W,~/#S},zsh,#W} "
+  readonly show_window_in_window_status="#[fg=$thm_black4,bg=default] #{?#{==:#W,~/#S},zsh,#W} "
 
   local show_window_in_window_status_current
-  readonly show_window_in_window_status_current="#[fg=4,bg=default] #I #{?#{==:#W,~/#S},zsh,#W} "
+  readonly show_window_in_window_status_current="#[fg=4,bg=default,bold] #{?#{==:#W,~/#S},zsh,#W} "
   # readonly show_window_in_window_status_current="#[fg=$thm_orange,bg=$thm_gray] #W #[fg=$thm_bg,bg=$thm_orange] #I#[fg=$thm_orange,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
 
   local show_user
@@ -174,7 +174,7 @@ main() {
   tmux bind-key -T prefix ':' "command-prompt -F -p \"#[bg=${thm_cyan}]#[fg=${thm_bg}]#[bold] TMUX CMD #[nobold]#[bg=${thm_gray}]#[fg=${thm_cyan}]:\""
   # tmux bind-key -T prefix ':' "command-prompt -F -p \"#[bg=${thm_cyan}]HELLO\""
   local cal_next
-  readonly cal_next="#[fg=${thm_fg},bg=${thm_bg}]#(gcal tmux)"
+  readonly cal_next="#[fg=${thm_fg}]#(gcal tmux)"
 
   local current_dir
   readonly current_dir="#[fg=${thm_orange},bg=${thm_bg},nobold]#(tmux-dir)"

@@ -1,0 +1,14 @@
+#!/bin/bash
+# Define the threshold for "significantly behind"
+THRESHOLD=10
+# Get the current branch name
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+# Get the number of commits behind origin/master
+COMMITS_BEHIND=$(git rev-list --count ${CURRENT_BRANCH}..origin/master)
+# If we're behind by more than the threshold, print a warning
+if [ $COMMITS_BEHIND -gt $THRESHOLD ]; then
+    yellow=`tput setaf 3`
+    bold=`tput bold`
+    reset=`tput sgr0`
+    echo "${yellow}${bold}Warning: Your branch is $COMMITS_BEHIND commits behind origin/master.${reset}"
+fi

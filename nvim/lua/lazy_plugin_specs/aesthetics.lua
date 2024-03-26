@@ -3,6 +3,7 @@ return {
   {
     "shortcuts/no-neck-pain.nvim",
     opts = {
+      -- debug = true,
       buffers = {
         wo = {
           fillchars = "eob: ",

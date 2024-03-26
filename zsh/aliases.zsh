@@ -2,23 +2,29 @@
 alias gk="git checkout"
 alias gs="git status"
 alias gf="git fetch"
-alias gpl="git pull"
+alias gp="git pull"
+alias gP="git push"
 alias ga.="git add ."
 alias gd="git diff"
 alias gds="git diff --staged"
 alias gl="git log --pretty=oneline-custom"
 alias pr="create-or-open-pr"
+alias gcm="git commit -m"
 if which eza > /dev/null; then
   alias ls="eza --icons always"
   alias ll="eza --icons -al --git"
 fi
-alias merge-master="git checkout master && git pull && git checkout - && git merge master"
+alias merge-master="git checkout master && git pull && git checkout - && git merge --no-edit master"
 gcam() {
   git commit -am "$*"
 }
 gcamp() {
   git commit -am "$*" && git push
 }
+gcmp() {
+  git commit -m "$*" && git push
+}
+
 
 alias glorms='git fetch && git log "origin/master" "origin/stable" "origin/release" --graph --decorate --pretty="%Cblue%h%Creset %Cgreen%ad%Creset %s %C(bold red)%d%Creset" --date=format-local:"%a %H:%M:%S"'
 
