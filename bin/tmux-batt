@@ -1,0 +1,27 @@
+#!/bin/bash
+level=$(pmset -g batt | grep -oE '\d{1,2}%;' | rev | cut -c 3- | rev)
+# echo $level
+if [ $level -le 5 ]; then 
+	echo "#[fg=red]󰂃 #[default]"
+elif [ $level -le 10 ]; then
+	echo "#[fg=red]󰁺 #[default]"
+elif [ $level -le 20 ]; then
+	echo "#[fg=yellow]󰁻 #[default]"
+elif [ $level -le 30 ]; then
+	echo "#[fg=yellow]󰁼 #[default]"
+elif [ $level -le 40 ]; then
+	echo "#[fg=colour249]󰁽 #[default]"
+elif [ $level -le 50 ]; then
+	echo "#[fg=colour249]󰁾 #[default]"
+elif [ $level -le 60 ]; then
+	echo "#[fg=colour249]󰁿 #[default]"
+elif [ $level -le 70 ]; then
+	echo "#[fg=colour249]󰂀 #[default]"
+elif [ $level -le 80 ]; then
+	echo "#[fg=colour249]󰂁 #[default]"
+elif [ $level -le 90 ]; then
+	echo "#[fg=colour249]󰂂 #[default]"
+else
+	echo "#[fg=colour249]󰁹 #[default]"
+fi
+

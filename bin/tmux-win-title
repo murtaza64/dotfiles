@@ -1,0 +1,15 @@
+#!/bin/bash
+cwd=$(tmux display-message -t $1 -p '#{pane_current_path}')
+cmd=$(tmux display-message -t $1 -p '#{pane_current_command}')
+session=$(tmux display-message -p '#S')
+session_path=$(realpath $HOME/$session)
+if [ $cmd != "zsh" ]; then
+  echo $cmd
+  exit 0
+fi
+if [ $cwd != $session_path ]; then
+  relative_dir=$(echo $cwd | sed -e "s|^$session_path/|./|")
+  echo "zsh $relative_dir"
+else
+  echo "zsh"
+fi

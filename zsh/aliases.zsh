@@ -30,6 +30,14 @@ alias glorms='git fetch && git log "origin/master" "origin/stable" "origin/relea
 
 alias ''='nvim'
 
+nvim () {
+  restart=68
+  while [[ $restart -eq 68 ]]; do
+    command nvim $*
+    restart=$?
+  done
+}
+
 duo_gpt_cmd="python3 ~/gpt.py --prompt='short-md' --postprocess-command='glow -w 100 -s /Users/murtaza/dotfiles/glow-custom.json'"
 # alias '?'="$duo_gpt_cmd ask"
 alias '??'="$duo_gpt_cmd continue"
@@ -74,4 +82,16 @@ jl() {
     curl $url -o /Users/murtaza/jenkins_logs/$job_name/$build_number.log
   fi
   nvim -c "term cat /Users/murtaza/jenkins_logs/$job_name/$build_number.log" -c "set ft=JenkinsLog"
+}
+
+tar-new-dir() {
+  if [[ -z $1 ]]; then
+    echo "Usage: tar-new-dir <archive>"
+    return 1
+  fi
+  # exttract archive (e.g. xyz.tar.gz) to a new directory (e.g. xyz)
+  dir=$(echo $1 | sed -E 's/\.tar\..*//')
+  echo $dir
+  mkdir $dir || (echo "directory already exists" >&2 && return 1)
+  tar -xzf $1 -C $dir && cd $dir
 }

@@ -69,6 +69,7 @@
   brw (cmd-button "open /Applications/Firefox.app")
   ter (cmd-button "open /Applications/iTerm.app")
   slk (cmd-button "open /Applications/Slack.app")
+  scr (around lctl (around lmet (around lsft 4)))
 
   ;; ltl (tap-hold-next-release 200 tab (layer-toggle symbols))
   sym (layer-toggle symbols)
@@ -107,7 +108,7 @@
   _                                              _    _   _   _    _               
   _    _    _    _    _    _    _    _    _    _    _    _    _    _
   _    _    _    _    _    _    _    _    _    _    _    _    _    _
-  _    _    _    _    _    _    _    @brw @ter @slk _    _       _
+  _    _    _    @scr _    _    _    @brw @ter @slk _    _       _
   _    _    _    _    _    _    _    _    _    _    _      _
   _         _    _              _         _    _    _    _    _
                                                     _    _    _

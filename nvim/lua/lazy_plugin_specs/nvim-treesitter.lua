@@ -13,6 +13,7 @@ local opts = {
     'lua',
     'python',
     'rust',
+    'svelte',
     'terraform',
     'tsx',
     'typescript',

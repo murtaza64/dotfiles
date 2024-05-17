@@ -85,11 +85,11 @@ return {
         backend = "mini",
       },
       mini = {
-        align = "message-left",
+        align = "message-right",
         timeout = 4000,
         position = {
           row = -1,
-          col = 0,
+          col = "100%",
         }
       },
       hover = {

@@ -73,7 +73,8 @@ local treesitter = function()
   if not require('nvim-treesitter').statusline() then
     return ''
   end
-  return '󰹩'
+  -- return '󰹩'
+  return ' '
 end
 
 local treesitter_color = function()
@@ -242,13 +243,15 @@ return {
 
           copilot,
           {
-            function() return '󰹩' end,
+            -- function() return '󰹩' end,
+            function() return ' ' end,
             color = treesitter_color,
             separator = { right = '' },
             padding = { left = 1, right = 1 },
           },
           {
-            function() return '󰧑 ' end,
+            function() return '󰒍 ' end,
+            -- function() return '󰧑 ' end,
             color = lsp_color,
             padding = { left = 0, right = 1 },
           },

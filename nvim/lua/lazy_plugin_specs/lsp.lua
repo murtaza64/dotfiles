@@ -72,6 +72,7 @@ local servers = {
   html = {},
   cssls = {},
   -- terraform_lsp = {},
+  jdtls = {},
 
   lua_ls = {
     Lua = {
@@ -253,6 +254,18 @@ return {
     require('lspconfig')['hls'].setup{
       filetypes = { 'haskell', 'lhaskell', 'cabal' },
     }
+    
+
+    require('lspconfig')['svelte'].setup {
+      on_attach = function(client, bufnr)
+        vim.api.nvim_create_autocmd("BufWritePost", {
+          pattern = { "*.js", "*.ts" },
+          callback = function(ctx)
+            client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
+          end,
+        })
+      end,
+    }
 
     -- require'lspconfig'.sourcekit.setup{
     --   cmd = {'xcrun', 'sourcekit-lsp'},
@@ -266,10 +279,10 @@ return {
         header = false,
       }
     }
-    -- local signs = { Error = " ", Warn = " ", Hint = "󱠃", Info = " " }
-    -- for type, icon in pairs(signs) do
-    --   local hl = "DiagnosticSign" .. type
-    --   vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-    -- end
+    local signs = { Error = " ", Warn = " ", Hint = "󱠃", Info = " " }
+    for type, icon in pairs(signs) do
+      local hl = "DiagnosticSign" .. type
+      vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+    end
   end
 }

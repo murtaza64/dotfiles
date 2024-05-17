@@ -43,7 +43,7 @@ main() {
   set status-bg default
   setw window-status-style bg=default
   set status-style bg=default
-  set status-justify "left"
+  set status-justify "absolute-centre"
   set status-left-length "100"
   set status-right-length "100"
 
@@ -138,11 +138,13 @@ main() {
   local show_window_in_window_status
   # readonly show_window_in_window_status="#[fg=$thm_fg,bg=$thm_bg] #W #[fg=$thm_bg,bg=$thm_blue] #I#[fg=$thm_blue,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
   # readonly show_window_in_window_status="#[fg=$thm_black4,bg=$thm_bg] #I #W "
-  readonly show_window_in_window_status="#[fg=$thm_black4,bg=default] #{?#{==:#W,~/#S},zsh,#W} "
+  readonly show_window_in_window_status="#[fg=$thm_black4,bg=default] ○ #{?#{==:#W,~/#S},zsh,#W} "
+  # readonly show_window_in_window_status="#[fg=$thm_black4,bg=default] ○ #(tmux-win-title #{window_id}) "
 
   local show_window_in_window_status_current
-  readonly show_window_in_window_status_current="#[fg=4,bg=default,bold] #{?#{==:#W,~/#S},zsh,#W} "
+  readonly show_window_in_window_status_current="#[fg=4,bg=default] ● #{?#{==:#W,~/#S},zsh,#W} "
   # readonly show_window_in_window_status_current="#[fg=$thm_orange,bg=$thm_gray] #W #[fg=$thm_bg,bg=$thm_orange] #I#[fg=$thm_orange,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
+  # readonly show_window_in_window_status_current="#[fg=4,bg=default] ● #(tmux-win-title #{window_id}) "
 
   local show_user
   readonly show_user="#[fg=$thm_blue,bg=$thm_gray]$right_separator#[fg=$thm_bg,bg=$thm_blue]$user_icon #[fg=$thm_fg,bg=$thm_gray] #(whoami) "
@@ -157,7 +159,7 @@ main() {
   local right_column1=$show_window
   local show_git_branch
   # readonly show_git_branch="#[fg=$thm_pink,bg=$thm_bg,nobold,nounderscore,noitalics]#{?#{!=:#{pane_current_command},zsh},  #(git branch --show-current) ,}"
-  readonly show_git_branch="#[fg=6,bg=default,nobold,nounderscore,noitalics]  #(git branch --show-current) "
+  readonly show_git_branch="#[fg=6,bg=default,nobold,nounderscore,noitalics]  #(git branch --show-current)"
 
   window_status_format=$show_window_in_window_status
   window_status_current_format=$show_window_in_window_status_current
@@ -174,17 +176,24 @@ main() {
   tmux bind-key -T prefix ':' "command-prompt -F -p \"#[bg=${thm_cyan}]#[fg=${thm_bg}]#[bold] TMUX CMD #[nobold]#[bg=${thm_gray}]#[fg=${thm_cyan}]:\""
   # tmux bind-key -T prefix ':' "command-prompt -F -p \"#[bg=${thm_cyan}]HELLO\""
   local cal_next
-  readonly cal_next="#[fg=${thm_fg}]#(gcal tmux)"
+  readonly cal_next="#[fg=${thm_fg}]#(gcal tmux --icon-only --popup)"
 
   local current_dir
-  readonly current_dir="#[fg=${thm_orange},bg=${thm_bg},nobold]#(tmux-dir)"
+  readonly current_dir="#[fg=${thm_orange},bg=default,nobold]#(tmux-dir)"
 
   local show_time
-  readonly show_time="#[fg=4,bold]#(date +\"%H:%M\") "
+  readonly show_time="#[fg=2,italics]#(date +\"%a %b %d\") #[default,fg=4,bold]#(date +\"%H:%M\")"
 
-  set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}${show_session} "
+  local show_gitmux
+  # readonly show_gitmux='#(/Users/murtaza/go/gitmux "#{pane_current_path}")'
+  readonly show_gitmux=' #(/Users/murtaza/go/bin/gitmux -cfg ~/dotfiles/gitmux.yaml "#{pane_current_path}")'
 
-  set status-right "${cal_next}${show_git_branch}${show_time}"
+  local show_batt
+  readonly show_batt='#(tmux-batt)'
+
+  set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}${current_dir}${show_gitmux}"
+
+  set status-right "${show_time}${cal_next} ${show_batt}"
 
   setw window-status-format "${window_status_format}"
   setw window-status-current-format "${window_status_current_format}"

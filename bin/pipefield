@@ -1,0 +1,96 @@
+#!python3
+
+from subprocess import Popen, PIPE
+from sys import stdin, argv
+from threading import Thread
+import time
+import signal
+
+
+
+field_number = int(argv[1])
+command = argv[2:]
+
+# $1, $2, ... $n
+FIELD_STRING_BEFORE = ', '.join([f"${i}" for i in range(1, field_number)])
+# $n+1, $n+2, ... $100
+FIELD_STRING_AFTER = ', '.join([f"${i}" for i in range(field_number+1, 100)])
+
+AWK_BEFORE = Popen(f"awk '{{print {FIELD_STRING_BEFORE}; fflush()}}'", stdout=PIPE, stdin=PIPE, shell=True)
+AWK_AFTER = Popen(f"awk '{{print {FIELD_STRING_AFTER}; fflush()}}'", stdout=PIPE, stdin=PIPE, shell=True)
+AWK_GET_FIELD = Popen(f"awk '{{print ${field_number}; fflush()}}'", stdout=PIPE, stdin=PIPE, shell=True)
+COMMAND = Popen(command, stdin=PIPE, stdout=PIPE)
+
+# propagate SIGINT to child processes
+def signal_handler(sig, frame):
+    AWK_BEFORE.send_signal(sig)
+    AWK_AFTER.send_signal(sig)
+    AWK_GET_FIELD.send_signal(sig)
+    COMMAND.send_signal(sig)
+    exit(130)
+
+signal.signal(signal.SIGINT, signal_handler)
+
+assert AWK_BEFORE.stdin is not None
+assert AWK_AFTER.stdin is not None
+assert AWK_GET_FIELD.stdin is not None
+assert COMMAND.stdin is not None
+
+assert AWK_BEFORE.stdout is not None
+assert AWK_AFTER.stdout is not None
+assert AWK_GET_FIELD.stdout is not None
+assert COMMAND.stdout is not None
+
+# read lines from stdin
+
+before = []
+after = []
+
+
+def process_command_output():
+    assert COMMAND.stdout is not None
+    i = 0
+    while True:
+        line = COMMAND.stdout.readline()
+        if not line:
+            break
+        output = line.decode().strip()
+        if field_number == 1:
+            print(output, after[i])
+        else:
+            print(before[i], output, after[i])
+        i += 1
+
+thread = Thread(target=process_command_output)
+thread.start()
+
+while True:
+    line = stdin.readline()
+    if not line:
+        break
+    # print(line.__repr__(), flush=True)
+
+    AWK_BEFORE.stdin.write(line.encode())
+    AWK_AFTER.stdin.write(line.encode())
+    AWK_GET_FIELD.stdin.write(line.encode())
+    AWK_BEFORE.stdin.flush()
+    AWK_AFTER.stdin.flush()
+    AWK_GET_FIELD.stdin.flush()
+
+    AWK_BEFORE.stdout.flush()
+    AWK_AFTER.stdout.flush()
+    b = AWK_BEFORE.stdout.readline().decode().strip()
+    a = AWK_AFTER.stdout.readline().decode().strip()
+    before.append(b)
+    after.append(a)
+
+    AWK_GET_FIELD.stdout.flush()
+    field = AWK_GET_FIELD.stdout.readline().decode()
+    # print(f"{b=} {a=} {field=}")
+    COMMAND.stdin.write(field.encode())
+    COMMAND.stdin.flush()
+
+AWK_BEFORE.stdin.close()
+AWK_AFTER.stdin.close()
+AWK_GET_FIELD.stdin.close()
+COMMAND.stdin.close()

@@ -51,6 +51,7 @@ return {
           DiagnosticUnderlineWarn = { bg = '#423a1b' },
           LspSignatureHint = { bg = colors.surface1, fg = colors.peach },
           NoiceCmdline = { bg = colors.base },
+          GitSignsChange = { fg = colors.peach },
         }
       end,
       integrations = {

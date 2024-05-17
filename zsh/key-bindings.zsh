@@ -134,6 +134,15 @@ bindkey -M emacs '^[[1;5D' backward-word
 bindkey -M viins '^[[1;5D' backward-word
 bindkey -M vicmd '^[[1;5D' backward-word
 
+# [Alt-RightArrow] - move forward one word
+bindkey -M emacs '^[[1;3C' forward-word
+bindkey -M viins '^[[1;3C' forward-word
+bindkey -M vicmd '^[[1;3C' forward-word
+# [Alt-LeftArrow] - move backward one word
+bindkey -M emacs '^[[1;3D' backward-word
+bindkey -M viins '^[[1;3D' backward-word
+bindkey -M vicmd '^[[1;3D' backward-word
+
 
 bindkey '\ew' kill-region                             # [Esc-w] - Kill from the cursor to the mark
 bindkey -s '\el' 'ls\n'                               # [Esc-l] - run command: ls

@@ -1,0 +1,4 @@
+#!/bin/bash 
+set -eo pipefail
+target=$(recent-branches | fzf --tiebreak=index --min-height=4 --height=16)
+git checkout $target

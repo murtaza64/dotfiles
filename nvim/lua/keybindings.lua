@@ -47,6 +47,9 @@ vim.keymap.set('n', 'g.', "'`[' . strpart(getregtype(), 0, 1) . '`]'", { expr = 
 -- doesn't seem to work with visual block mode properly
 -- https://vim.fandom.com/wiki/Selecting_your_pasted_text
 
+-- / in visual mode searches selected text
+vim.keymap.set('v', '/', '"sy/<C-R>s', { desc = 'Search selected text' })
+
 -- keep indented text selected
 vim.keymap.set('v', '<', '<gv')
 vim.keymap.set('v', '>', '>gv')

@@ -65,7 +65,7 @@ function zvm_after_lazy_keybindings() {
     bindkey -M vicmd 'D' push-and-insert
     bindkey -M vicmd 'yy' copy-command-line-to-tmux
     bindkey -s -M vicmd 'n' "D^M"
-    bindkey -s -M vicmd '^N' "vv"
+    bindkey -M vicmd '^N' edit-in-tmux-nvim-split
 }
 
 
@@ -193,11 +193,35 @@ clear-and-move-bottom() {
     zle reset-prompt
 }
 
+edit-in-tmux-nvim-split() {
+    local temp_file=$(mktemp "/tmp/command.XXXX")
+    mv $temp_file $temp_file.zsh
+    temp_file=$temp_file.zsh
+    echo $BUFFER > $temp_file
+    LBUFFER=""
+    RBUFFER=""
+    # zle reset-prompt
+    tmux split-window -l25% \
+        "MURTAZA_NVIM_NO_NNP=1 nvim $temp_file; tmux wait-for -S nvim-split-done"
+    tmux wait-for nvim-split-done
+    # sleep 5
+    LBUFFER=$(< $temp_file)
+    # LBUFFER="hello world"
+    zle reset-prompt
+    if [[ -f /tmp/nvim_exec_next_zsh_command ]]; then
+        rm /tmp/nvim_exec_next_zsh_command
+        zle accept-line
+    fi
+}
+
 function zvm_after_init() {
     zle     -N   fzf-history-widget
     bindkey '^R' fzf-history-widget
     zle     -N   clear-and-move-bottom
     bindkey '^L' clear-and-move-bottom
     zle     -N   commit-search
-    bindkey -s '^N' "\evv"
+    zle     -N   edit-in-tmux-nvim-split
+    # bindkey -s '^N' "\evv"
+    bindkey '^N' edit-in-tmux-nvim-split
+    bindkey -s '^B' 'branch-switch^M'
 }

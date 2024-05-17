@@ -32,10 +32,10 @@
   # The list of segments shown on the left. Fill it with the most important segments.
   typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
     # =========================[ Line #1 ]=========================
-    dir                     # current directory
-    vcs                     # git status
+    # dir                     # current directory
+    # vcs                     # git status
     # =========================[ Line #2 ]=========================
-    newline                 # \n
+    # newline                 # \n
     # space
     prompt_char             # prompt symbol
   )
@@ -108,10 +108,10 @@
     # tmux
     # example
     # context
-    os_icon
+    # os_icon
     # time                    # current time
     # =========================[ Line #2 ]=========================
-    newline
+    # newline
     # ip                    # ip address and bandwidth usage for a specified network interface
     # public_ip             # public IP address
     # proxy                 # system-wide http/https/ftp proxy
@@ -121,8 +121,8 @@
     # time                    # current time
   )
 
-  function p10k-on-pre-prompt() { p10k display '1'=show }
-  function p10k-on-post-prompt() { p10k display '1'=hide }
+  # function p10k-on-pre-prompt() { p10k display '1'=show }
+  # function p10k-on-post-prompt() { p10k display '1'=hide }
 
   # Defines character set used by powerlevel10k. It's best to let `p10k configure` set it for you.
   typeset -g POWERLEVEL9K_MODE=nerdfont-v3

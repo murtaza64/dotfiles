@@ -35,10 +35,17 @@ else
     },
   })
   -- run noneckpain after a 1 sec delay
-  local timer = vim.loop.new_timer()
-  timer:start(100, 0, vim.schedule_wrap(function()
-    vim.cmd('NoNeckPain')
-  end))
+  if not os.getenv('MURTAZA_NVIM_NO_NNP') then
+    local timer = vim.loop.new_timer()
+    timer:start(100, 0, vim.schedule_wrap(function()
+      vim.cmd('NoNeckPain')
+    end))
+  else
+    vim.keymap.set('n', '<cr><cr>', function()
+      vim.fn.system('touch /tmp/nvim_exec_next_zsh_command')
+      vim.cmd('wq')
+    end)
+  end
   -- vim.cmd('hi Normal guibg=#131313')
   -- vim.cmd('hi EndOfBuffer guifg=#191919 guibg=#191919')
   -- vim.cmd('hi EndOfBuffer guifg=#131313')

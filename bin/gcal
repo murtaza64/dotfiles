@@ -8,6 +8,7 @@ import os
 import pickle
 from datetime import datetime, timedelta, timezone
 import click
+import subprocess
 import rich, rich.console
 local_tz = datetime.now().astimezone().tzinfo
 tz_suffix = datetime.now(local_tz).strftime('%z')
@@ -49,6 +50,21 @@ def humanize_time_delta(t: datetime, now: datetime | None = None):
     if years < 1.5:
         return f'last year' if past else f'next year'
     return f'{round(years)} years ago' if past else f'in {round(years)} years'
+
+# always give something like "15 min" or "10 min ago"
+def humanize_time_delta_short_min(t: datetime, now: datetime | None = None):
+    if now is None:
+        now = datetime.now(tz=timezone.utc)
+    delta = t - now
+    past = delta < timedelta(0)
+    if past:
+        delta = -delta
+    seconds = delta.total_seconds()
+    if seconds < 60:
+        return 'just now' if past else 'now'
+    minutes = delta / timedelta(minutes=1)
+    return f'{round(minutes)} min ago' if past else f'{round(minutes)} min'
+
 
 def event_in_progress(event):
     now = datetime.now(tz=timezone.utc)
@@ -122,15 +138,40 @@ def cli(ctx, max_events_loaded):
         ctx.invoke(upcoming)
 
 @cli.command()
+@click.option('--debug', '-d', is_flag=True)
+@click.option('--icon-only', '-i', is_flag=True)
+@click.option('--popup', '-p', is_flag=True)
 @click.pass_obj
-def tmux(obj):
+def tmux(obj, debug=False, icon_only=False, popup=False):
     events = obj['events'] 
     # if there are events starting in less than 10 minutes, show only that
     for event in events:
         if not event.in_progress and event.minutes_till < 10:
-            print(event.summary, event.start, event.end, event.minutes_till)
-            delta = humanize_time_delta(event.start)
-            print(f"#[fg=colour5,bold]{event.summary} #[fg=colour1,nobold]{delta}")
+            if debug:
+                print(event.summary, event.all_day, "loop 1")
+            if icon_only:
+                delta = humanize_time_delta_short_min(event.start)
+                print(f" #[fg=colour1]󰃭  {delta}")
+            else:
+                delta = humanize_time_delta(event.start)
+                print(f"#[fg=colour5,bold]{event.summary} #[fg=colour1,nobold]{delta}")
+            if popup and event.minutes_till < 1:
+                filename = f"/tmp/notification-{'-'.join(event.summary.split())}-{event.start}"
+                if os.path.exists(filename):
+                    return
+                else:
+                    open(filename, 'w').close()
+
+                f = open('/tmp/gcal_popup', 'w')
+                con = rich.console.Console(file=f, force_terminal=True)
+                con.print(f"[bold blue]{event.summary}[/bold blue] starts [red]{delta}[/red]")
+                if event.conference:
+                    con.print(f"[grey66]{event.conference}[/grey66]", end='')
+                elif event.location:
+                    con.print(f"[grey66]{event.location}[/grey66]", end='')
+                else:
+                    con.print("[grey42]No location found[/grey42]", end='')
+                subprocess.run(f"tmux popup -h4 -S fg=colour3 -b rounded cat /tmp/gcal_popup", shell=True)
             return
              
     # if there is an event in progress, show that
@@ -140,15 +181,31 @@ def tmux(obj):
             delta_ends = humanize_time_delta(event.end)
             delta_starts = humanize_time_delta(event.start)
             if event.minutes_till_end < 10:
+                if debug:
+                    print(event, "loop 2, ends soon")
+                if icon_only:
+                    return
                 print(f"#[fg=colour5,bold]{event.summary} #[fg=colour3,nobold]ends {delta_ends}")
                 return
             elif abs(event.minutes_till) < 10:
+                if debug:
+                    print(event, "loop 2, starts soon")
+                if icon_only:
+                    delta = humanize_time_delta_short_min(event.start)
+                    print(f" #[fg=colour1]󰃭  {delta}")
+                    return
                 print(f"#[fg=colour5,bold]{event.summary} #[fg=colour1,nobold]started {delta_starts}")
                 return
             elif abs(event.minutes_till) < event.minutes_till_end:
+                if debug:
+                    print(event, "loop 2, starts sooner than it ends")
+                if icon_only:
+                    return
                 print(f"#[fg=colour5,bold]{event.summary} #[fg=colour3,nobold]started {delta_starts}")
                 return
             else:
+                if icon_only:
+                    return
                 print(f"#[fg=colour5,bold]{event.summary} #[fg=colour3,nobold]ends {delta_ends}")
                 return
     
@@ -157,7 +214,11 @@ def tmux(obj):
         if event.all_day: continue
         if event.minutes_till < 30:
             delta = humanize_time_delta(event.start)
-            print(f"#[fg=colour5,bold]{event.summary} #[fg=colour3,nobold]{delta}")
+            if icon_only:
+                delta = humanize_time_delta_short_min(event.start)
+                print(f" #[fg=colour3]󰃭  {delta}")
+            else:
+                print(f"#[fg=colour5,bold]{event.summary} #[fg=colour3,nobold]{delta}")
             return
             
 
