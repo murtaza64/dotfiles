@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 export FZF_DEFAULT_OPTS=" \
  --prompt='  ' --pointer=' ' \
@@ -46,5 +47,7 @@ if [ ! -d "$selected" ]; then
 fi
 selected=${selected%/}
 selected_name=$(basename "$selected" | tr . _)
-tmux new-session -ds $selected_name -c "$selected"
-tmux switch-client -t $selected_name
+new=$(tmux new-session -ds $selected_name -c "$selected" -P)
+tmux send-keys -t "$new" Escape n
+tmux new-window -dt "$new" -c "$selected"
+tmux switch-client -t "$selected_name"
