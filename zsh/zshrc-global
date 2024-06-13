@@ -225,3 +225,11 @@ function zvm_after_init() {
     bindkey '^N' edit-in-tmux-nvim-split
     bindkey -s '^B' 'branch-switch^M'
 }
+
+autoload -Uz add-zsh-hook
+
+function refresh-tmux-status() {
+    command -v tmux > /dev/null && [ -n $TMUX ] && tmux refresh-client -S
+}
+
+add-zsh-hook -Uz precmd refresh-tmux-status

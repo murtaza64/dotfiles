@@ -52,8 +52,8 @@ main() {
   set message-command-style "fg=${thm_cyan},bg=${thm_gray},align=centre"
 
   # panes
-  set pane-border-style "fg=${thm_gray}"
-  set pane-active-border-style "fg=${thm_blue}"
+  set pane-border-style "fg=${thm_black4}"
+  set pane-active-border-style "fg=4"
 
   # windows
   setw window-status-activity-style "fg=${thm_fg},bg=${thm_bg},none"
@@ -138,11 +138,11 @@ main() {
   local show_window_in_window_status
   # readonly show_window_in_window_status="#[fg=$thm_fg,bg=$thm_bg] #W #[fg=$thm_bg,bg=$thm_blue] #I#[fg=$thm_blue,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
   # readonly show_window_in_window_status="#[fg=$thm_black4,bg=$thm_bg] #I #W "
-  readonly show_window_in_window_status="#[fg=$thm_black4,bg=default] ○ #{?#{==:#W,~/#S},zsh,#W} "
+  readonly show_window_in_window_status="#[fg=$thm_black4,bg=default] #{?#{==:#W,~/#S}, ,#W} "
   # readonly show_window_in_window_status="#[fg=$thm_black4,bg=default] ○ #(tmux-win-title #{window_id}) "
 
   local show_window_in_window_status_current
-  readonly show_window_in_window_status_current="#[fg=4,bg=default] ● #{?#{==:#W,~/#S},zsh,#W} "
+  readonly show_window_in_window_status_current="#[fg=4,bg=default] #{?#{==:#W,~/#S}, ,#W} "
   # readonly show_window_in_window_status_current="#[fg=$thm_orange,bg=$thm_gray] #W #[fg=$thm_bg,bg=$thm_orange] #I#[fg=$thm_orange,bg=$thm_bg]$left_separator#[fg=$thm_fg,bg=$thm_bg,nobold,nounderscore,noitalics]"
   # readonly show_window_in_window_status_current="#[fg=4,bg=default] ● #(tmux-win-title #{window_id}) "
 
