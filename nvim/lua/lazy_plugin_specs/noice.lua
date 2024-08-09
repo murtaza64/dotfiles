@@ -98,14 +98,14 @@ return {
       },
     },
     routes = {
-      {
-        filter = { event = "msg_show", find = "Do you really want to" },
-        view = "popup",
-      },
-      {
-        filter = { event = "msg_show", find = "!!!" },
-        view = "popup",
-      },
+      -- {
+      --   filter = { event = "msg_show", find = "Do you really want to" },
+      --   view = "popup",
+      -- },
+      -- {
+      --   filter = { event = "msg_show", find = "!!!" },
+      --   view = "popup",
+      -- },
     },
     presets = {
       bottom_search = false, -- use a classic bottom cmdline for search

@@ -19,7 +19,7 @@ tmux:
         # count of untracked files.
         untracked: "?"
         # count of stash entries.
-        stashed: "⚑ "
+        stashed: "󰜦 "
         # count of inserted lines (stats section).
         insertions: +
         # count of deleted lines (stats section).

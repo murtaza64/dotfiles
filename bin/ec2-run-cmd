@@ -1,0 +1,14 @@
+#!/bin/bash
+run_cmd() {
+  instance=$1
+  shift
+  cmd="$*"
+  ip_addr=$(aws ec2 describe-instances --instance-ids $instance | jq '.Reservations[].Instances[].PrivateIpAddress' -r)
+  echo $instance at $ip_addr
+  echo --------
+  ssh -o ConnectTimeout=20 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa_tri_team ec2-user@$ip_addr "bash -c \"$cmd\""
+  echo ========
+  echo
+}
+export -f run_cmd
+parallel run_cmd {} "\"$*\""

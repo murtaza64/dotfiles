@@ -1,5 +1,6 @@
 return {
   'mbbill/undotree',
+  "lambdalisue/suda.vim",
   {
     'Wansmer/treesj',
     dependencies = { 'nvim-treesitter/nvim-treesitter' },
@@ -58,9 +59,6 @@ return {
       -- vim.api.nvim_set_hl(0, 'YankyPut', { bg = colors.sky })
     end,
   },
-
-  { 'numToStr/Comment.nvim', opts = {} },
-
   {
     "kylechui/nvim-surround",
     version = "*", -- Use for stability; omit to use `main` branch for the latest features
@@ -123,13 +121,11 @@ return {
       vim.keymap.set({ "o", "x" }, "a|", '<cmd>lua require("various-textobjs").shellPipe("outer")<CR>')
     end,
   },
-
   {
     'windwp/nvim-autopairs',
     event = "InsertEnter",
     opts = {}
   },
-  "lambdalisue/suda.vim",
   {
     "monaqa/dial.nvim",
     init = function()
@@ -174,10 +170,9 @@ return {
     end
   },
   {
-    -- "m4xshen/hardtime.nvim",
-    -- dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
-    -- opts = {
-    --   disable_mouse = false,
-    -- }
+    "iamcco/markdown-preview.nvim",
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    ft = { "markdown" },
+    build = function() vim.fn["mkdp#util#install"]() end,
   },
 }

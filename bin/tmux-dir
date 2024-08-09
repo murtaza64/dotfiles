@@ -7,20 +7,14 @@ session=$(tmux display-message -p '#S' | sed -e 's/^[[:space:]]*//' -e 's/[[:spa
 dir=$(tmux display-message -p "#{pane_current_path}" \
   | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
   | sed -e "s|^$HOME/||")
-cmd=$(tmux display-message -p "#{pane_current_command}" \
-  | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
 if [ $dir != $session ]; then
-  # if [ $cmd == "zsh" ]; then
-  #   echo "$MAGENTA$session"
-  #   exit 0
-  # fi
   absolute_dir=$(realpath $HOME/$dir)
-  if echo $absolute_dir | grep -q "^$HOME/$session"; then
+  if echo $absolute_dir | grep -q "^$HOME/$session/"; then
     relative_dir=$(echo $dir | sed -e "s|^$session/||")
     echo " $MAGENTA$session$ORANGE/$relative_dir"
   else
-    echo " $MAGENTA$session$ORANGE  $dir"
+    echo " $MAGENTA$session$ORANGE   $dir"
   fi
 else
   echo " $MAGENTA$session"

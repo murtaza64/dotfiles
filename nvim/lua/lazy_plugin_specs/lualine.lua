@@ -261,7 +261,10 @@ return {
             -- icon_only = true,
             padding = { left = 1, right = 1 },
           },
-          indent,
+          {
+            indent,
+            colored = true,
+          },
         },
         lualine_y = {
           -- {

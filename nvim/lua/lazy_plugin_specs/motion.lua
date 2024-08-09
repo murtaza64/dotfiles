@@ -15,31 +15,29 @@ return {
       --   -- By default, all modes are included.
       --   modes = {'n', 'x', 'o'},
       -- })
-      vim.keymap.set('n', 's', function ()
-        require('leap').leap { target_windows = { vim.api.nvim_get_current_win() } }
-      end)
+      vim.keymap.set('n', 's', "<Plug>(leap)")
 
-      -- fix duplicate cursor bug
-      vim.api.nvim_create_autocmd(
-        "User",
-        {
-          callback = function()
-            vim.cmd.hi("Cursor", "blend=100")
-            vim.opt.guicursor:append { "a:Cursor/lCursor" }
-          end,
-          pattern = "LeapEnter"
-        }
-      )
-      vim.api.nvim_create_autocmd(
-        "User",
-        {
-          callback = function()
-            vim.cmd.hi("Cursor", "blend=0")
-            vim.opt.guicursor:remove { "a:Cursor/lCursor" }
-          end,
-          pattern = "LeapLeave"
-        }
-      )
+      -- -- fix duplicate cursor bug
+      -- vim.api.nvim_create_autocmd(
+      --   "User",
+      --   {
+      --     callback = function()
+      --       vim.cmd.hi("Cursor", "blend=100")
+      --       vim.opt.guicursor:append { "a:Cursor/lCursor" }
+      --     end,
+      --     pattern = "LeapEnter"
+      --   }
+      -- )
+      -- vim.api.nvim_create_autocmd(
+      --   "User",
+      --   {
+      --     callback = function()
+      --       vim.cmd.hi("Cursor", "blend=0")
+      --       vim.opt.guicursor:remove { "a:Cursor/lCursor" }
+      --     end,
+      --     pattern = "LeapLeave"
+      --   }
+      -- )
     end
   },
 
@@ -66,32 +64,9 @@ return {
 
     }
   },
-  -- {
-  --   'ggandor/lightspeed.nvim',
-  --   config = function()
-  --     require('lightspeed').setup({})
-  --     local colors = require('catppuccin.palettes').get_palette()
-  --     vim.api.nvim_set_hl(0, 'LightspeedShortcut', { bg = colors.peach, fg = 'black', bold = true, nocombine = true })
-  --     vim.api.nvim_set_hl(0, 'LightspeedLabel', { bg = colors.peach, fg = 'black', bold = true, nocombine = true })
-  --     vim.api.nvim_set_hl(0, 'LightspeedGreyWash', {})
-  --   end
-  -- },
-
-  -- {
-  --   'phaazon/hop.nvim',
-  --   config = function()
-  --     require('hop').setup({
-  --       create_hl_autocmd = false,
-  --     })
-  --     vim.keymap.set('n', 's', '<cmd>HopChar2<cr>', { silent = true })
-  --     vim.api.nvim_set_hl(0, 'HopUnmatched', {})
-  --     vim.api.nvim_set_hl(0, 'HopNextKey', { bg = 'yellow', fg = 'black', bold = true, nocombine = true })
-  --   end
-  -- },
-  --
   {
     'ThePrimeagen/harpoon',
-    config = function(opts) 
+    config = function(opts)
       -- require('harpoon').setup(opts)
       vim.keymap.set('n', '<leader>h', require("harpoon.ui").toggle_quick_menu, { silent = true, desc = "Toggle [H]arpoon" })
       vim.keymap.set('n', ']h', require("harpoon.ui").nav_next, { silent = true, desc = "Next [H]arpoon" })

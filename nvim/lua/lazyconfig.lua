@@ -33,34 +33,6 @@ require('lazy').setup({
   {
     'emmanueltouzery/agitator.nvim',
     init = function()
-      -- local gb_open = false
-      -- vim.keymap.set({"n", "v"}, "<leader>gb", function()
-      --   if _G.NoNeckPain.state.enabled then
-      --     if gb_open then
-      --       require("agitator").git_blame_toggle()
-      --       vim.cmd("NoNeckPainToggleLeftSide")
-      --       gb_open = false
-      --       vim.wo.wrap = true
-      --     else
-      --       vim.cmd("NoNeckPainToggleLeftSide")
-      --       require("agitator").git_blame_toggle()
-      --       gb_open = true
-      --       vim.api.nvim_create_autocmd({ "BufHidden", "BufUnload" },
-      --       {
-      --         callback = function()
-      --           if gb_open then
-      --             gb_open = false
-      --             vim.cmd("NoNeckPainToggleLeftSide")
-      --             vim.wo.wrap = true
-      --           end
-      --         end,
-      --         pattern = "<buffer>",
-      --       })
-      --     end
-      --   else
-      --     require("agitator").git_blame_toggle()
-      --   end
-      -- end, {
       vim.keymap.set({"n", "v"}, "<leader>gb", require("agitator").git_blame_toggle, {
         silent = true,
         desc = "Git [B]lame"
@@ -80,53 +52,6 @@ require('lazy').setup({
   },
 
   {'akinsho/git-conflict.nvim', version = "*", config=true},
-  {
-    "NeogitOrg/neogit",
-    dependencies = {
-      "nvim-lua/plenary.nvim",         -- required
-      "nvim-telescope/telescope.nvim", -- optional
-      "sindrets/diffview.nvim",        -- optional
-      "ibhagwan/fzf-lua",              -- optional
-    },
-    config = true
-  },
-
-  {
-    "NeogitOrg/neogit",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "sindrets/diffview.nvim",
-
-      "nvim-telescope/telescope.nvim",
-    },
-    config = true
-  },
-
-  -- {
-  --   'knsh14/vim-github-link',
-  --   init = function()
-  --     vim.keymap.set({"n", "v"}, "<leader>gl", ":GetCommitLink<cr>", {
-  --       silent = true,
-  --       desc = "Get [G]itHub [L]ink"
-  --     })
-  --     vim.keymap.set({"n", "v"}, "<leader>gL", ":GetCurrentCommitLink<cr>", {
-  --       silent = true,
-  --       desc = "Get [G]itHub [L]ink (current commit)"
-  --     })
-  --   end
-  -- },
-
-  {
-    'pwntester/octo.nvim',
-    dependencies = {
-      'nvim-lua/plenary.nvim',
-      'nvim-telescope/telescope.nvim',
-      'nvim-tree/nvim-web-devicons',
-    },
-    config = function ()
-      require("octo").setup()
-    end
-  },
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
@@ -161,17 +86,6 @@ require('lazy').setup({
         wrap = true,
         signcolumn = "yes:2",
       },
-      -- keymaps = {
-      --   ["q"] = function ()
-      --     print("hello")
-      --     -- require('oil.actions').preview.callback()
-      --     -- vim.api.nvim_feedkeys("", "n", false)
-      --     vim.wait(500)
-      --     -- vim.api.nvim_feedkeys("", "n", false)
-      --     require('oil.actions').close.callback()
-      --     -- vim.api.nvim_win_close(0, false)
-      --   end,
-      -- }
     },
     -- Optional dependencies
     dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -187,7 +101,6 @@ require('lazy').setup({
   },
   -- require 'kickstart.plugins.autoformat',
   -- require 'kickstart.plugins.debug',
-  'ThePrimeagen/vim-be-good',
 
   { import = 'lazy_plugin_specs.colors' },
   -- noice is too buggy/heavy
@@ -198,7 +111,6 @@ require('lazy').setup({
   { import = 'lazy_plugin_specs.lsp' },
   { import = 'lazy_plugin_specs.lualine' },
   { import = 'lazy_plugin_specs.motion' },
-  { import = 'lazy_plugin_specs.nvim-tree' },
   { import = 'lazy_plugin_specs.nvim-treesitter' },
   { import = 'lazy_plugin_specs.telescope' },
 },

@@ -4,6 +4,9 @@
 vim.wo.number = true
 vim.wo.relativenumber = true
 
+vim.o.autoread = true
+vim.o.fillchars = "eob: "
+
 -- see inactive_cursorline.lua
 -- vim.o.cursorline = true
 -- vim.wo.colorcolumn = '80'

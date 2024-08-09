@@ -1,42 +1,8 @@
-#!/Users/murtaza/.pyenv/versions/3.11.5/bin/python
-import json
-from datetime import datetime
-import subprocess
+#!/bin/bash
+set -eo pipefail
 
-TOPLEVEL = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).strip().decode()
-DATA_FILE = f'{TOPLEVEL}/.git/recent-branches'
-
-try:
-    with open(DATA_FILE, 'rb') as f:
-        BRANCHES = json.load(f)
-except FileNotFoundError:
-    BRANCHES = {}
-
-def store_branch(branch):
-    branch = branch.strip()
-    BRANCHES[branch] = datetime.now().isoformat()
-    with open(DATA_FILE, 'w') as f:
-        json.dump(BRANCHES, f)
-
-def generate_branch_list():
-    l = []
-    for branch in sorted(BRANCHES.items(), key=lambda x: x[1], reverse=True):
-        l.append(branch[0])
-    all_branches = subprocess.check_output(['git', 'branch', '--list']).strip().decode().split('\n')
-    for branch in all_branches:
-        branch = branch.strip()
-        if branch not in BRANCHES and not branch.startswith('*'):
-            l.append(branch)
-    current_branch = subprocess.check_output(['git', 'branch', '--show-current']).strip().decode()
-    if current_branch in l:
-        l.remove(current_branch)
-    for branch in l:
-        print(branch)
-
-
-if __name__ == '__main__':
-    import sys
-    if len(sys.argv) == 2:
-        store_branch(sys.argv[1])
-    else:
-        generate_branch_list()
+current=$(git branch --show-current)
+cat <(git reflog | awk '/checkout:/ {print $8}') \
+	<(git branch | cut -c 3-) \
+	| awk '$0 !~ /HEAD/ && $0 != "'$current'" \
+		{if (!seen[$0]++) {print $0}}'

@@ -65,7 +65,7 @@ function zvm_after_lazy_keybindings() {
     bindkey -M vicmd 'D' push-and-insert
     bindkey -M vicmd 'yy' copy-command-line-to-tmux
     bindkey -s -M vicmd 'n' "D^M"
-    bindkey -M vicmd '^N' edit-in-tmux-nvim-split
+    bindkey -M vicmd '^e' edit-in-tmux-nvim-split
 }
 
 
@@ -78,6 +78,9 @@ export PAGER='less --mouse --wheel-lines 3'
 alias grep='grep --color=auto'
 
 export MANPAGER='nvim +Man!'
+export MANPAGER='moar'
+export MANWIDTH=110
+export MOAR='--no-statusbar'
 
 # don't beep when triggering menu complete
 unsetopt LIST_BEEP
@@ -222,8 +225,9 @@ function zvm_after_init() {
     zle     -N   commit-search
     zle     -N   edit-in-tmux-nvim-split
     # bindkey -s '^N' "\evv"
-    bindkey '^N' edit-in-tmux-nvim-split
+    bindkey '^E' edit-in-tmux-nvim-split
     bindkey -s '^B' 'branch-switch^M'
+    bindkey -s '^N' "^M"
 }
 
 autoload -Uz add-zsh-hook

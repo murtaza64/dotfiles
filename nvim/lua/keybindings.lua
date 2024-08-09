@@ -12,8 +12,12 @@ vim.keymap.set('n', '<leader>w', '<cmd>:w<cr>', { desc = 'Write buffer'})
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
+vim.keymap.set('i', 'jk', '<Esc>', { silent = true })
+
 vim.keymap.set('n', '<C-d>', '<C-d>zz')
 vim.keymap.set('n', '<C-u>', '<C-u>zz')
+vim.keymap.set('n', 'n', 'nzz')
+vim.keymap.set('n', 'N', 'Nzz')
 
 -- Enter selects highlighted item in command mode wildmenu
 vim.keymap.set('c', '<CR>', "wildmenumode()? '<C-y>' : '<CR>'", { expr = true, silent = true })
@@ -21,7 +25,6 @@ vim.keymap.set('c', '<CR>', "wildmenumode()? '<C-y>' : '<CR>'", { expr = true, s
 -- CR clears search highlighting
 -- vim.keymap.set('n', '<CR>', ":noh<CR><CR>", { silent = true })
 
-vim.keymap.set('n', '<leader>t', require('nvim-tree.api').tree.toggle, { desc = 'Toggle nvim-[t]ree' })
 vim.keymap.set('n', '<leader>o', function()
   vim.cmd.Oil()
   -- vim.wait(50)

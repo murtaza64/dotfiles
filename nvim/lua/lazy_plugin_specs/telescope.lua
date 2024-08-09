@@ -31,6 +31,7 @@ local config_telescope = function()
   }
 
   require("telescope").load_extension("live_grep_args")
+  require("telescope").load_extension("yank_history")
 
   -- Enable telescope fzf native, if installed
   pcall(require('telescope').load_extension, 'fzf')
@@ -73,6 +74,7 @@ local config_telescope = function()
   vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
   vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
   vim.keymap.set('n', '<leader>sg', require('telescope').extensions.live_grep_args.live_grep_args, { desc = '[S]earch by [G]rep' })
+  vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
   vim.keymap.set('v', '<leader>sg', function ()
     local text = table.concat(require('utils').get_visual_text(), '\n')
     require('telescope').extensions.live_grep_args.live_grep_args({ default_text = text })

@@ -13,12 +13,6 @@ local signature_opts = {
 
 
 local on_attach = function(_, bufnr)
-  -- NOTE: Remember that lua is a real programming language, and as such it is possible
-  -- to define small helper and utility functions so you don't have to repeat yourself
-  -- many times.
-  --
-  -- In this case, we create a function that lets us more easily define mappings specific
-  -- for LSP related items. It sets the mode, buffer and description for us each time.
   local nmap = function(keys, func, desc)
     if desc then
       desc = 'LSP: ' .. desc
@@ -65,8 +59,15 @@ end
 local servers = {
   -- clangd = {},
   gopls = {},
-  pyright = {},
-  ruby_ls = {},
+  -- pyright = {},
+  basedpyright = {
+    basedpyright = {
+      analysis = {
+        typeCheckingMode = "standard"
+      },
+    }
+  },
+  ruby_lsp = {},
   rust_analyzer = {},
   tsserver = {},
   html = {},
@@ -101,9 +102,9 @@ local config_cmp = function()
       ['<C-p>'] = function(fallback) fallback() end,
       ['<C-u>'] = cmp.mapping.scroll_docs(-4),
       ['<C-d>'] = cmp.mapping.scroll_docs(4),
-      ['<C-Space>'] = cmp.mapping.complete {},
+      ['<C-.>'] = cmp.mapping.complete {},
       ['<CR>'] = cmp.mapping.confirm {
-        behavior = cmp.ConfirmBehavior.Replace,
+        behavior = cmp.ConfirmBehavior.Insert,
         select = false,
       },
       ['<Tab>'] = cmp.mapping(function(fallback)

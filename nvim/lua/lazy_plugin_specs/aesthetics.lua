@@ -1,5 +1,7 @@
 return {
 
+  'xiyaowong/virtcolumn.nvim',
+
   {
     "shortcuts/no-neck-pain.nvim",
     opts = {
@@ -11,22 +13,6 @@ return {
       },
     },
   },
-
-  -- {
-  --   "petertriho/nvim-scrollbar",
-  --   config = function(opts)
-  --     require("scrollbar").setup(opts)
-  --     require("scrollbar.handlers.gitsigns").setup()
-  --     require("scrollbar.handlers.search").setup({
-  --       override_lens = function() end,
-  --     })
-  --   end,
-  --   dependencies = {
-  --     "lewis6991/gitsigns.nvim",
-  --     "kevinhwang91/nvim-hlslens"
-  --   },
-  -- },
-  -- "lewis6991/satellite.nvim",
 
   {
     -- Add indentation guides even on blank lines
@@ -55,8 +41,6 @@ return {
       vim.g.loaded_matchparen = 1
     end,
   },
-
-  'xiyaowong/virtcolumn.nvim',
   {
     'https://gitlab.com/HiPhish/rainbow-delimiters.nvim',
     init = function()
@@ -109,13 +93,4 @@ return {
       require'alpha'.setup(require'alpha-theme'.config)
     end
   },
-  -- {
-  --   "folke/trouble.nvim",
-  --   dependencies = { "nvim-tree/nvim-web-devicons" },
-  --   opts = { },
-  -- }
-  -- {
-  --   'kevinhwang91/nvim-bqf',
-  --   ft = 'qf'
-  -- },
 }

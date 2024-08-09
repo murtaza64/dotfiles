@@ -2,7 +2,7 @@
 
 gh pr view --jq .number --json number > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-	gh pr create --web
+	gh pr create --web --head $(git branch --show-current)
 else
 	gh pr view --web
 fi

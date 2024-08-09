@@ -1,16 +1,5 @@
 return {
   {
-    "oncomouse/lushwal.nvim",
-    cmd = { "LushwalCompile" },
-    config = function()
-      -- vim.cmd.colorscheme 'catppuccin'
-    end,
-    dependencies = {
-      { "rktjmp/lush.nvim" },
-      { "rktjmp/shipwright.nvim" },
-    },
-  },
-  {
     'catppuccin/nvim',
     priority = 1000,
     opts = {

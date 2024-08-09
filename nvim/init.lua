@@ -46,6 +46,10 @@ else
       vim.cmd('wq')
     end)
   end
+  local checktime_timer = vim.loop.new_timer()
+  checktime_timer:start(0, 1000, vim.schedule_wrap(function()
+    vim.cmd('checktime')
+  end))
   -- vim.cmd('hi Normal guibg=#131313')
   -- vim.cmd('hi EndOfBuffer guifg=#191919 guibg=#191919')
   -- vim.cmd('hi EndOfBuffer guifg=#131313')
