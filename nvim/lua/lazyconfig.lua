@@ -21,6 +21,7 @@ vim.opt.rtp:prepend(lazypath)
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
   'kmonad/kmonad-vim',
+  'fladson/vim-kitty',
 
   -- dot repeat plugin commands
   'tpope/vim-repeat',
