@@ -61,7 +61,7 @@ main() {
 
   local show_time="#[fg=2,italics]#(date +\"%a %b %d\") #[default,fg=4,bold]#(date +\"%H:%M\")"
 
-  local show_gitmux=' #(/Users/murtaza/go/bin/gitmux -cfg ~/dotfiles/gitmux.yaml "#{pane_current_path}")'
+  local show_gitmux=' #(gitmux -cfg ~/dotfiles/gitmux.yaml "#{pane_current_path}")'
 
   local show_batt='#(tmux-batt)'
 

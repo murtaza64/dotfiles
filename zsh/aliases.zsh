@@ -21,6 +21,9 @@ gcam() {
 gcamp() {
   git commit -am "$*" && git push
 }
+gcnamp() {
+  git commit -nam "$*" && git push
+}
 gcmp() {
   git commit -m "$*" && git push
 }

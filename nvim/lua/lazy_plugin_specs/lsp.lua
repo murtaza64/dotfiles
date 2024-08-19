@@ -67,7 +67,7 @@ local servers = {
       },
     }
   },
-  ruby_lsp = {},
+  -- ruby_lsp = {},
   rust_analyzer = {},
   tsserver = {},
   html = {},
@@ -198,6 +198,8 @@ return {
           settings = servers[server_name],
         }
       end,
+
+      jdtls = function() end
     }
     require('lspconfig').clangd.setup {
       on_attach = on_attach,

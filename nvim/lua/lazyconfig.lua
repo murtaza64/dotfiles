@@ -72,11 +72,6 @@ require('lazy').setup({
   -- Useful plugin to show you pending keybinds.
   {
     'folke/which-key.nvim',
-    opts = {
-      operators = {
-        ys = "Surround"
-      },
-    },
   },
 
   {
@@ -109,6 +104,7 @@ require('lazy').setup({
   { import = 'lazy_plugin_specs.aesthetics' },
   { import = 'lazy_plugin_specs.ai' },
   { import = 'lazy_plugin_specs.editing' },
+  { import = 'lazy_plugin_specs.jdtls' },
   { import = 'lazy_plugin_specs.lsp' },
   { import = 'lazy_plugin_specs.lualine' },
   { import = 'lazy_plugin_specs.motion' },
