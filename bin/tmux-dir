@@ -8,7 +8,7 @@ dir=$(tmux display-message -p "#{pane_current_path}" \
   | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
   | sed -e "s|^$HOME/||")
 
-if [ $dir != $session ]; then
+if [ "$dir" != "$session" ]; then
   absolute_dir=$(realpath $HOME/$dir)
   if echo $absolute_dir | grep -q "^$HOME/$session/"; then
     relative_dir=$(echo $dir | sed -e "s|^$session/||")

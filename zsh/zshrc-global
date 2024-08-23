@@ -77,10 +77,20 @@ alias less='less --mouse --wheel-lines 3'
 export PAGER='less --mouse --wheel-lines 3'
 alias grep='grep --color=auto'
 
-export MANPAGER='nvim +Man!'
-export MANPAGER='moar'
-export MANWIDTH=110
-export MOAR='--no-statusbar'
+if command -v nvim >/dev/null; then
+    export EDITOR='nvim'
+    log "nvim not found"
+    export MANPAGER='nvim +Man!'
+    export MANWIDTH=110
+fi
+
+if command -v moar >/dev/null; then
+    export PAGER='moar'
+    export MANPAGER='moar'
+    export MOAR='--no-statusbar'
+else
+    log "moar not found"
+fi
 
 # don't beep when triggering menu complete
 unsetopt LIST_BEEP
@@ -133,9 +143,10 @@ fzf-history-widget() {
     setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2> /dev/null
     selected=( $( fc -rlt %s 1 | sed "s/^[ \t]*//" \
         | awk '!seen[$0]++' \
-        | fzf --with-nth=3.. --preview='echo {1}"\t$(time_ago {2})"' \
-        --preview-window=down:1 \
-        --height=16 --tiebreak=index --query=${LBUFFER} +m) )
+        # i spent a long time trying to get the *correct* preview, but this is the best I could do. it's practical
+        | fzf --with-nth=3.. --preview='echo {1}"\t$(time_ago {2})"; echo {3..} | xargs -0 printf' \
+        --preview-window=down:8,wrap \
+        --height=24 --tiebreak=index --query=${LBUFFER} +m) )
     # selected=( $(fc -rl 1 |
     #   FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} $FZF_DEFAULT_OPTS -n2..,.. --tiebreak=index --bind=ctrl-r:toggle-sort $FZF_CTRL_R_OPTS --query=${(qqq)LBUFFER} +m" $(__fzfcmd)) )
     local ret=$?
