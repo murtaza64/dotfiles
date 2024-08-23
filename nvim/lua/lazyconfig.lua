@@ -70,9 +70,7 @@ require('lazy').setup({
   },
 
   -- Useful plugin to show you pending keybinds.
-  {
-    'folke/which-key.nvim',
-  },
+  'folke/which-key.nvim',
 
   {
     'stevearc/oil.nvim',

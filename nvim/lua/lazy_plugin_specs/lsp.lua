@@ -58,7 +58,7 @@ end
 --  the `settings` field of the server config. You must look up that documentation yourself.
 local servers = {
   -- clangd = {},
-  gopls = {},
+  -- gopls = {},
   -- pyright = {},
   basedpyright = {
     basedpyright = {
@@ -73,7 +73,8 @@ local servers = {
   html = {},
   cssls = {},
   -- terraform_lsp = {},
-  jdtls = {},
+  -- jdtls = {},
+  -- zls = {},
 
   lua_ls = {
     Lua = {
@@ -269,6 +270,11 @@ return {
         })
       end,
     }
+    require("lspconfig")["gdscript"].setup({
+      name = "godot",
+      cmd = {"godot-wsl-lsp", "--host", "localhost"},
+      on_attach = on_attach,
+    })
 
     -- require'lspconfig'.sourcekit.setup{
     --   cmd = {'xcrun', 'sourcekit-lsp'},
