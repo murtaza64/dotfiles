@@ -13,7 +13,11 @@ fd . ~ --max-depth=1 --type d > $tmp
 sessions=$(tmux list-sessions -F "#{session_name}")
 # remove dirs that already have a matching session
 for session in $sessions; do
-    sed -e "\\#/$session/\$#d" --in-place "$tmp"
+    if $(uname -s | grep -q Darwin); then
+        sed -e "\\#/$session/\$#d" -i '' "$tmp"
+    else
+        sed -e "\\#/$session/\$#d" --in-place "$tmp"
+    fi
 done
 echo $sessions
 # filter out dirs without git repos
@@ -24,11 +28,19 @@ echo $sessions
 # done
 while read -r line; do
     if [ ! -d "$line/.git" ]; then
-        sed -e "\#$line#d" --in-place "$tmp"
+        if $(uname -s | grep -q Darwin); then
+            sed -e "\#$line#d" -i '' "$tmp"
+        else
+            sed -e "\#$line#d" --in-place "$tmp"
+        fi
     fi
 done < $tmp
 # replace home directory with ~ in tmp
-sed -e "s#^$HOME#~#" --in-place $tmp
+if $(uname -s | grep -q Darwin); then
+    sed -e "s#^$HOME#~#" -i '' $tmp
+else
+    sed -e "s#^$HOME#~#" --in-place $tmp
+fi
 selected=$( (echo $sessions | tr ' ' '\n'; cat $tmp) | fzf )
     # --border rounded --border-label "switch or create session" )
 
