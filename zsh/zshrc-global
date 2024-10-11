@@ -143,7 +143,6 @@ fzf-history-widget() {
     setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2> /dev/null
     selected=( $( fc -rlt %s 1 | sed "s/^[ \t]*//" \
         | awk '!seen[$0]++' \
-        # i spent a long time trying to get the *correct* preview, but this is the best I could do. it's practical
         | fzf --with-nth=3.. --preview='echo {1}"\t$(time_ago {2})"; echo {3..} | xargs -0 printf' \
         --preview-window=down:8,wrap \
         --height=24 --tiebreak=index --query=${LBUFFER} +m) )

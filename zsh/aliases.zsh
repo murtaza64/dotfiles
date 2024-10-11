@@ -31,7 +31,7 @@ quickpr() {
   (
     set -e
     commit_message="$*"
-    branch_name="murtaza-$(echo $commit_message | tr '[:upper:]' '[:lower:]' | tr -cd '[:lower:] ' | cut -d' ' -f-5 | tr ' ' '-')"
+    branch_name="murtaza-$(echo $commit_message | tr '[:upper:]' '[:lower:]' | tr -cd '[:lower:][:digit:] ' | cut -d' ' -f-5 | tr ' ' '-')"
     current=$(git branch --show-current)
     if [[ $current == $branch_name ]]; then
       echo "Already on branch $branch_name, not switching"
