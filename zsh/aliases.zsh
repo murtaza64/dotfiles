@@ -14,6 +14,9 @@ if which eza > /dev/null; then
   alias ls="eza --icons always"
   alias ll="eza --icons -al --git"
 fi
+if which bat > /dev/null; then
+  alias cat="bat"
+fi
 alias merge-master="git checkout master && git pull && git checkout - && git merge --no-edit master"
 gcam() {
   git commit -am "$*"

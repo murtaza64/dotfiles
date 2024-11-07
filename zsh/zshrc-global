@@ -243,7 +243,7 @@ function zvm_after_init() {
 autoload -Uz add-zsh-hook
 
 function refresh-tmux-status() {
-    command -v tmux > /dev/null && [ -n $TMUX ] && tmux refresh-client -S
+    command -v tmux > /dev/null && [ -n "$TMUX" ] && tmux refresh-client -S
 }
 
 add-zsh-hook -Uz precmd refresh-tmux-status
