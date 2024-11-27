@@ -1,2 +1,8 @@
 #!/usr/bin/env bash
-tee >(tmux load-buffer -) >(pbcopy) > /dev/null
+if which pbcopy > /dev/null 2>&1; then
+    tee >(tmux load-buffer -) >(pbcopy) > /dev/null
+elif which wl-copy > /dev/null 2>&1; then
+    tee >(tmux load-buffer -) >(wl-copy) > /dev/null
+fi
+
+	

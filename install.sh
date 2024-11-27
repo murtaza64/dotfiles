@@ -9,8 +9,8 @@ echo 'source $ZSH_ROOT/zshrc-global' >> $HOME/.zshrc
 mkdir -p $HOME/.config
 
 for subdir (nvim qmk tmux kitty git) do
-    if [ -d $DOTFILES_ROOT/$subdir ]; then
-        echo $DOTFILES_ROOT/$subdir already exists
+    if [ -d $HOME/.config/$subdir ]; then
+        echo $HOME/.config/$subdir already exists
         continue
     fi
     ln -s $DOTFILES_ROOT/$subdir $HOME/.config/$subdir
