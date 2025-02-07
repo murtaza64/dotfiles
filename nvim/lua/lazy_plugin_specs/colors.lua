@@ -41,6 +41,10 @@ return {
           LspSignatureHint = { bg = colors.surface1, fg = colors.peach },
           NoiceCmdline = { bg = colors.base },
           GitSignsChange = { fg = colors.peach },
+          AlphaButtonLabel = { fg = colors.pink, bold = true },
+          AlphaButtonSides = { fg = colors.surface2 },
+          AlphaHeader = { fg = colors.lavender },
+          AlphaDivider = { fg = colors.yellow },
         }
       end,
       integrations = {

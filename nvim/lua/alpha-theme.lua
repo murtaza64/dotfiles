@@ -16,21 +16,6 @@ local leader = "SPC"
 local margin = 3
 local align = 70
 
-local colors = require('catppuccin.palettes').get_palette()
-vim.api.nvim_set_hl(0, "AlphaButtonLabel", {
-  fg = colors.pink,
-  bold = true,
-})
-vim.api.nvim_set_hl(0, "AlphaButtonSides", {
-  fg = colors.surface2,
-})
-vim.api.nvim_set_hl(0, "AlphaHeader", {
-  fg = colors.lavender,
-})
-vim.api.nvim_set_hl(0, "AlphaDivider", {
-  fg = colors.yellow,
-})
-
 local asciis = require('neovim_ascii')
 local art = asciis[math.random(#asciis)]
 if #art < 3 then

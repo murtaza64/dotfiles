@@ -69,7 +69,7 @@ local servers = {
   },
   -- ruby_lsp = {},
   rust_analyzer = {},
-  tsserver = {},
+  ts_ls = {},
   html = {},
   cssls = {},
   -- terraform_lsp = {},

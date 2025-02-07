@@ -97,7 +97,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.debug',
 
   { import = 'lazy_plugin_specs.colors' },
-  -- noice is too buggy/heavy
+  -- noice is quite buggy/heavy
   { import = 'lazy_plugin_specs.noice' },
   { import = 'lazy_plugin_specs.aesthetics' },
   { import = 'lazy_plugin_specs.ai' },

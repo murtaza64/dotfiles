@@ -1,6 +1,6 @@
 local function github_link(args)
     local filename = vim.fn.expand('%:p')
-    filename = vim.trim(vim.fn.system('git ls-files --full-name -- ' .. filename))
+    filename = vim.trim(vim.fn.system('git ls-files --full-name -- "' .. filename .. '"'))
     -- if in visual mode get range of lines
     local linepart
     local start = args.line1
@@ -24,7 +24,7 @@ local function github_link(args)
     end
 
     -- check if file is present on origin/master
-    vim.fn.system('git show origin/master:' .. filename)
+    vim.fn.system('git show "origin/master:' .. filename .. '"')
     local ret = vim.v.shell_error
     local file_on_master = ret == 0
  
