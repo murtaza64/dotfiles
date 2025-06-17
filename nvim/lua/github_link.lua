@@ -51,6 +51,23 @@ local function github_link(args)
         return
     end
 
+    if file_on_master and not same_as_master then
+        vim.ui.select({'Use master branch','Use current commit'}, {prompt='File differs from master; choose URL:'}, function(choice)
+            if choice == 'Use master branch' then
+                local url = remote .. '/blob/master/' .. filename .. linepart
+                vim.notify("copied " .. url)
+                vim.fn.setreg('+', url)
+            else
+                local commit = vim.fn.system('git rev-parse HEAD')
+                commit = commit:gsub('%s*$', '')
+                local url = remote .. '/blob/' .. commit .. '/' .. filename .. linepart
+                vim.notify("copied " .. url)
+                vim.fn.setreg('+', url)
+            end
+        end)
+        return
+    end
+
     if committed and pushed then
         local commit = vim.fn.system('git rev-parse HEAD')
         commit = commit:gsub('%s*$', '')
