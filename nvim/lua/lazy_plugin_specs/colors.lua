@@ -30,7 +30,7 @@ return {
           VerticalSplit = { fg = colors.surface1 },
           WinSeparator = { fg = colors.surface1 },
           MsgArea = { bg = colors.base },
-          NormalFloat = { bg = colors.base },
+          NormalFloat = { bg = "bg" },
           CursorLine = { bg = colors.surface0 },
           CursorColumn = { bg = colors.surface0 },
           LineNr = { fg = colors.surface2 },
@@ -45,6 +45,7 @@ return {
           AlphaButtonSides = { fg = colors.surface2 },
           AlphaHeader = { fg = colors.lavender },
           AlphaDivider = { fg = colors.yellow },
+          TelescopeBorder = { fg = colors.lavender },
         }
       end,
       integrations = {

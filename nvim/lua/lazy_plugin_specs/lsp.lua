@@ -60,13 +60,6 @@ local servers = {
   -- clangd = {},
   -- gopls = {},
   -- pyright = {},
-  basedpyright = {
-    basedpyright = {
-      analysis = {
-        typeCheckingMode = "standard"
-      },
-    }
-  },
   -- ruby_lsp = {},
   rust_analyzer = {},
   ts_ls = {},
@@ -191,17 +184,17 @@ return {
     mason_lspconfig.setup {
       ensure_installed = vim.tbl_keys(servers),
     }
-    mason_lspconfig.setup_handlers {
-      function(server_name)
-        require('lspconfig')[server_name].setup {
-          capabilities = capabilities,
-          on_attach = on_attach,
-          settings = servers[server_name],
-        }
-      end,
-
-      jdtls = function() end
-    }
+    -- mason_lspconfig.setup_handlers {
+    --   function(server_name)
+    --     require('lspconfig')[server_name].setup {
+    --       capabilities = capabilities,
+    --       on_attach = on_attach,
+    --       settings = servers[server_name],
+    --     }
+    --   end,
+    --
+    --   jdtls = function() end
+    -- }
     require('lspconfig').clangd.setup {
       on_attach = on_attach,
       capabilities = capabilities,
@@ -258,6 +251,29 @@ return {
     require('lspconfig')['hls'].setup{
       filetypes = { 'haskell', 'lhaskell', 'cabal' },
     }
+
+    -- require('lspconfig')['basedpyright'].setup{
+    --   settings = {
+    --     basedpyright = {
+    --       analysis = {
+    --         typeCheckingMode = "standard"
+    --       },
+    --     }
+    --   },
+    --   on_attach = on_attach,
+    --   root_markers = { ".python-version", "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" }
+    -- }
+    vim.lsp.enable('basedpyright')
+    vim.lsp.config('basedpyright', {
+      settings = {
+        basedpyright = {
+          analysis = {
+            typeCheckingMode = "standard"
+          },
+        }
+      },
+      on_attach = on_attach,
+    })
     
 
     require('lspconfig')['svelte'].setup {
