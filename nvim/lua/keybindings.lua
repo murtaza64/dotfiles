@@ -26,12 +26,14 @@ vim.keymap.set('c', '<CR>', "wildmenumode()? '<C-y>' : '<CR>'", { expr = true, s
 -- vim.keymap.set('n', '<CR>', ":noh<CR><CR>", { silent = true })
 
 vim.keymap.set('n', '<leader>o', function()
-  vim.cmd.Oil()
+  -- vim.cmd.Oil()
+  require('oil').open(nil, {preview={vertical=true}})
   -- vim.wait(50)
   -- require('oil.actions').preview.callback()
   -- vim.wait(50)
   -- vim.api.nvim_feedkeys('L', 'n', false)
 end, { desc = 'Open [o]il' })
+
 vim.keymap.set('n', '<leader>gg', '<cmd>:Neogit<cr>', { silent=true, desc = 'Open [n]eogit' })
 vim.keymap.set("n", "<leader>uc", ":UnsavedChanges<CR>", { silent=true, desc = 'Show unsaved changes' })
 vim.keymap.set("n", "<leader>ut", ":UndotreeToggle<CR>", { silent=true, desc = 'Toggle [U]ndo [T]ree' })
@@ -97,6 +99,6 @@ vim.keymap.set('n', ']l', '<cmd>lnext<cr>', { desc = 'Go to next loclist item' }
 vim.keymap.set('n', '[t', '<cmd>tabprev<cr>', { desc = 'Go to previous tab' })
 vim.keymap.set('n', ']t', '<cmd>tabnext<cr>', { desc = 'Go to next tab' })
 -- Diagnostic keymaps
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
+vim.keymap.set('n', '[d', function() vim.diagnostic.jump({count=-1, float=true}) end, { desc = 'Go to previous diagnostic message' })
+vim.keymap.set('n', ']d', function() vim.diagnostic.jump({count=1, float=true}) end, { desc = 'Go to next diagnostic message' })
 vim.keymap.set('n', '<leader>d', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })

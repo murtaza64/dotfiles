@@ -64,20 +64,23 @@ nvim () {
   done
 }
 
-duo_gpt_cmd="python3 ~/gpt.py --prompt='short-md' --postprocess-command='glow -w 100 -s /Users/murtaza/dotfiles/glow-custom.json'"
+# duo_gpt_cmd="python3 ~/gpt.py --prompt='short-md' --postprocess-command='glow -w 100 -s /Users/murtaza/dotfiles/glow-custom.json'"
 # alias '?'="$duo_gpt_cmd ask"
-alias '??'="$duo_gpt_cmd continue"
-alias '?!'="$duo_gpt_cmd clear"
-alias '?.'="$duo_gpt_cmd"
-alias '?y'="$duo_gpt_cmd copy"
-duo_gpt_cmd=(
-  python3 ~/gpt.py 
-  --prompt='short-md' 
-  --postprocess-command='glow -w 100 -s /Users/murtaza/dotfiles/glow-custom.json'
-)
+# alias '??'="$duo_gpt_cmd continue"
+# alias '?!'="$duo_gpt_cmd clear"
+# alias '?.'="$duo_gpt_cmd"
+# alias '?y'="$duo_gpt_cmd copy"
+# duo_gpt_cmd=(
+#   python3 ~/gpt.py 
+#   --prompt='short-md' 
+#   --postprocess-command='glow -w 100 -s /Users/murtaza/dotfiles/glow-custom.json'
+# )
 
+# ask_and_pipe_glow() {
+#   gum spin --show-output -- python3 ~/gpt.py --prompt='short-md' ask $* | glow -w 100 -s ~/dotfiles/glow-custom.json
+# }
 ask_and_pipe_glow() {
-  gum spin --show-output -- python3 ~/gpt.py --prompt='short-md' ask $* | glow -w 100 -s ~/dotfiles/glow-custom.json
+  gum spin --show-output --title "Clauding..." -- /Users/murtaza/.claude/local/claude --append-system-prompt "$(cat ~/scratch/murtaza/ai_prompts/short-md.prompt)" -p "$*" | glow -w 100 -s ~/dotfiles/glow-custom.json
 }
 alias '?'=ask_and_pipe_glow
 

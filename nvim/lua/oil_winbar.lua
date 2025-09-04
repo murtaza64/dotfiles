@@ -8,7 +8,7 @@ vim.api.nvim_set_hl(0, "OilIcon", {
 })
 vim.api.nvim_set_hl(0, "OilDirName", {
   bg = colors.surface0,
-  fg = colors.blue,
+  fg = colors.mauve,
   bold = true,
 })
 vim.api.nvim_create_autocmd({'BufWinEnter', 'BufModifiedSet'}, {

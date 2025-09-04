@@ -80,8 +80,8 @@ main() {
   setw window-status-activity-style "fg=${thm_fg},bg=${thm_bg},none"
   setw window-status-separator ""
 
-  local window="#[fg=$thm_black4,bg=default] #{?#{==:#W,zsh}, ,#{?#{==:#W,},#W,  #W}} "
-  local current_window="#[fg=4,bg=default] #{?#{==:#W,zsh}, ,#{?#{==:#W,},#W,  #W}} "
+  local window="#[fg=$thm_black4,bg=default] #{?#{==:#W,zsh}, ,#{?#{==:#W,},#W,#{?#{==:#W,claude},󰧑,  #W}}} "
+  local current_window="#[fg=4,bg=default] #{?#{==:#W,zsh}, ,#{?#{==:#W,},#W,#{?#{==:#W,claude},󰧑,  #W}}} "
   setw window-status-format "${window}"
   setw window-status-current-format "${current_window}"
 

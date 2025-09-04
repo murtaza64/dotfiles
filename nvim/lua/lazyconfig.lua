@@ -72,41 +72,18 @@ require('lazy').setup({
   -- Useful plugin to show you pending keybinds.
   'folke/which-key.nvim',
 
-  {
-    'stevearc/oil.nvim',
-    opts = {
-      -- cleanup_delay_ms = false,
-      win_options = {
-        wrap = true,
-        signcolumn = "yes:2",
-      },
-    },
-    -- Optional dependencies
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-  },
-  {
-    "refractalize/oil-git-status.nvim",
-
-    dependencies = {
-      "stevearc/oil.nvim",
-    },
-
-    config = true,
-  },
-  -- require 'kickstart.plugins.autoformat',
-  -- require 'kickstart.plugins.debug',
-
-  { import = 'lazy_plugin_specs.colors' },
+  { import = 'plugins.colors' },
   -- noice is quite buggy/heavy
-  { import = 'lazy_plugin_specs.noice' },
-  { import = 'lazy_plugin_specs.aesthetics' },
-  { import = 'lazy_plugin_specs.ai' },
-  { import = 'lazy_plugin_specs.editing' },
-  { import = 'lazy_plugin_specs.lsp' },
-  { import = 'lazy_plugin_specs.lualine' },
-  { import = 'lazy_plugin_specs.motion' },
-  { import = 'lazy_plugin_specs.nvim-treesitter' },
-  { import = 'lazy_plugin_specs.telescope' },
+  { import = 'plugins.noice' },
+  { import = 'plugins.aesthetics' },
+  { import = 'plugins.ai' },
+  { import = 'plugins.editing' },
+  { import = 'plugins.lsp' },
+  { import = 'plugins.lualine' },
+  { import = 'plugins.motion' },
+  { import = 'plugins.nvim-treesitter' },
+  { import = 'plugins.oil' },
+  { import = 'plugins.telescope' },
 },
 {
   change_detection = { enabled = false },

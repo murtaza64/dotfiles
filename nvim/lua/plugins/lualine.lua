@@ -85,7 +85,7 @@ local treesitter_color = function()
 end
 
 local lsp_color = function()
-  local clients = vim.lsp.get_active_clients()
+  local clients = vim.lsp.get_clients()
   -- confirm that the client is attached to the current buffer and supports the current filetype
   local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
   for _, client in ipairs(clients) do
