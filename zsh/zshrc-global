@@ -1,8 +1,8 @@
 # ZSH_ROOT=~/.config/zsh
 # This should be set in .zshenv
 
-# move prompt to bottom
-printf '\n%.0s' {1..100}
+# move prompt to bottom (skip when in SSH)
+[[ -z "$SSH_CONNECTION" ]] && printf '\n%.0s' {1..100}
 
 export PATH=$(dirname $ZSH_ROOT)/bin:$PATH
 
