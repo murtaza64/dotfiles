@@ -1,4 +1,5 @@
-local function github_link(args)
+local function get_github_link(args)
+    args = args or { line1 = vim.fn.line('.'), line2 = vim.fn.line('.'), range = 0 }
     local filename = vim.fn.expand('%:p')
     filename = vim.trim(vim.fn.system('git ls-files --full-name -- "' .. filename .. '"'))
     -- if in visual mode get range of lines
@@ -19,8 +20,7 @@ local function github_link(args)
     -- print(filename, line)
     -- make sure file is tracked
     if filename == '' then
-        vim.notify('File is untracked', vim.log.levels.ERROR)
-        return
+        return nil, 'File is untracked'
     end
 
     -- check if file is present on origin/master
@@ -46,47 +46,76 @@ local function github_link(args)
 
     if file_on_master and same_as_master then
         local url = remote .. '/blob/master/' .. filename .. linepart
-        vim.notify("copied " .. url)
-        vim.fn.setreg('+', url)
-        return
+        return url
     end
 
     if file_on_master and not same_as_master then
-        vim.ui.select({'Use master branch','Use current commit'}, {prompt='File differs from master; choose URL:'}, function(choice)
-            if choice == 'Use master branch' then
-                local url = remote .. '/blob/master/' .. filename .. linepart
-                vim.notify("copied " .. url)
-                vim.fn.setreg('+', url)
-            else
-                local commit = vim.fn.system('git rev-parse HEAD')
-                commit = commit:gsub('%s*$', '')
-                local url = remote .. '/blob/' .. commit .. '/' .. filename .. linepart
-                vim.notify("copied " .. url)
-                vim.fn.setreg('+', url)
-            end
-        end)
-        return
+        -- For non-interactive use, default to master branch
+        local url = remote .. '/blob/master/' .. filename .. linepart
+        return url, 'File differs from master'
     end
 
     if committed and pushed then
         local commit = vim.fn.system('git rev-parse HEAD')
         commit = commit:gsub('%s*$', '')
         local url = remote .. '/blob/' .. commit .. '/' .. filename .. linepart
-        vim.notify("copied " .. url)
-        vim.fn.setreg('+', url)
-        return
+        return url
     end
 
     if file_on_master then
         -- skip line number if file is not committed
-        vim.notify('File has uncommitted or unpushed changes, check line number', vim.log.levels.WARN)
         local url = remote .. '/blob/master/' .. filename .. linepart
-        vim.notify("copied " .. url)
-        vim.fn.setreg('+', url)
+        return url, 'File has uncommitted or unpushed changes, check line number'
+    end
+    
+    return nil, 'File is uncommitted or unpushed and doesn\'t exist on master'
+end
+
+local function github_link(args)
+    local url, warning = get_github_link(args)
+    
+    if not url then
+        vim.notify(warning, vim.log.levels.ERROR)
         return
     end
     
-    vim.notify('File is uncommitted or unpushed and doesn\'t exist on master', vim.log.levels.ERROR)
+    if warning then
+        if warning:match('differs from master') then
+            vim.ui.select({'Use master branch','Use current commit'}, {prompt='File differs from master; choose URL:'}, function(choice)
+                if choice == 'Use master branch' then
+                    vim.notify("copied " .. url)
+                    vim.fn.setreg('+', url)
+                else
+                    local commit = vim.fn.system('git rev-parse HEAD')
+                    commit = commit:gsub('%s*$', '')
+                    local filename = vim.fn.expand('%:p')
+                    filename = vim.trim(vim.fn.system('git ls-files --full-name -- "' .. filename .. '"'))
+                    local start = args.line1
+                    local finish = args.line2
+                    local linepart = start ~= finish and ('#L' .. start .. '-L' .. finish) or ('#L' .. start)
+                    local remote = vim.trim(vim.fn.system('git remote get-url origin'))
+                    if remote:find('git@') == 1 then
+                        remote = remote:gsub('git@github.com:', 'https://github.com/')
+                        remote = remote:gsub('%.git', '')
+                    end
+                    local commit_url = remote .. '/blob/' .. commit .. '/' .. filename .. linepart
+                    vim.notify("copied " .. commit_url)
+                    vim.fn.setreg('+', commit_url)
+                end
+            end)
+            return
+        else
+            vim.notify(warning, vim.log.levels.WARN)
+        end
+    end
+    
+    vim.notify("copied " .. url)
+    vim.fn.setreg('+', url)
 end
 vim.api.nvim_create_user_command('GithubLink', github_link, { range = true } )
 vim.keymap.set({ 'n', 'v' }, '<leader>gl', ':GithubLink<CR>', { noremap = true, silent = true })
+
+-- Export for other modules
+return {
+    get_github_link = get_github_link
+}

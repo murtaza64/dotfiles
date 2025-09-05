@@ -34,10 +34,19 @@ require('lazy').setup({
   {
     'emmanueltouzery/agitator.nvim',
     init = function()
-      vim.keymap.set({"n", "v"}, "<leader>gb", require("agitator").git_blame_toggle, {
-        silent = true,
-        desc = "Git [B]lame"
-      })
+      vim.keymap.set({"n", "v"}, "<leader>gb", function()
+          require("agitator").git_blame_toggle({
+          formatter=function(r)
+            local pr_num = r.summary:match("#(%d+)") or ""
+            local date_str = string.format("%04d-%02d-%02d", r.date.year, r.date.month, r.date.day)
+            if pr_num ~= "" then
+              return date_str .. " (#" .. pr_num .. ") " .. r.author
+            else
+              return date_str .. " " .. r.author
+            end
+          end
+        })
+      end, { silent = true, desc = "Git [B]lame" })
 
       function open_blame_pr()
         local commit = require("agitator").git_blame_commit_for_line()
@@ -71,6 +80,9 @@ require('lazy').setup({
 
   -- Useful plugin to show you pending keybinds.
   'folke/which-key.nvim',
+
+  -- Mini.pick for lightweight pickers
+  'echasnovski/mini.pick',
 
   { import = 'plugins.colors' },
   -- noice is quite buggy/heavy

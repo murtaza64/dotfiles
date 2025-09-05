@@ -2,8 +2,11 @@ local config_telescope = function()
   local lga_actions = require("telescope-live-grep-args.actions")
   local quote_prompt = lga_actions.quote_prompt()
   local glob = lga_actions.quote_prompt({ postfix = " --iglob " })
+  local themes = require('telescope.themes')
   require('telescope').setup {
     defaults = {
+      prompt_prefix = "  ",
+      results_title = false,
       mappings = {
         i = {
           ['<C-u>'] = false,
@@ -38,17 +41,31 @@ local config_telescope = function()
 
   -- See `:help telescope.builtin`
   vim.keymap.set('n', '<leader>?', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
-  vim.keymap.set('n', '<leader><space>', require('telescope.builtin').buffers, { desc = '[ ] Find existing buffers' })
+
+  vim.keymap.set('n', '<leader><space>', function()
+    local opts = {
+      sort_mru = true,
+      ignore_current_buffer = true,
+      initial_mode = "normal",
+      preview_title = false,
+      layout_strategy = "center",
+      layout_config = {
+        -- anchor = "S",
+        height = 0.4,
+      }
+    }
+    require('telescope.builtin').buffers(themes.get_dropdown(opts))
+  end, { desc = '[ ] Find open buffers' })
+
   vim.keymap.set('n', '<leader>/', function()
     -- You can pass additional configuration to telescope to change theme, layout, etc.
-    require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-      -- winblend = 10,
+    require('telescope.builtin').current_buffer_fuzzy_find(themes.get_dropdown {
       previewer = false,
     })
   end, { desc = '[/] Fuzzily search in current buffer' })
 
   vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
-  -- vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, { desc = '[F]ind [F]iles' })
+
   vim.keymap.set('n', '<leader>ff', function()
     require('telescope.builtin').find_files({
       -- find_command = {"find", "-L", "-not", "-path", "**/.git/*"},
@@ -60,6 +77,7 @@ local config_telescope = function()
       prompt_title = "Find Files"
     })
   end, { desc = '[F]ind [F]iles' })
+
   vim.keymap.set('n', '<leader>fa', function()
     require('telescope.builtin').find_files({
       -- find_command = {"find", "-L", "-not", "-path", "**/.git/*"},
@@ -71,14 +89,26 @@ local config_telescope = function()
       prompt_title = "Find All Files"
     })
   end, { desc = '[F]ind [A]ll' })
+
   vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
   vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
-  vim.keymap.set('n', '<leader>sg', require('telescope').extensions.live_grep_args.live_grep_args, { desc = '[S]earch by [G]rep' })
+
+  vim.keymap.set('n', '<leader>sg', function()
+    local opts = {
+      layout_config = {
+        height = 0.8,
+      },
+    }
+    require('telescope').extensions.live_grep_args.live_grep_args(themes.get_ivy(opts))
+  end, { desc = '[S]earch by [G]rep' })
+
   vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
+
   vim.keymap.set('v', '<leader>sg', function ()
     local text = table.concat(require('utils').get_visual_text(), '\n')
     require('telescope').extensions.live_grep_args.live_grep_args({ default_text = text })
   end, { desc = '[S]earch by [G]rep selection' })
+
   vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
 end
 return {

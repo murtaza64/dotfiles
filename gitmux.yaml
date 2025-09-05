@@ -50,7 +50,7 @@ tmux:
         # 'untracked' count
         untracked: "#[fg=blue,nobold]"
         # 'stash' count
-        stashed: "#[fg=cyan,bold]"
+        stashed: "#[fg=cyan]"
         # 'insertions' count
         insertions: "#[fg=green]"
         # 'deletions' count

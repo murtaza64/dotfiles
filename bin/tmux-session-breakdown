@@ -1,0 +1,556 @@
+#!/usr/bin/env python3
+"""Show a breakdown of processes running in a tmux session with CPU usage."""
+
+import sys
+import subprocess
+import argparse
+
+try:
+    import psutil
+except ImportError:
+    print("Error: psutil is required. Install with: pip install psutil", file=sys.stderr)
+    sys.exit(1)
+
+# Global process cache
+_process_cache = {}
+
+# Global color configuration
+COLORS = {
+    'low': (255, 255, 255),   # Default white
+    'high': (255, 0, 0),      # Default red  
+    'bg': (64, 64, 64)        # Default dark grey
+}
+
+def load_all_processes(loop_mode=False):
+    """Load all processes once into a global cache using psutil."""
+    global _process_cache
+    
+    # First call cpu_percent() to initialize, then wait briefly
+    processes = list(psutil.process_iter(['pid', 'ppid', 'cmdline']))
+    for proc in processes:
+        try:
+            proc.cpu_percent()  # Initialize CPU measurement
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+    
+    # Brief sleep to let CPU measurement settle - longer interval for more accurate readings
+    # Skip sleep in loop mode for faster updates
+    if not loop_mode:
+        import time
+        time.sleep(1.0)
+    
+    # Now get actual CPU percentages
+    for proc in processes:
+        try:
+            info = proc.as_dict(['pid', 'ppid', 'cmdline'])
+            pid = info['pid']
+            ppid = info['ppid'] if info['ppid'] is not None else 0
+            
+            # Join command line arguments into full command
+            cmdline = info['cmdline']
+            if cmdline:
+                command = ' '.join(cmdline)
+            else:
+                command = proc.name()  # Fallback to process name
+            
+            # Get CPU percent after brief interval
+            cpu = proc.cpu_percent()
+            
+            _process_cache[pid] = {
+                'pid': pid,
+                'ppid': ppid,
+                'name': command,
+                'cpu': cpu
+            }
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+
+def get_process_info_with_cpu(pid):
+    """Get process info from cache."""
+    return _process_cache.get(pid)
+
+def get_children_with_cpu(ppid):
+    """Get all child processes from cache."""
+    children = []
+    for proc in _process_cache.values():
+        if proc['ppid'] == ppid:
+            children.append(proc.copy())
+    return children
+
+def get_descendants_with_cpu(pid, depth=0):
+    """Get all descendant processes recursively from cache."""
+    children = get_children_with_cpu(pid)
+    descendants = []
+    
+    for child in children:
+        child['depth'] = depth
+        descendants.append(child)
+        # Recursively get descendants of this child
+        child_descendants = get_descendants_with_cpu(child['pid'], depth + 1)
+        descendants.extend(child_descendants)
+    
+    return descendants
+
+def get_tmux_pane_pids(session_name=None):
+    """Get all pane PIDs from a tmux session with window names and pane commands."""
+    try:
+        if session_name:
+            cmd = ['tmux', 'list-panes', '-st', session_name, '-F', 
+                   '#{session_name}:#{window_index}.#{pane_index} #{pane_pid} #{window_name} #{pane_current_command}']
+        else:
+            cmd = ['tmux', 'list-panes', '-a', '-F', 
+                   '#{session_name}:#{window_index}.#{pane_index} #{pane_pid} #{window_name} #{pane_current_command}']
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        panes = []
+        
+        for line in result.stdout.strip().split('\n'):
+            if line:
+                parts = line.split(None, 3)  # Split into 4 parts max
+                if len(parts) >= 4:
+                    location = parts[0]
+                    pid = int(parts[1])
+                    window_name = parts[2]
+                    pane_current_command = parts[3]
+                    
+                    # Get CPU info and actual command from our cache
+                    proc_info = get_process_info_with_cpu(pid)
+                    cpu = proc_info['cpu'] if proc_info else 0.0
+                    actual_command = proc_info['name'] if proc_info else 'unknown'
+                    
+                    panes.append({
+                        'location': location,
+                        'pid': pid,
+                        'command': actual_command,  # Actual process command
+                        'pane_current_command': pane_current_command,  # Tmux's pane_current_command
+                        'cpu': cpu,
+                        'window_name': window_name
+                    })
+        
+        return panes
+    except (subprocess.CalledProcessError, ValueError):
+        return []
+
+def get_terminal_width():
+    """Get terminal width, default to 120 if not available."""
+    try:
+        import shutil
+        return shutil.get_terminal_size().columns
+    except:
+        return 120
+
+def cpu_to_bars_16(cpu_percent):
+    """Convert CPU percentage to 16-point scale value."""
+    if cpu_percent <= 0:
+        return 0
+    
+    # More evenly distributed breakpoints for better visual distinction
+    breakpoints = [
+        (0.5, 1),   # 0-0.5% -> 1
+        (1.0, 2),   # 0.5-1% -> 2  
+        (2.0, 3),   # 1-2% -> 3
+        (4.0, 4),   # 2-4% -> 4
+        (6.0, 5),   # 4-6% -> 5
+        (8.0, 6),   # 6-8% -> 6
+        (12.0, 7),  # 8-12% -> 7
+        (16.0, 8),  # 12-16% -> 8 (first box full)
+        (22.0, 9),  # 16-22% -> 9
+        (30.0, 10), # 22-30% -> 10
+        (40.0, 11), # 30-40% -> 11
+        (50.0, 12), # 40-50% -> 12
+        (65.0, 13), # 50-65% -> 13
+        (80.0, 14), # 65-80% -> 14
+        (95.0, 15), # 80-95% -> 15
+        (100.0, 16) # 95-100% -> 16
+    ]
+    
+    for threshold, bars in breakpoints:
+        if cpu_percent <= threshold:
+            return bars
+    
+    return 16
+
+def cpu_to_bar(cpu_percent, dim=False, color_low=None, color_high=None, color_bg=None):
+    """Convert CPU percentage to visual bar with color gradient."""
+    import math
+    
+    # Use global colors if not specified
+    if color_low is None:
+        color_low = COLORS.get('low', (255,255,255))
+    if color_high is None:
+        color_high = COLORS.get('high', (255,0,0))  
+    if color_bg is None:
+        color_bg = COLORS.get('bg', (64,64,64))
+    
+    if cpu_percent <= 0:
+        return f"\033[48;2;{color_bg[0]};{color_bg[1]};{color_bg[2]}m  \033[0m"  # Background boxes for 0%
+    
+    # Get the 16-point scale value
+    bars_16 = cpu_to_bars_16(cpu_percent)
+    
+    # Color gradient based on the same hybrid scale as the bars
+    # Use the bars_16 value (0-16) for consistent visual mapping
+    low_r, low_g, low_b = color_low
+    high_r, high_g, high_b = color_high
+    
+    # Map bars_16 (0-16) to color intensity (0.0-1.0) 
+    color_intensity = bars_16 / 16.0
+    
+    # Interpolate between low and high colors based on bar intensity
+    base_red = int(low_r + (high_r - low_r) * color_intensity)
+    base_green = int(low_g + (high_g - low_g) * color_intensity)
+    base_blue = int(low_b + (high_b - low_b) * color_intensity)
+    
+    if dim:
+        # Dimmer colors for individual processes (blend with grey for hierarchy)
+        red = int(base_red * 0.5 + 128 * 0.5)
+        green = int(base_green * 0.5 + 128 * 0.5)  
+        blue = int(base_blue * 0.5 + 128 * 0.5)
+    else:
+        # Full saturation for window/pane level
+        red = base_red
+        green = base_green
+        blue = base_blue
+    
+    # Use horizontal block characters for visual bar
+    bar_chars = [" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█"]
+    
+    # RGB color escape sequence with parameterized background
+    color_start = f"\033[38;2;{red};{green};{blue};48;2;{color_bg[0]};{color_bg[1]};{color_bg[2]}m"
+    color_end = "\033[0m"
+    
+    # Convert 16-point scale to two-box display
+    if bars_16 == 0:
+        # For 0%, show background with spaces
+        bar_display = f"\033[48;2;{color_bg[0]};{color_bg[1]};{color_bg[2]}m  \033[0m"
+    else:
+        # First box: full 8-point range
+        first_box_fill = min(8, bars_16)
+        first_char = bar_chars[first_box_fill]
+        
+        # Second box: remainder
+        second_box_fill = max(0, bars_16 - 8)
+        second_char = bar_chars[second_box_fill]
+        
+        bar_display = first_char + second_char
+    
+    return color_start + bar_display + color_end if bars_16 > 0 else bar_display
+
+def test_cpu_bar_scale():
+    """Unit test for CPU bar logarithmic scale."""
+    import math
+    
+    test_cases = [
+        (0.0, 0),    # 0% -> 0 bars
+        (0.1, 1),    # 0.1% -> 1 bar  
+        (0.5, 1),    # 0.5% -> 1 bar
+        (1.0, 2),    # 1% -> 2 bars
+        (2.0, 4),    # 2% -> 4 bars
+        (4.0, 6),    # 4% -> 6 bars  
+        (8.0, 8),    # 8% -> 8 bars (first box full)
+        (16.0, 10),  # 16% -> 10 bars (first full + 2/8)
+        (32.0, 12),  # 32% -> 12 bars (first full + 4/8)
+        (64.0, 14),  # 64% -> 14 bars (first full + 6/8)
+        (100.0, 16), # 100% -> 16 bars (both boxes full)
+    ]
+    
+    print("CPU Bar Scale Unit Test:")
+    for cpu, expected_bars in test_cases:
+        actual_bars = cpu_to_bars_16(cpu)
+        
+        bar_display = cpu_to_bar(cpu)
+        actual_filled = bar_display.count('█')
+        
+        status = "✓" if actual_bars == expected_bars and actual_filled == expected_bars else "✗"
+        print(f"{status} {cpu:>6.1f}% -> {actual_bars} bars (expected {expected_bars}) | {bar_display}")
+        
+        if actual_bars != expected_bars:
+            print(f"  DEBUG: log2({cpu}) = {math.log2(max(0.5, cpu)):.3f}, +2.8 = {math.log2(max(0.5, cpu)) + 2.8:.3f}")
+    
+    return True
+
+def render_process_tree(descendants, indent_level=1):
+    """Render descendants with CPU usage in tree format with left-aligned CPU column."""
+    if not descendants:
+        return
+    
+    terminal_width = get_terminal_width()
+    cpu_col_width = 12  # "[XX.X%] ██"
+    
+    for desc in descendants:
+        indent = "  " * (indent_level + desc['depth'])
+        prefix = "└─ "
+        cpu_bar = cpu_to_bar(desc['cpu'], dim=True)  # Use dimmed colors for individual processes
+        cpu_str = f"[{desc['cpu']:>5.1f}%] {cpu_bar}"
+        tree_part = f"{indent}{prefix}{desc['pid']} {desc['name']}"
+        
+        # Truncate tree part if needed
+        available_for_tree = terminal_width - cpu_col_width - 1  # 1 for space
+        if len(tree_part) > available_for_tree:
+            tree_part = tree_part[:available_for_tree-3] + "..."
+        
+        print(f"{cpu_str} {tree_part}")
+
+def render_pane_summary(pane, total_descendants, total_cpu, available_width, indent_level=0, show_descendants=True):
+    """Render pane summary line with left-aligned CPU column."""
+    cpu_col_width = 12  # "[XX.X%] ██"
+    terminal_width = get_terminal_width()
+    indent = "  " * indent_level
+    
+    # Combined pane info with total CPU and descendant count
+    cpu_bar = cpu_to_bar(total_cpu)
+    total_cpu_str = f"[{total_cpu:>5.1f}%] {cpu_bar}"
+    
+    # Include descendant count only if requested and not in expanded mode
+    if show_descendants and total_descendants > 0:
+        desc_part = f" + {total_descendants} descendants"
+    else:
+        desc_part = ""
+    
+    # Show both actual command and pane_current_command
+    command_part = f"{pane['command']}"
+    if 'pane_current_command' in pane and pane['pane_current_command'] != pane['command']:
+        command_part = f"{pane['command']} ({pane['pane_current_command']})"
+    
+    # Extract pane number from location (e.g., "dotfiles:1.0" -> "0")
+    pane_number = pane['location'].split('.')[1]
+    pane_text = f"{indent}[{pane_number}] {pane['pid']} {command_part}{desc_part}"
+    
+    # Truncate pane text if needed
+    available_for_pane = terminal_width - cpu_col_width - 1  # 1 for space
+    if len(pane_text) > available_for_pane:
+        # Try to preserve the important parts
+        prefix = f"{indent}[{pane_number}] {pane['pid']} "
+        suffix = desc_part
+        available_for_command = available_for_pane - len(prefix) - len(suffix) - 3  # 3 for "..."
+        
+        if available_for_command > 10:
+            truncated_command = command_part[:available_for_command] + "..."
+            pane_text = f"{prefix}{truncated_command}{suffix}"
+        else:
+            pane_text = pane_text[:available_for_pane-3] + "..."
+    
+    print(f"{total_cpu_str} {pane_text}")
+
+def get_current_tmux_session():
+    """Get the current tmux session name."""
+    try:
+        result = subprocess.run(['tmux', 'display-message', '-p', '#{session_name}'], 
+                              capture_output=True, text=True, check=True)
+        return result.stdout.strip()
+    except subprocess.CalledProcessError:
+        return None
+
+def main():
+    parser = argparse.ArgumentParser(description="Show process breakdown for tmux session")
+    parser.add_argument("session", nargs="?", help="Tmux session name (default: current session)")
+    parser.add_argument("-e", "--expand", action="store_true",
+                       help="Show full process tree for each pane")
+    parser.add_argument("--min-cpu", type=float, default=0.0,
+                       help="Only show panes with total CPU usage above threshold")
+    parser.add_argument("--test-bars", action="store_true",
+                       help="Show progress bar color and scale test")
+    parser.add_argument("--color-low", default="255,255,255",
+                       help="RGB color for low CPU (default: 255,255,255 - white)")
+    parser.add_argument("--color-high", default="255,0,0", 
+                       help="RGB color for high CPU (default: 255,0,0 - red)")
+    parser.add_argument("--color-bg", default="64,64,64",
+                       help="RGB background color (default: 64,64,64 - dark grey)")
+    parser.add_argument("--loop", action="store_true",
+                       help="Run continuously, updating every second")
+    args = parser.parse_args()
+    
+    # Parse color arguments (supports both RGB and hex formats)
+    def parse_color(color_str):
+        try:
+            if color_str.startswith('#'):
+                # Hex format: #RRGGBB or #RGB
+                hex_str = color_str[1:]
+                if len(hex_str) == 3:
+                    # Short hex format: #RGB -> #RRGGBB
+                    hex_str = ''.join(c*2 for c in hex_str)
+                r = int(hex_str[0:2], 16)
+                g = int(hex_str[2:4], 16)
+                b = int(hex_str[4:6], 16)
+            else:
+                # RGB format: R,G,B
+                r, g, b = map(int, color_str.split(','))
+            return (max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b)))
+        except:
+            print(f"Error: Invalid color format '{color_str}'. Use 'R,G,B' or '#RRGGBB' format")
+            sys.exit(1)
+    
+    # Set global color variables
+    global COLORS
+    COLORS = {
+        'low': parse_color(args.color_low),
+        'high': parse_color(args.color_high), 
+        'bg': parse_color(args.color_bg)
+    }
+    
+    # Handle test mode
+    if args.test_bars:
+        print('Progress bar test:')
+        print('Normal colors (window/pane level):')
+        test_values = [0, 0.5, 1, 2, 5, 10, 15, 25, 50, 75, 100]
+        for cpu in test_values:
+            # Calculate the scale value for debugging
+            bars_16 = cpu_to_bars_16(cpu)
+            bar = cpu_to_bar(cpu, dim=False)
+            print(f'{cpu:>4}%: {bar} ({bars_16:>2}/16)')
+        print()
+        print('Dimmed colors (individual process level):')
+        for cpu in test_values:
+            # Calculate the scale value for debugging
+            bars_16 = cpu_to_bars_16(cpu)
+            bar = cpu_to_bar(cpu, dim=True) 
+            print(f'{cpu:>4}%: {bar} ({bars_16:>2}/16)')
+        return
+    
+    # Use current session if none specified
+    session_name = args.session
+    if not session_name:
+        session_name = get_current_tmux_session()
+        if not session_name:
+            print("Not in a tmux session and no session specified")
+            return
+    
+    # Load all process data
+    load_all_processes(loop_mode=args.loop)
+    panes = get_tmux_pane_pids(session_name)
+    
+    if not panes:
+        print(f"No panes found in session '{session_name}' or session doesn't exist")
+        return
+    
+    terminal_width = get_terminal_width()
+    
+    # Group panes by window
+    windows = {}
+    for pane in panes:
+        # Extract window index from location (e.g., "dotfiles:1.0" -> "1")
+        location_parts = pane['location'].split(':')[1]  # "1.0"
+        window_index = location_parts.split('.')[0]      # "1"
+        window_key = f"{session_name}:{window_index}"
+        
+        if window_key not in windows:
+            windows[window_key] = []
+        windows[window_key].append(pane)
+    
+    total_session_cpu = 0.0
+    total_session_processes = 0
+    displayed_windows = 0
+    
+    # Process each window
+    for window_key in sorted(windows.keys()):
+        window_panes = windows[window_key]
+        window_index = window_key.split(':')[1]
+        
+        # Calculate window totals
+        window_cpu = 0.0
+        window_processes = 0
+        window_panes_data = []
+        
+        for pane in window_panes:
+            descendants = get_descendants_with_cpu(pane['pid'])
+            total_descendants = len(descendants)
+            pane_total_cpu = pane['cpu'] + sum(desc['cpu'] for desc in descendants)
+            
+            window_cpu += pane_total_cpu
+            window_processes += total_descendants + 1  # +1 for the pane shell itself
+            
+            window_panes_data.append({
+                'pane': pane,
+                'descendants': descendants,
+                'total_descendants': total_descendants,
+                'total_cpu': pane_total_cpu
+            })
+        
+        total_session_cpu += window_cpu
+        total_session_processes += window_processes
+        
+        # Skip windows below CPU threshold
+        if window_cpu < args.min_cpu:
+            continue
+        
+        # Remove blank lines between windows for more compact display
+        
+        # Check if we should collapse window and pane into one line
+        if len(window_panes_data) == 1 and window_panes_data[0]['total_cpu'] >= args.min_cpu:
+            # Single pane - collapse window and pane into one line
+            pane_data = window_panes_data[0]
+            window_name = window_panes[0].get('window_name', '')
+            window_text = f"{window_index}:{window_name}"
+            
+            # Get pane info
+            pane = pane_data['pane']
+            pane_number = pane['location'].split('.')[1]
+            command_part = f"{pane['command']}"
+            if 'pane_current_command' in pane and pane['pane_current_command'] != pane['command']:
+                command_part = f"{pane['command']} ({pane['pane_current_command']})"
+            
+            if not args.expand and pane_data['total_descendants'] > 0:
+                desc_part = f" + {pane_data['total_descendants']} descendants"
+            else:
+                desc_part = ""
+            
+            # Combined line: window info + pane info
+            window_cpu_bar = cpu_to_bar(window_cpu)
+            window_cpu_str = f"[{window_cpu:>5.1f}%] {window_cpu_bar}"
+            combined_text = f"{window_text} [{pane_number}] {pane['pid']} {command_part}{desc_part}"
+            print(f"{window_cpu_str} {combined_text}")
+            
+            if args.expand and pane_data['descendants']:
+                render_process_tree(pane_data['descendants'], indent_level=1)
+        else:
+            # Multiple panes or filtered out panes - show window header
+            window_cpu_bar = cpu_to_bar(window_cpu)
+            window_cpu_str = f"[{window_cpu:>5.1f}%] {window_cpu_bar}"
+            window_name = window_panes[0].get('window_name', '')
+            window_text = f"{window_index}:{window_name}"
+            print(f"{window_cpu_str} {window_text}")
+            
+            # Show panes in this window
+            displayed_panes_in_window = 0
+            for pane_data in window_panes_data:
+                # Skip panes below CPU threshold
+                if pane_data['total_cpu'] < args.min_cpu:
+                    continue
+                    
+                # Remove blank lines between panes for more compact display
+                
+                # Render pane summary with aligned columns and indentation
+                render_pane_summary(pane_data['pane'], pane_data['total_descendants'], 
+                                  pane_data['total_cpu'], terminal_width, indent_level=1, 
+                                  show_descendants=not args.expand)
+                
+                if args.expand and pane_data['descendants']:
+                    render_process_tree(pane_data['descendants'], indent_level=2)
+                
+                displayed_panes_in_window += 1
+        
+        displayed_windows += 1
+    
+    print()
+    print(f"Session totals: {total_session_processes} processes, {total_session_cpu:.1f}% total CPU")
+
+if __name__ == "__main__":
+    import sys
+    
+    # Check if loop mode is requested
+    if '--loop' in sys.argv:
+        import time, os
+        try:
+            while True:
+                # Clear screen
+                os.system('clear' if os.name == 'posix' else 'cls')
+                
+                # Run main function
+                main()
+                
+                # Wait for 1 second
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("\nExiting...")
+    else:
+        main()

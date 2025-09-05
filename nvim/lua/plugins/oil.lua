@@ -10,6 +10,7 @@ return {
       keymaps = {
         ["h"] = "actions.parent",
         ["l"] = "actions.select",
+        ["q"] = "actions.close",
       },
       view_options = {
         show_hidden = true,

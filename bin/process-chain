@@ -1,0 +1,292 @@
+#!/usr/bin/env python3
+"""Render the process chain for the current process or a specified PID."""
+
+import sys
+import os
+import subprocess
+import argparse
+
+def get_process_info(pid, show_args=False):
+    """Get process info (pid, ppid, name) for a given PID."""
+    try:
+        if show_args:
+            result = subprocess.run(['ps', '-o', 'pid,ppid,args', '-p', str(pid)], 
+                                  capture_output=True, text=True, check=True)
+        else:
+            result = subprocess.run(['ps', '-o', 'pid,ppid,comm', '-p', str(pid)], 
+                                  capture_output=True, text=True, check=True)
+        
+        lines = result.stdout.strip().split('\n')
+        if len(lines) > 1:
+            parts = lines[1].split(None, 2)  # Split into at most 3 parts
+            if len(parts) >= 3:
+                return {
+                    'pid': int(parts[0]),
+                    'ppid': int(parts[1]),
+                    'name': parts[2]
+                }
+    except (subprocess.CalledProcessError, ValueError, IndexError):
+        return None
+
+def get_children(ppid, show_args=False):
+    """Get all child processes for a given parent PID."""
+    try:
+        if show_args:
+            result = subprocess.run(['ps', '-o', 'pid,ppid,args', '-ax'], 
+                                  capture_output=True, text=True, check=True)
+        else:
+            result = subprocess.run(['ps', '-o', 'pid,ppid,comm', '-ax'], 
+                                  capture_output=True, text=True, check=True)
+        
+        children = []
+        lines = result.stdout.strip().split('\n')[1:]  # Skip header
+        
+        for line in lines:
+            parts = line.split(None, 2)  # Split into at most 3 parts
+            if len(parts) >= 3:
+                try:
+                    pid = int(parts[0])
+                    parent_pid = int(parts[1])
+                    name = parts[2]
+                    if parent_pid == ppid:
+                        children.append({'pid': pid, 'ppid': parent_pid, 'name': name})
+                except ValueError:
+                    continue
+        
+        return children
+    except subprocess.CalledProcessError:
+        return []
+
+def get_descendants(pid, depth=0, max_depth=None, show_args=False):
+    """Get all descendant processes recursively."""
+    if max_depth is not None and depth >= max_depth:
+        return []
+    
+    children = get_children(pid, show_args=show_args)
+    descendants = []
+    
+    for child in children:
+        child['depth'] = depth
+        descendants.append(child)
+        # Recursively get descendants of this child
+        child_descendants = get_descendants(child['pid'], depth + 1, max_depth, show_args=show_args)
+        descendants.extend(child_descendants)
+    
+    return descendants
+
+def get_process_chain(start_pid, show_siblings=False, show_args=False):
+    """Build the complete process chain from start_pid to init."""
+    chain = []
+    current_pid = start_pid
+    
+    while current_pid and current_pid > 1:
+        info = get_process_info(current_pid, show_args=show_args)
+        if not info:
+            break
+        
+        # Add siblings if requested
+        if show_siblings:
+            siblings = get_children(info['ppid'], show_args=show_args)
+            info['siblings'] = [s for s in siblings if s['pid'] != info['pid']]
+        
+        chain.append(info)
+        current_pid = info['ppid']
+    
+    return list(reversed(chain))
+
+def render_chain(chain, target_pid):
+    """Render the process chain with tree-like formatting."""
+    if not chain:
+        print("No process chain found")
+        return
+    
+    for i, proc in enumerate(chain):
+        indent = "  " * i
+        if i == 0:
+            prefix = ""
+        else:
+            prefix = "└─ "
+        
+        current_marker = " ← current" if proc['pid'] == target_pid else ""
+        print(f"{indent}{prefix}{proc['name']} ({proc['pid']}){current_marker}")
+        
+        # Show siblings if they exist
+        if 'siblings' in proc and proc['siblings']:
+            sibling_indent = "  " * (i + 1)
+            for j, sibling in enumerate(proc['siblings']):
+                sibling_prefix = "├─ " if j < len(proc['siblings']) - 1 else "└─ "
+                print(f"{sibling_indent}{sibling_prefix}{sibling['name']} ({sibling['pid']})")
+
+def render_descendants(pid, descendants, target_pid):
+    """Render descendants tree starting from a given PID."""
+    root_info = get_process_info(pid)
+    if not root_info:
+        print(f"Process {pid} not found")
+        return
+    
+    current_marker = " ← current" if pid == target_pid else ""
+    print(f"{root_info['name']} ({root_info['pid']}){current_marker}")
+    
+    if not descendants:
+        print("  (no descendants)")
+        return
+    
+    # Render descendants with proper tree indentation
+    for desc in descendants:
+        indent = "  " * (desc['depth'] + 1)
+        prefix = "└─ "
+        current_marker = " ← current" if desc['pid'] == target_pid else ""
+        print(f"{indent}{prefix}{desc['name']} ({desc['pid']}){current_marker}")
+
+def render_combined(chain, descendants, target_pid):
+    """Render both ancestor chain and descendants in one view."""
+    if not chain:
+        print("No process chain found")
+        return
+    
+    # Find the target process in the chain
+    target_index = -1
+    for i, proc in enumerate(chain):
+        if proc['pid'] == target_pid:
+            target_index = i
+            break
+    
+    # Render ancestor chain up to target
+    for i, proc in enumerate(chain):
+        indent = "  " * i
+        if i == 0:
+            prefix = ""
+        else:
+            prefix = "└─ "
+        
+        current_marker = " ← current" if proc['pid'] == target_pid else ""
+        print(f"{indent}{prefix}{proc['name']} ({proc['pid']}){current_marker}")
+        
+        # Show descendants from the current process if it matches target
+        if proc['pid'] == target_pid and descendants:
+            for desc in descendants:
+                desc_indent = "  " * (i + desc['depth'] + 1)
+                desc_prefix = "└─ "
+                desc_current_marker = " ← current" if desc['pid'] == target_pid else ""
+                print(f"{desc_indent}{desc_prefix}{desc['name']} ({desc['pid']}){desc_current_marker}")
+
+def get_tmux_pane_pids(session_name=None, show_args=False):
+    """Get all pane PIDs from a tmux session."""
+    try:
+        if session_name:
+            cmd = ['tmux', 'list-panes', '-st', session_name, '-F', '#{session_name}:#{window_index}.#{pane_index} #{pane_pid}']
+        else:
+            cmd = ['tmux', 'list-panes', '-a', '-F', '#{session_name}:#{window_index}.#{pane_index} #{pane_pid}']
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        panes = []
+        
+        for line in result.stdout.strip().split('\n'):
+            if line:
+                parts = line.split()
+                if len(parts) >= 2:
+                    location = parts[0]
+                    pid = int(parts[1])
+                    
+                    # Get the actual command from ps instead of tmux
+                    proc_info = get_process_info(pid, show_args=show_args)
+                    command = proc_info['name'] if proc_info else 'unknown'
+                    
+                    panes.append({
+                        'location': location,
+                        'pid': pid,
+                        'command': command
+                    })
+        
+        return panes
+    except (subprocess.CalledProcessError, ValueError):
+        return []
+
+def render_tmux_session(session_name=None, show_descendants=False, show_combined=False, max_depth=None, show_args=False):
+    """Render process trees for all panes in a tmux session."""
+    panes = get_tmux_pane_pids(session_name, show_args=show_args)
+    
+    if not panes:
+        if session_name:
+            print(f"No panes found in session '{session_name}' or session doesn't exist")
+        else:
+            print("No tmux panes found")
+        return
+    
+    session_title = f"Session: {session_name}" if session_name else "All tmux sessions"
+    print(f"=== {session_title} ===")
+    
+    for i, pane in enumerate(panes):
+        if i > 0:
+            print()  # Blank line between panes
+        
+        print(f"Pane {pane['location']} - {pane['command']} (PID {pane['pid']})")
+        
+        if show_combined:
+            # Show both ancestor chain and descendants
+            chain = get_process_chain(pane['pid'], show_args=show_args)
+            descendants = get_descendants(pane['pid'], max_depth=max_depth, show_args=show_args)
+            render_combined(chain, descendants, pane['pid'])
+        elif show_descendants:
+            descendants = get_descendants(pane['pid'], max_depth=max_depth, show_args=show_args)
+            if descendants:
+                for desc in descendants:
+                    indent = "  " * (desc['depth'] + 1)
+                    prefix = "└─ "
+                    print(f"{indent}{prefix}{desc['name']} ({desc['pid']})")
+            else:
+                print("  (no descendants)")
+        else:
+            # Show ancestor chain for this pane
+            chain = get_process_chain(pane['pid'], show_args=show_args)
+            for j, proc in enumerate(chain):
+                indent = "  " * j
+                if j == 0:
+                    prefix = ""
+                else:
+                    prefix = "└─ "
+                
+                current_marker = " ← pane shell" if proc['pid'] == pane['pid'] else ""
+                print(f"{indent}{prefix}{proc['name']} ({proc['pid']}){current_marker}")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Show process chain hierarchy")
+    parser.add_argument("pid", nargs="?", type=int, help="PID to trace (default: current process)")
+    parser.add_argument("-s", "--siblings", action="store_true", 
+                       help="Show sibling processes at each level")
+    parser.add_argument("-d", "--descendants", action="store_true",
+                       help="Show descendant processes instead of ancestor chain")
+    parser.add_argument("-c", "--combined", action="store_true",
+                       help="Show both ancestor chain and descendants")
+    parser.add_argument("-t", "--tmux-session", type=str, metavar="SESSION",
+                       help="Show process trees for all panes in tmux session")
+    parser.add_argument("--max-depth", type=int, default=None,
+                       help="Maximum depth for descendants (default: unlimited)")
+    parser.add_argument("-a", "--args", action="store_true",
+                       help="Show full command with arguments instead of just command name")
+    parser.add_argument("--count", action="store_true",
+                       help="Just print the total number of descendants")
+    args = parser.parse_args()
+    
+    # Use provided PID or current process
+    target_pid = args.pid if args.pid else os.getpid()
+    
+    if args.count:
+        descendants = get_descendants(target_pid, max_depth=args.max_depth, show_args=args.args)
+        print(len(descendants))
+    elif args.tmux_session is not None:
+        render_tmux_session(args.tmux_session if args.tmux_session else None, 
+                          show_descendants=args.descendants,
+                          show_combined=args.combined,
+                          max_depth=args.max_depth,
+                          show_args=args.args)
+    elif args.combined:
+        chain = get_process_chain(target_pid, show_siblings=args.siblings, show_args=args.args)
+        descendants = get_descendants(target_pid, max_depth=args.max_depth, show_args=args.args)
+        render_combined(chain, descendants, target_pid)
+    elif args.descendants:
+        descendants = get_descendants(target_pid, max_depth=args.max_depth, show_args=args.args)
+        render_descendants(target_pid, descendants, target_pid)
+    else:
+        chain = get_process_chain(target_pid, show_siblings=args.siblings, show_args=args.args)
+        render_chain(chain, target_pid)

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# Get number of running docker containers
+container_count=$(docker ps -q | wc -l | xargs)
+
+# Only show if there are containers running
+if [ "$container_count" -gt 0 ]; then
+    echo "󰡨 $container_count"
+fi

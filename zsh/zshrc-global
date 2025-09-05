@@ -164,30 +164,6 @@ fzf-history-widget() {
 # zle     -N   fzf-history-widget
 # bindkey '^R' fzf-history-widget
 
-# My history widget is made obsolete by builtin fzf functionality :(
-# function h {
-#     local fzf_options=(--border=rounded --border-label="zsh history" 
-#          --border-label-pos=bottom)
-#     if [ "$#" -eq 0 ]; then
-#         local cmd=$(history | sed "s/^[ \t]*//" \
-#             | sed "s/^[0-9*]\+\s\+//" | tac | awk '!seen[$0]++' | fzf $fzf_options --tiebreak=index)
-#     else
-#         local cmd=$(history | sed "s/^[ \t]*//" \
-#             | sed "s/^[0-9*]\+\s\+//" | tac | awk '!seen[$0]++' | fzf $fzf_options \
-#             --tiebreak=index -q ${(j[ ])@})
-#     fi
-#     if [[ ! -z $cmd ]]; then
-#         zle -U $cmd 2> /dev/null || print -z $cmd
-#     else
-#         return 2
-#     fi
-# }
-# zle -N interactive-history h
-# bindkey '^[h' interactive-history
-
-# must be sourced at the end
-# source $ZSH_ROOT/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
 commit-search() {
     local res=$(git log "origin/master" HEAD --pretty=oneline-custom --date=short --color=always \
         | fzf --ansi | cut -d' ' -f1)
@@ -229,7 +205,8 @@ edit-in-tmux-nvim-split() {
 
 function zvm_after_init() {
     zle     -N   fzf-history-widget
-    bindkey '^R' fzf-history-widget
+    # bindkey '^R' fzf-history-widget
+    bindkey '^R' atuin-search
     zle     -N   clear-and-move-bottom
     bindkey '^L' clear-and-move-bottom
     zle     -N   commit-search

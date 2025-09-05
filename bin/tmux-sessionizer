@@ -1,66 +1,95 @@
-#!/usr/bin/env bash
-set -e
+#!/usr/bin/env python3
 
-export FZF_DEFAULT_OPTS=" \
- --prompt='  ' --pointer=' ' \
---color=spinner:#f5e0dc,gutter:-1,bg+:-1,hl:red,hl+:red \
---color=header:#f38ba8,info:magenta,fg+:yellow,pointer:yellow \
---color=marker:#f5e0dc,prompt:magenta,query:magenta \
---info inline-right"
-# get dirs and sessions
-tmp=$(mktemp)
-fd . ~ --max-depth=1 --type d > $tmp
-sessions=$(tmux list-sessions -F "#{session_name}")
-# remove dirs that already have a matching session
-for session in $sessions; do
-    if $(uname -s | grep -q Darwin); then
-        sed -e "\\#/$session/\$#d" -i '' "$tmp"
-    else
-        sed -e "\\#/$session/\$#d" --in-place "$tmp"
-    fi
-done
-echo $sessions
-# filter out dirs without git repos
-# for dir in $dirs; do
-#     if [ ! -d "$dir/.git" ]; then
-#         sed "\\_/$dir\$_d" -i'' $tmp
-#     fi
-# done
-while read -r line; do
-    if [ ! -d "$line/.git" ]; then
-        if $(uname -s | grep -q Darwin); then
-            sed -e "\#$line#d" -i '' "$tmp"
-        else
-            sed -e "\#$line#d" --in-place "$tmp"
-        fi
-    fi
-done < $tmp
-# replace home directory with ~ in tmp
-if $(uname -s | grep -q Darwin); then
-    sed -e "s#^$HOME#~#" -i '' $tmp
-else
-    sed -e "s#^$HOME#~#" --in-place $tmp
-fi
-selected=$( (echo $sessions | tr ' ' '\n'; cat $tmp) | fzf )
-    # --border rounded --border-label "switch or create session" )
+import os
+import subprocess as sp
+import sys
+from pathlib import Path
 
-if [ -z "$selected" ]; then
-    exit 0
-fi
-# if selected is a session, switch to it
-if echo $sessions | tr ' ' '\n' | grep -q "^$selected$"; then
-    tmux switch-client -t $selected
-    exit 0
-fi
-# create a new session
-selected=${selected/#\~/$HOME}
-if [ ! -d "$selected" ]; then
-    echo "No such directory: $selected"
-    exit 1
-fi
-selected=${selected%/}
-selected_name=$(basename "$selected" | tr . _)
-new=$(tmux new-session -ds $selected_name -c "$selected" -P)
-tmux send-keys -t "$new" Escape n
-tmux new-window -dt "$new" -c "$selected"
-tmux switch-client -t "$selected_name"
+def main():
+    # Set FZF options
+    os.environ['FZF_DEFAULT_OPTS'] = (
+        " --prompt='  ' --pointer=' ' "
+        "--color=spinner:#f5e0dc,gutter:-1,bg+:-1,hl:red,hl+:red "
+        "--color=header:#f38ba8,info:magenta,fg+:yellow,pointer:yellow "
+        "--color=marker:#f5e0dc,prompt:magenta,query:magenta "
+        "--info inline-right"
+    )
+
+    # Get all directories in home directory
+    home = Path.home()
+    dirs = [d for d in home.iterdir() if d.is_dir()]
+    
+    # Get existing tmux sessions
+    try:
+        result = sp.run(['tmux', 'list-sessions', '-F', '#{session_name}'], 
+                               capture_output=True, text=True, check=True)
+        sessions = result.stdout.strip().split('\n') if result.stdout.strip() else []
+    except sp.CalledProcessError:
+        sessions = []
+    
+    # Filter out directories that already have sessions
+    session_basenames = {Path(session).name for session in sessions if session}
+    available_dirs = [d for d in dirs if d.name not in session_basenames]
+    
+    # Filter out directories without git repos
+    git_dirs = [d for d in available_dirs if (d / '.git').is_dir()]
+    
+    # Convert paths to strings with ~ notation
+    git_dir_strs = [str(d).replace(str(home), '~') for d in git_dirs]
+    
+    # Combine sessions and directories for fzf
+    choices = sessions + git_dir_strs
+    
+    if not choices:
+        sys.exit(0)
+        
+    # Run fzf
+    try:
+        fzf_input = '\n'.join(choices)
+        result = sp.run(['fzf'], input=fzf_input, text=True, capture_output=True)
+        if result.returncode != 0:
+            sys.exit(0)
+        selected = result.stdout.strip()
+    except FileNotFoundError:
+        print("fzf not found", file=sys.stderr)
+        sys.exit(1)
+    
+    if not selected:
+        sys.exit(0)
+    
+    # If selected is an existing session, switch to it
+    if selected in sessions:
+        sp.run(['tmux', 'switch-client', '-t', selected])
+        sys.exit(0)
+    
+    # Create new session from directory
+    selected_path = Path(selected.replace('~', str(home)))
+    
+    if not selected_path.is_dir():
+        print(f"No such directory: {selected_path}", file=sys.stderr)
+        sys.exit(1)
+    
+    session_name = selected_path.name.replace('.', '_')
+    
+    # Create new session
+    result = sp.run(['tmux', 'new-session', '-ds', session_name, '-c', str(selected_path), '-P'],
+                           capture_output=True, text=True)
+    new_session = result.stdout.strip()
+    
+    # Send escape and 'n' to first window to open neovim
+    sp.run(['tmux', 'send-keys', '-t', new_session, 'Escape', 'n'])
+    
+    # Create claude window
+    result = sp.run(['tmux', 'new-window', '-dt', new_session, '-c', str(selected_path), '-P'],
+                           capture_output=True, text=True)
+    claude_window = result.stdout.strip()
+    sp.run(['tmux', 'send-keys', '-t', claude_window, 'claude', 'Enter'])
+    
+    # Create third window
+    sp.run(['tmux', 'new-window', '-dt', new_session, '-c', str(selected_path)])
+    
+    # Switch to the new session
+    sp.run(['tmux', 'switch-client', '-t', session_name])
+
+if __name__ == '__main__':
+    main()

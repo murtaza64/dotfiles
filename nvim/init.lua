@@ -20,7 +20,8 @@ require('inactive_cursorline')
 require('oil_winbar')
 require('autocmds')
 require('github_link')
-require('claude_link')
+require('claude')
+require('git_urls')
 
 vim.filetype.add({
   pattern = { ['.*pipeline'] = 'jenkins' },

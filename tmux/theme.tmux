@@ -64,9 +64,11 @@ main() {
   local show_gitmux=' #(gitmux -cfg ~/dotfiles/gitmux.yaml "#{pane_current_path}")'
 
   local show_batt='#(tmux-batt)'
+  
+  local show_docker='#[fg=6]#(docker-container-count)'
 
   set status-left "${in_copy_mode}${in_prefix_mode}${in_view_mode}${session_and_dir}${show_gitmux} ${cal_next}"
-  set status-right "${show_time} ${show_batt}"
+  set status-right "${show_docker} ${show_time} ${show_batt}"
 
   # messages
   set message-style "fg=${thm_cyan},bg=${thm_gray},align=centre"
