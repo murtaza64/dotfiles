@@ -1,0 +1,28 @@
+# Wofi Configuration
+# Modern, clean launcher setup
+
+# Display settings
+width=500
+height=400
+location=center
+show=drun
+prompt=
+filter_rate=100
+allow_markup=true
+no_actions=true
+halign=fill
+orientation=vertical
+content_halign=fill
+insensitive=true
+
+# Behavior
+hide_scroll=true
+show_all=false
+print_command=true
+layer=overlay
+single_click=true
+allow_images=true
+image_size=24
+
+# Style
+stylesheet=/home/murtaza/dotfiles/wofi/style.css

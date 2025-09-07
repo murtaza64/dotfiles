@@ -4,7 +4,8 @@
 # move prompt to bottom (skip when in SSH)
 [[ -z "$SSH_CONNECTION" ]] && printf '\n%.0s' {1..100}
 
-export PATH=$(dirname $ZSH_ROOT)/bin:$PATH
+# export PATH=$(dirname $ZSH_ROOT)/bin:$PATH
+# export PYTHONPATH=$(dirname $ZSH_ROOT)/python:$PYTHONPATH
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]

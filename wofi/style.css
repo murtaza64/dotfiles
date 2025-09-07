@@ -1,0 +1,132 @@
+/* Modern Wofi Theme - Catppuccin Grey */
+
+/* Main window */
+window {
+    background: rgba(26, 26, 26, 0.85);
+    /* border: 2px solid #5a5a5a; */
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    margin: 0;
+    padding: 0;
+}
+
+/* Outer box */
+#outer-box {
+    background: transparent;
+    margin: 0;
+    padding: 12px;
+}
+
+/* Inner box */
+#inner-box {
+    background: transparent;
+    margin: 0;
+    padding: 0;
+}
+
+/* Input field */
+#input {
+    background: rgba(39, 39, 39, 0.8);
+    /* border: 2px solid #5a5a5a; */
+    border-radius: 8px;
+    color: #d0d0d0;
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0 0 12px 0;
+    padding: 8px 12px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+#input:focus {
+    /* border-color: #cba6f7; */
+    box-shadow: none;
+}
+
+/* Scrolled area */
+#scroll {
+    background: transparent;
+    margin: 0;
+    padding: 0;
+}
+
+/* Text entries */
+#text {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #d0d0d0;
+    font-size: 18px;
+    font-weight: 400;
+    margin: 2px 0;
+    padding: 8px 12px;
+    transition: all 0.15s ease;
+}
+
+#text:hover {
+    background: rgba(203, 166, 247, 0.15);
+    color: #d0d0d0;
+}
+
+/* Entry containers */
+#entry {
+    background: transparent;
+    border: none;
+    margin: 1px 0;
+    padding: 0;
+    border: 2px solid transparent;
+}
+
+#entry:hover {
+    background: rgba(203, 166, 247, 0.08);
+    border-radius: 6px;
+}
+
+#entry:selected {
+    border: 2px solid #cba6f7;
+    border-radius: 6px;
+}
+
+#entry:selected #text {
+    color: #cba6f7;
+}
+
+/* Image/Icon styling */
+#img {
+    margin-left: 8px;
+    margin-right: 8px;
+    padding: 0;
+    opacity: 0.8;
+    transition: opacity 0.15s ease;
+}
+
+#entry:hover #img {
+    opacity: 1;
+}
+
+#entry:selected #img {
+    opacity: 1;
+}
+
+/* No results message */
+#no-results {
+    color: #5a5a5a;
+    font-size: 12px;
+    font-style: italic;
+    padding: 20px;
+}
+
+/* Custom scrollbar */
+scrollbar {
+    background: transparent;
+}
+
+scrollbar slider {
+    background: rgba(90, 90, 90, 0.5);
+    border-radius: 3px;
+    min-height: 20px;
+}
+
+scrollbar slider:hover {
+    background: rgba(90, 90, 90, 0.8);
+}

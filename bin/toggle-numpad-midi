@@ -1,0 +1,11 @@
+#!/bin/bash
+# Toggle numpad MIDI controller on/off
+
+if pkill -f numpad_midi; then
+    # Successfully killed process - script will show its own notification via signal handler
+    exit 0
+else
+    # No process running - start it
+    cd /home/murtaza/dotfiles/numpad-midi
+    PYTHONPATH=/home/murtaza/dotfiles/python uv run numpad_midi_virmidi.py
+fi
