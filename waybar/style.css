@@ -8,9 +8,7 @@ window#waybar {
     background-color: rgba(30, 30, 30, 0.8);
     border-bottom: 3px solid rgba(100, 114, 125, 0.5);
     color: #ffffff;
-    transition-property: background-color;
-    transition-duration: .5s;
-    transition-property: border-color;
+    transition-property: background-color, border-color, color;
     transition-duration: .5s;
     border-radius: 20px;
     padding: 0 20px;
@@ -51,9 +49,14 @@ button:hover {
     background: inherit;
 }
 
+#pulseaudio {
+    transition-property: background-color, border-color, color;
+    transition-duration: .5s;
+}
 /* you can set a style on hover for any module like this */
 #pulseaudio:hover {
-    background-color: #a37800;
+    background-color: #a6e3a1;
+    color: #313244;
 }
 
 #workspaces button {
