@@ -7,6 +7,8 @@ end
 local function create_claude_window()
     vim.system({'tmux', 'new-window', '-a', '-n', 'claude'}):wait()
     vim.system({'tmux', 'send-keys', '-t', 'claude', 'claude', 'Enter'}):wait()
+    vim.system({'sleep', '3'}):wait()
+    vim.system({'tmux', 'send-keys', '-t', 'claude', 'Enter'}):wait()
 end
 
 local function send_to_claude(message)

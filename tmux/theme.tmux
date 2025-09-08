@@ -82,8 +82,15 @@ main() {
   setw window-status-activity-style "fg=${thm_fg},bg=${thm_bg},none"
   setw window-status-separator ""
 
-  local window="#[fg=$thm_black4,bg=default] #{?#{==:#W,zsh}, ,#{?#{==:#W,},#W,#{?#{==:#W,claude},󰧑,  #W}}} "
-  local current_window="#[fg=4,bg=default] #{?#{==:#W,zsh}, ,#{?#{==:#W,},#W,#{?#{==:#W,claude},󰧑,  #W}}} "
+  local zsh_icon="#{?#{==:#W,zsh},"
+  local nvim_icon="#{?#{==:#W,},#W"
+  local claude_icon="#{?#{==:#W,claude},󰧑"
+  local docker_icon="#{?#{==:#W,docker},󰡨"
+  local runsh_icon="#{?#{==:#W,./run.sh},"
+  local window_icon="${zsh_icon},${nvim_icon},${claude_icon},${docker_icon},${runsh_icon},  #W}}}}} "
+  # local window_icon="#{?#{==:#W,zsh}, ,#{?#{==:#W,},#W,#{?#{==:#W,claude},󰧑,#{?#{==:#W,docker},󰡨,  #W}}}} "
+  local window="#[fg=$thm_black4,bg=default] ${window_icon}"
+  local current_window="#[fg=4,bg=default] ${window_icon}"
   setw window-status-format "${window}"
   setw window-status-current-format "${current_window}"
 

@@ -30,16 +30,27 @@
   [[ $ZSH_VERSION == (5.<1->*|<6->.*) ]] || return
 
   # The list of segments shown on the left. Fill it with the most important segments.
-  typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
-    # =========================[ Line #1 ]=========================
-    # dir                     # current directory
-    # vcs                     # git status
-    # =========================[ Line #2 ]=========================
-    # newline                 # \n
-    # space
-    context                 # user@hostname
-    prompt_char             # prompt symbol
-  )
+  if [[ -n "$SSH_CONNECTION" ]]; then
+    typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
+      # newline                 # \n
+      # space
+      context                 # user@hostname
+      dir                     # current directory
+      vcs                     # git status
+      prompt_char             # prompt symbol
+    )
+  else
+    typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
+      # =========================[ Line #1 ]=========================
+      # dir                     # current directory
+      # vcs                     # git status
+      # =========================[ Line #2 ]=========================
+      # newline                 # \n
+      # space
+      context                 # user@hostname
+      prompt_char             # prompt symbol
+    )
+  fi
 
   # The list of segments shown on the right. Fill it with less important segments.
   # Right prompt on the last prompt line (where you are typing your commands) gets
