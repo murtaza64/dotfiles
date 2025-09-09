@@ -1,7 +1,25 @@
 #!/usr/bin/env bash
 
-ORANGE='#[fg=3]'
-MAGENTA='#[fg=5]'
+# Use walcolor if available, fallback to hardcoded colors
+if command -v walcolor >/dev/null 2>&1; then
+  color1=$(walcolor 1 2>/dev/null)
+  color2=$(walcolor 2 2>/dev/null)
+  
+  if [[ -n "$color2" ]]; then
+    ORANGE="#[fg=$color2]"
+  else
+    ORANGE='#[fg=3]'
+  fi
+  
+  if [[ -n "$color1" ]]; then
+    MAGENTA="#[fg=$color1]"
+  else
+    MAGENTA='#[fg=5]'
+  fi
+else
+  ORANGE='#[fg=3]'
+  MAGENTA='#[fg=5]'
+fi
 session=$(tmux display-message -p '#S' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 # get directory relative to ~
 dir=$(tmux display-message -p "#{pane_current_path}" \

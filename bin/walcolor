@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# Fast walcolor implementation using properties file
+# Usage: walcolor-fast <number|key>
+
+if [[ $# -ne 1 ]]; then
+    echo "Usage: walcolor-fast <number|key>"
+    echo "Examples:"
+    echo "  walcolor-fast 1"
+    echo "  walcolor-fast background" 
+    echo "  walcolor-fast red"
+    exit 1
+fi
+
+cache_file="$HOME/.cache/wal/colors.properties"
+
+if [[ ! -f "$cache_file" ]]; then
+    echo "Error: Could not load pywal colors" >&2
+    exit 1
+fi
+
+arg="$1"
+
+# Convert number to colorN format
+if [[ "$arg" =~ ^[0-9]+$ ]] && (( arg >= 0 && arg <= 15 )); then
+    arg="color$arg"
+fi
+
+# Extract value using awk - much simpler with properties format
+awk -F= -v key="$arg" '
+    $1 == key { print $2; exit }
+' "$cache_file"

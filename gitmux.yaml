@@ -48,7 +48,7 @@ tmux:
         # 'modified' count
         modified: "#[fg=yellow,nobold]"
         # 'untracked' count
-        untracked: "#[fg=blue,nobold]"
+        untracked: "#[fg=magenta,nobold]"
         # 'stash' count
         stashed: "#[fg=cyan]"
         # 'insertions' count
