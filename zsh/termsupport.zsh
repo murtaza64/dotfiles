@@ -105,7 +105,7 @@ function omz_termsupport_preexec {
 
 autoload -Uz add-zsh-hook
 
-if [[ -z "$INSIDE_EMACS" || "$INSIDE_EMACS" = vterm ]]; then
+if [[ -z "$INSIDE_EMACS" || "$INSIDE_EMACS" = vterm ]] && [[ -z "$SSH_CONNECTION" ]]; then
   add-zsh-hook precmd omz_termsupport_precmd
   add-zsh-hook preexec omz_termsupport_preexec
 fi
