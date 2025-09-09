@@ -29,7 +29,6 @@ return {
         return {
           VerticalSplit = { fg = colors.surface1 },
           WinSeparator = { fg = colors.surface1 },
-          MsgArea = { bg = colors.base },
           NormalFloat = { link = 'Normal' },
           FloatTitle = { link = 'Normal' },
           CursorLine = { bg = colors.surface0 },
@@ -46,7 +45,6 @@ return {
           AlphaButtonSides = { fg = colors.surface2 },
           AlphaHeader = { fg = colors.lavender },
           AlphaDivider = { fg = colors.yellow },
-          TelescopeBorder = { fg = colors.lavender },
           MsgArea = { link = 'Normal' },
         }
       end,

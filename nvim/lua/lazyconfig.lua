@@ -91,7 +91,7 @@ require('lazy').setup({
   { import = 'plugins.ai' },
   { import = 'plugins.editing' },
   { import = 'plugins.lsp' },
-  { import = 'plugins.lualine' },
+  { import = 'lualine.spec' },
   { import = 'plugins.motion' },
   { import = 'plugins.nvim-treesitter' },
   { import = 'plugins.oil' },

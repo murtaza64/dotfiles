@@ -17,6 +17,7 @@ for subdir (nvim qmk tmux kitty git mako) do
 done
 
 ln -s $HOME/.config/tmux/tmux.conf $HOME/.tmux.conf
+ln -s $HOME/.cache/wal $DOTFILES_ROOT/walcache
 
 echo "install the following packages:"
 echo "git tmux neovim ripgrep fd delta fzf gitmux eza gh"

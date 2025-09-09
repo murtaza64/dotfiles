@@ -1,14 +1,15 @@
 local highlight = require('lualine.highlight')
 
 local M = require('lualine.component'):extend()
-local colors = require("catppuccin.palettes").get_palette()
+-- local colors = require("catppuccin.palettes").get_palette()
 
 
 function M:init(options)
+  local colors = require("pywalcolors").get_colors()
   M.super.init(self, options)
   self.colors = {
     dir = highlight.create_component_highlight_group(
-      { fg = colors.overlay1, gui = 'italic' },
+      { fg = colors.surface3, gui = 'italic' },
       'filename_dir',
       self.options
     ),
@@ -18,7 +19,7 @@ function M:init(options)
       self.options
     ),
     modified = highlight.create_component_highlight_group(
-      { fg = colors.peach },
+      { fg = colors.orange },
       'filename_modified',
       self.options
     ),

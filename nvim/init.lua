@@ -7,7 +7,6 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 require('lazyconfig')
-require('pywalcolors')
 
 require('delta')
 require('highlight_hex_colors')
@@ -22,6 +21,8 @@ require('autocmds')
 require('github_link')
 require('claude')
 require('git_urls')
+require('pywalcolors').load_pywal_colors()
+require('lualine.load_lualine').init()
 
 vim.filetype.add({
   pattern = { ['.*pipeline'] = 'jenkins' },
