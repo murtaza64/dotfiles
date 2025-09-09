@@ -1,7 +1,12 @@
-font=monospace 16
+font=monospace 14
 anchor=bottom-center
-background-color=#1a1a1ad9
+background-color=#2a2a2ad9
 border-radius=8
 border-size=0
 padding=20
 outer-margin=10
+[app-name="Spotify" urgency="low"]
+anchor=bottom-right
+default-timeout=2000
+width=400
+height=400

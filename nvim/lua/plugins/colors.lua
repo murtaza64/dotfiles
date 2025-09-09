@@ -47,6 +47,7 @@ return {
           AlphaHeader = { fg = colors.lavender },
           AlphaDivider = { fg = colors.yellow },
           TelescopeBorder = { fg = colors.lavender },
+          MsgArea = { link = 'Normal' },
         }
       end,
       integrations = {

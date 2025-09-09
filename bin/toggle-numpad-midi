@@ -7,5 +7,5 @@ if pkill -f numpad_midi; then
 else
     # No process running - start it
     cd /home/murtaza/dotfiles/numpad-midi
-    PYTHONPATH=/home/murtaza/dotfiles/python uv run numpad_midi_virmidi.py
+    PYTHONPATH=/home/murtaza/dotfiles/python uv run numpad_midi_appindicator.py &
 fi

@@ -26,13 +26,19 @@ dir=$(tmux display-message -p "#{pane_current_path}" \
   | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
   | sed -e "s|^$HOME/||")
 
-if [ "$dir" != "$session" ]; then
+if [ "$dir" == "$HOME" ]; then
+  echo " $MAGENTA$session$ORANGE  "
+elif [ "$dir" != "$session" ]; then
   absolute_dir=$(realpath $HOME/$dir)
   if echo $absolute_dir | grep -q "^$HOME/$session/"; then
     relative_dir=$(echo $dir | sed -e "s|^$session/||")
     echo " $MAGENTA$session$ORANGE/$relative_dir"
   else
-    echo " $MAGENTA$session$ORANGE   $dir"
+    if echo $absolute_dir | grep -q "^$HOME/"; then
+      echo " $MAGENTA$session$ORANGE   $dir"
+    else
+      echo " $MAGENTA$session$ORANGE   $dir"
+    fi
   fi
 else
   echo " $MAGENTA$session"

@@ -66,7 +66,11 @@ vim.keymap.set('n', '<m-j>', 'ddp==', { desc = 'Move line down', remap = true })
 vim.keymap.set('n', '<m-k>', 'ddkP==', { desc = 'Move line up', remap = true })
 
 -- open URLs under cursor
-vim.keymap.set("n", "gx", ":silent execute '!open ' . shellescape(expand('<cfile>'), 1)<CR>")
+vim.keymap.set("n", "gx", function()
+  local file = vim.fn.expand('<cfile>')
+  local cmd = vim.fn.has('linux') == 1 and vim.fn.executable('xdg-open') == 1 and 'xdg-open' or 'open'
+  vim.fn.system(cmd .. ' ' .. vim.fn.shellescape(file))
+end)
 
 -- Esc clears search highlighting in normal mode
 vim.keymap.set('n', '<Esc>', function()

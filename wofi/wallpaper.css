@@ -1,3 +1,4 @@
+/* Modern Wofi Theme - Catppuccin Grey */
 @import '/home/murtaza/.cache/wal/colors-waybar.css';
 
 /* Main window */
@@ -28,7 +29,6 @@ window {
     padding: 0;
 }
 
-/* Input field */
 #input {
     background: @background;
     /* border: 2px solid #5a5a5a; */
@@ -61,6 +61,7 @@ window {
     font-weight: 400;
     margin: 2px 0;
     padding: 8px 12px;
+    transition: all 0.15s ease;
 }
 
 #text:hover {
@@ -74,28 +75,25 @@ window {
     border: none;
     margin: 1px 0;
     padding: 0;
-    border: 2px solid transparent;
+    border: 3px solid transparent;
 }
 
 #entry:hover {
     background: rgba(203, 166, 247, 0.08);
-    border-radius: 6px;
+    /* border-radius: 6px; */
 }
 
 #entry:selected {
-    /* border: 3px solid @color5; */
-    background-color: @color5;
+    border: 3px solid @color2;
     /* border-radius: 6px; */
 }
 
 #entry:selected #text {
-    color: @background;
+    color: #cba6f7;
 }
 
 /* Image/Icon styling */
 #img {
-    margin-left: 8px;
-    margin-right: 8px;
     padding: 0;
     opacity: 0.8;
     transition: opacity 0.15s ease;

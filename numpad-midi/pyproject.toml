@@ -7,6 +7,7 @@ dependencies = [
     "python-rtmidi>=1.4.9",
     "evdev>=1.6.0",
     "murtaza",
+    "pygobject>=3.48.2",
 ]
 
 [tool.uv]

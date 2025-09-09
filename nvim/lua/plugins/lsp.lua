@@ -230,31 +230,31 @@ return {
         '%l:%c: %m'
       }
     }
-    require('lspconfig')['efm'].setup {
-      init_options = {documentFormatting = true},
-      filetypes = { 'sh', 'groovy', 'jenkins' },
-      -- capabilities = capabilities,
-      on_attach = on_attach,
-      settings = {
-        logLevel = 1,
-        logFile = '/Users/murtaza/efm-nvim.log',
-        rootMarkers = {".git/"},
-        languages = {
-          -- lua = {
-          --   -- {formatCommand = "lua-format -i", formatStdin = true}
-          -- },
-          sh = {
-            shellcheck
-          },
-          groovy = {
-            jenkins
-          },
-          jenkins = {
-            jenkins
-          },
-        }
-      }
-    }
+    -- require('lspconfig')['efm'].setup {
+    --   init_options = {documentFormatting = true},
+    --   filetypes = { 'sh', 'groovy', 'jenkins' },
+    --   -- capabilities = capabilities,
+    --   on_attach = on_attach,
+    --   settings = {
+    --     logLevel = 1,
+    --     logFile = '/Users/murtaza/efm-nvim.log',
+    --     rootMarkers = {".git/"},
+    --     languages = {
+    --       -- lua = {
+    --       --   -- {formatCommand = "lua-format -i", formatStdin = true}
+    --       -- },
+    --       sh = {
+    --         shellcheck
+    --       },
+    --       groovy = {
+    --         jenkins
+    --       },
+    --       jenkins = {
+    --         jenkins
+    --       },
+    --     }
+    --   }
+    -- }
     require('lspconfig')['hls'].setup{
       filetypes = { 'haskell', 'lhaskell', 'cabal' },
     }
@@ -293,11 +293,11 @@ return {
         })
       end,
     }
-    require("lspconfig")["gdscript"].setup({
-      name = "godot",
-      cmd = {"godot-wsl-lsp", "--host", "localhost"},
-      on_attach = on_attach,
-    })
+    -- require("lspconfig")["gdscript"].setup({
+    --   name = "godot",
+    --   cmd = {"godot-wsl-lsp", "--host", "localhost"},
+    --   on_attach = on_attach,
+    -- })
 
     -- require'lspconfig'.sourcekit.setup{
     --   cmd = {'xcrun', 'sourcekit-lsp'},

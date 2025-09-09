@@ -32,10 +32,10 @@ vim.filetype.add({
 })
 -- run noneckpain after a 1 sec delay
 if not os.getenv('MURTAZA_NVIM_NO_NNP') then
-  local timer = vim.uv.new_timer()
-  timer:start(100, 0, vim.schedule_wrap(function()
-    vim.cmd('NoNeckPain')
-  end))
+  -- local timer = vim.uv.new_timer()
+  -- timer:start(100, 0, vim.schedule_wrap(function()
+  --   vim.cmd('NoNeckPain')
+  -- end))
 else
   -- shell command editor support
   vim.keymap.set('n', '<cr><cr>', function()

@@ -17,6 +17,9 @@ fi
 if which bat > /dev/null; then
   alias cat="bat"
 fi
+if [[ "$OSTYPE" == "linux-gnu"* ]] && which xdg-open > /dev/null; then
+  alias open="xdg-open"
+fi
 alias merge-master="git checkout master && git pull && git checkout - && git merge --no-edit master"
 gcam() {
   git commit -am "$*"

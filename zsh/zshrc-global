@@ -31,6 +31,9 @@ ZSH_ALIAS_FINDER_AUTOMATIC=true
 # done
 
 source $ZSH_ROOT/aliases.zsh
+if which atuin > /dev/null; then
+    source $ZSH_ROOT/atuin.zsh
+fi
 source $ZSH_ROOT/completion.zsh
 source $ZSH_ROOT/git.zsh
 # source $ZSH_ROOT/git.plugin.zsh
@@ -206,8 +209,10 @@ edit-in-tmux-nvim-split() {
 
 function zvm_after_init() {
     zle     -N   fzf-history-widget
-    # bindkey '^R' fzf-history-widget
-    bindkey '^R' atuin-search
+    bindkey '^R' fzf-history-widget
+    if which atuin > /dev/null; then
+        bindkey '^R' atuin-search
+    fi
     zle     -N   clear-and-move-bottom
     bindkey '^L' clear-and-move-bottom
     zle     -N   commit-search
