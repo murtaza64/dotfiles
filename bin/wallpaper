@@ -1,42 +1,38 @@
 #!/bin/bash
 
 # Set wallpaper and generate colors with pywal
-# Usage: wallpaper [file]
-#   - If file is provided, use that specific wallpaper
-#   - Otherwise, use the wallpapers directory for random selection
+# Usage: wallpaper [filename|options...]
+#   - No arguments: random wallpaper from ~/wallpapers
+#   - First arg is filename: use as wallpaper (-i filename)
+#   - First arg is option/flag: use current wallpaper with additional args
 
 cd ~/pywal
 
-if [ $# -eq 1 ]; then
-    if [ "$1" = "--shuffle" ]; then
-        # Shuffle mode - let pywal pick randomly from directory
-        uv run -m pywal --backend colorthief --ansi-match --cols16 lighten -i ~/wallpapers/ > /dev/null 2>&1
+# Default pywal options
+DEFAULT_OPTS="--backend colorthief --shading lighten --contrast 1.5"
+
+if [ $# -eq 0 ]; then
+    # No arguments - random wallpaper
+    uv run -m pywal $DEFAULT_OPTS -i ~/wallpapers/
+elif [[ "$1" == -* ]]; then
+    # First argument is an option/flag - regenerate palette for current wallpaper
+    CURRENT_WALLPAPER=$(cat ~/.cache/wal/wal 2>/dev/null)
+    if [ -n "$CURRENT_WALLPAPER" ] && [ -f "$CURRENT_WALLPAPER" ]; then
+        uv run -m pywal $DEFAULT_OPTS -i "$CURRENT_WALLPAPER" --no-cache "$@"
     else
-        # Use provided file
-        WALLPAPER="$1"
-        
-        # Check if file exists
-        if [ ! -f "$WALLPAPER" ]; then
-            echo "Wallpaper file not found: $WALLPAPER"
-            exit 1
-        fi
-        
-        uv run -m pywal --backend colorthief --ansi-match --cols16 lighten -i "$WALLPAPER" > /dev/null 2>&1
-    fi
-else
-    # No arguments - use fzf to select wallpaper
-    WALLPAPER=$(find ~/wallpapers/ -type f -exec basename {} \; -print | \
-                paste - - | \
-                fzf --with-nth=1 \
-                    --delimiter=$'\t' | \
-                cut -f2)
-                    # --preview 'identify {2} && kitten icat {2}' \
-                    # --preview-window up | \
-    
-    if [ -n "$WALLPAPER" ]; then
-        uv run -m pywal --backend colorthief --ansi-match --cols16 lighten -i "$WALLPAPER" > /dev/null 2>&1
-    else
-        echo "No wallpaper selected"
+        echo "No current wallpaper found or file doesn't exist"
         exit 1
     fi
+else
+    # First argument is filename
+    WALLPAPER="$1"
+    shift  # Remove filename from arguments
+    
+    # Check if file exists
+    if [ ! -f "$WALLPAPER" ]; then
+        echo "Wallpaper file not found: $WALLPAPER"
+        exit 1
+    fi
+    
+    uv run -m pywal $DEFAULT_OPTS -i "$WALLPAPER" "$@"
 fi

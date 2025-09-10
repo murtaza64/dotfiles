@@ -207,11 +207,12 @@ local function load_pywal_colors()
   end
   local highlights = {
     Normal = { bg = colors.background, fg = colors.foreground },
+    Title = { fg = colors.blue, bold = true },
 
     -- UI
     CursorLine = { bg = colors.surface0 }, -- slightly lighter than background
     FloatBorder = { fg = colors.color1 },
-    LineNr = { fg = colors.surface1 },
+    LineNr = { fg = colors.surface2 },
     CursorLineNr = { fg = colors.color1 },
     VerticalSplit = { fg = colors.surface1 },
     WinSeparator = { fg = colors.surface1 },
@@ -232,6 +233,19 @@ local function load_pywal_colors()
     TelescopeSelection = { fg = colors.magenta, bg = colors.surface0, bold = true },
     TelescopeMatching = { fg = colors.blue },
     TelescopePromptPrefix = { fg = colors.color1 },
+    
+    -- Diagnostics
+    DiagnosticSignError = { fg = colors.red },
+    DiagnosticSignWarn = { fg = colors.yellow },
+    DiagnosticSignInfo = { fg = colors.blue },
+    DiagnosticSignHint = { fg = colors.cyan },
+    DiagnosticSignOk = { fg = colors.green },
+    DiagnosticError = { fg = colors.red },
+    DiagnosticWarn = { fg = colors.yellow },
+    DiagnosticInfo = { fg = colors.blue },
+    DiagnosticHint = { fg = colors.cyan },
+    DiagnosticOk = { fg = colors.green },
+
 
     -- Syntax
     Comment = { fg = colors.surface4 }, -- just comments
@@ -272,16 +286,15 @@ local function load_pywal_colors()
 
 
     -- Treesitter
-    ["@property"] = { fg = colors.magenta },
     ["@parameter"] = { fg = colors.red },
 
     -- https://github.com/catppuccin/nvim/blob/30fa4d122d9b22ad8b2e0ab1b533c8c26c4dde86/lua/catppuccin/groups/integrations/treesitter.lua
     -- Reference: https://github.com/nvim-treesitter/nvim-treesitter/blob/master/CONTRIBUTING.md
     -- Identifiers
-    -- ["@variable"] = { fg = C.text }, -- Any variable name that does not have another highlight.
+    ["@variable"] = { fg = colors.foreground }, -- Any variable name that does not have another highlight.
     ["@variable.builtin"] = { fg = colors.red }, -- Variable names that are defined by the languages, like this or self.
     ["@variable.parameter"] = { fg = colors.red }, -- For parameters of a function.
-    -- ["@variable.member"] = { fg = C.text }, -- For fields.
+    ["@variable.member"] = { fg = colors.foreground }, -- For fields.
 
     ["@constant"] = { link = "Constant" }, -- For constants
     ["@constant.builtin"] = { fg = colors.orange }, -- For constant that are built in the language: nil in Lua.
@@ -314,7 +327,7 @@ local function load_pywal_colors()
     ["@type.definition"] = { link = "Type" }, -- type definitions (e.g. `typedef` in C)
 
     ["@attribute"] = { link = "Constant" }, -- attribute annotations (e.g. Python decorators)
-    -- ["@property"] = { fg = C.text }, -- For fields, like accessing `bar` property on `foo.bar`. Overriden later for data languages and CSS.
+    ["@property"] = { fg = colors.foreground }, -- For fields, like accessing `bar` property on `foo.bar`. Overriden later for data languages and CSS.
 
     -- Functions
     ["@function"] = { link = "Function" }, -- For function (calls and definitions).
@@ -358,17 +371,17 @@ local function load_pywal_colors()
     ["@comment"] = { link = "Comment" },
     ["@comment.documentation"] = { link = "Comment" }, -- For comments documenting code
 
-    -- ["@comment.error"] = { fg = C.base, bg = colors.red },
-    -- ["@comment.warning"] = { fg = C.base, bg = colors.yellow },
-    -- ["@comment.hint"] = { fg = C.base, bg = colors.blue },
-    -- ["@comment.todo"] = { fg = C.base, bg = colors.red },
-    -- ["@comment.note"] = { fg = C.base, bg = C.rosewater },
+    ["@comment.error"] = { fg = colors.surface0, bg = colors.red },
+    ["@comment.warning"] = { fg = colors.surface0, bg = colors.yellow },
+    ["@comment.hint"] = { fg = colors.surface0, bg = colors.blue },
+    ["@comment.todo"] = { fg = colors.surface0, bg = colors.red },
+    ["@comment.note"] = { fg = colors.surface0, bg = colors.magenta },
 
     -- Markup
-    -- ["@markup"] = { fg = C.text }, -- For strings considerated text in a markup language.
+    ["@markup"] = { fg = colors.foreground }, -- For strings considerated text in a markup language.
     ["@markup.strong"] = { fg = colors.red }, -- bold
     ["@markup.italic"] = { fg = colors.red }, -- italic
-    -- ["@markup.strikethrough"] = { fg = C.text }, -- strikethrough text
+    ["@markup.strikethrough"] = { fg = colors.foreground }, -- strikethrough text
     ["@markup.underline"] = { link = "Underlined" }, -- underlined text
 
     ["@markup.heading"] = { fg = colors.blue }, -- titles like: # Example
@@ -387,7 +400,7 @@ local function load_pywal_colors()
 
     ["@markup.list"] = { fg = colors.blue },
     ["@markup.list.checked"] = { fg = colors.green }, -- todo notes
-    -- ["@markup.list.unchecked"] = { fg = C.overlay1 }, -- todo notes
+    ["@markup.list.unchecked"] = { fg = colors.surface2 }, -- todo notes
 
 
     -- Tags
@@ -423,13 +436,13 @@ local function load_pywal_colors()
     ["@property.class.css"] = { fg = colors.yellow },
     ["@type.css"] = { fg = colors.blue },
     ["@type.tag.css"] = { fg = colors.cyan },
-    -- ["@string.plain.css"] = { fg = C.text },
+    ["@string.plain.css"] = { fg = colors.foreground },
     ["@number.css"] = { fg = colors.orange },
     ["@keyword.directive.css"] = { link = "Keyword" }, -- CSS at-rules: https://developer.mozilla.org/en-US/docs/Web/CSS/At-rule.
 
     -- HTML
     ["@string.special.url.html"] = { fg = colors.green }, -- Links in href, src attributes.
-    -- ["@markup.link.label.html"] = { fg = C.text }, -- Text between <a></a> tags.
+    ["@markup.link.label.html"] = { fg = colors.foreground }, -- Text between <a></a> tags.
     ["@character.special.html"] = { fg = colors.red }, -- Symbols such as &nbsp;.
 
     -- TOML
@@ -470,7 +483,7 @@ local function load_pywal_colors()
     ["@comment.warning.gitcommit"] = { fg = colors.yellow },
 
     -- gitignore
-    -- ["@string.special.path.gitignore"] = { fg = C.text },
+    ["@string.special.path.gitignore"] = { fg = colors.foreground },
 
     -- Misc
     -- gitcommitSummary = { fg = C.rosewater },
@@ -511,6 +524,31 @@ local reload_pywal_colors = function()
   require("lualine.load_lualine").init()
 end
 
+local auto_reload_pywal_colors = function()
+  local colors_file = os.getenv("HOME") .. "/.cache/wal/colors.properties"
+  local last_mtime = 0
+  
+  local function check_and_reload()
+    local stat = vim.uv.fs_stat(colors_file)
+    if stat and stat.mtime.sec > last_mtime then
+      last_mtime = stat.mtime.sec
+      reload_pywal_colors()
+    end
+  end
+  
+  -- Initial check to set baseline mtime
+  local stat = vim.uv.fs_stat(colors_file)
+  if stat then
+    last_mtime = stat.mtime.sec
+  end
+  
+  -- Create timer that checks every 3 seconds
+  local timer = vim.uv.new_timer()
+  timer:start(0, 3000, vim.schedule_wrap(check_and_reload))
+  
+  return timer
+end
+
 -- -- Load colors on initial require
 -- load_pywal_colors()
 
@@ -522,6 +560,7 @@ vim.api.nvim_create_user_command('PywalReload', reload_pywal_colors, {
 
 -- Return the function for manual calling if needed
 return {
+  auto_reload_pywal_colors = auto_reload_pywal_colors,
   load_pywal_colors = load_pywal_colors,
   lualine_theme = lualine_theme,
   get_colors = get_colors,

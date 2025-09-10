@@ -22,6 +22,7 @@ require('github_link')
 require('claude')
 require('git_urls')
 require('pywalcolors').load_pywal_colors()
+require('pywalcolors').auto_reload_pywal_colors()
 require('lualine.load_lualine').init()
 
 vim.filetype.add({

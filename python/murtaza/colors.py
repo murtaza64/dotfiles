@@ -49,25 +49,32 @@ class PywalColors:
         ]
         
         # ANSI colors with semantic names
-        ansi = data['ansi']
-        self.black = ansi['black']
-        self.red = ansi['red']
-        self.green = ansi['green']
-        self.yellow = ansi['yellow']
-        self.blue = ansi['blue']
-        self.magenta = ansi['magenta']
-        self.cyan = ansi['cyan']
-        self.white = ansi['white']
+        self.black = colors['black']
+        self.red = colors['red']
+        self.green = colors['green']
+        self.yellow = colors['yellow']
+        self.blue = colors['blue']
+        self.magenta = colors['magenta']
+        self.cyan = colors['cyan']
+        self.white = colors['white']
         
         # Bright variants
-        self.bright_black = ansi['bright_black']
-        self.bright_red = ansi['bright_red']
-        self.bright_green = ansi['bright_green']
-        self.bright_yellow = ansi['bright_yellow']
-        self.bright_blue = ansi['bright_blue']
-        self.bright_magenta = ansi['bright_magenta']
-        self.bright_cyan = ansi['bright_cyan']
-        self.bright_white = ansi['bright_white']
+        self.bright_black = colors['bright_black']
+        self.bright_red = colors['bright_red']
+        self.bright_green = colors['bright_green']
+        self.bright_yellow = colors['bright_yellow']
+        self.bright_blue = colors['bright_blue']
+        self.bright_magenta = colors['bright_magenta']
+        self.bright_cyan = colors['bright_cyan']
+        self.bright_white = colors['bright_white']
+
+        # surfaces
+        self.surface0 = colors['surface0']
+        self.surface1 = colors['surface1']
+        self.surface2 = colors['surface2']
+        self.surface3 = colors['surface3']
+        self.surface4 = colors['surface4']
+        self.surface5 = colors['surface5']
     
     def get_color(self, index: int) -> str:
         """Get color by index (0-15)"""

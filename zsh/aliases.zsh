@@ -159,3 +159,7 @@ ssh-ec2-instance() {
     TERM=xterm ssh -i ~/.ssh/id_rsa_tri_team $user@$ip
   )
 }
+
+alias wal="uv run --directory ~/pywal -m pywal -i"
+alias walm="uv run --directory ~/pywal -m pywal --modify"
+alias wals="uv run --directory ~/pywal -m pywal --modify --shuffle"

@@ -3,44 +3,40 @@
 import subprocess
 import sys
 
+class MochaColors:
+    background = '#1e1e2e'
+    color0 = '#1e1e2e'
+    red = '#f38ba8'
+    color1 = '#f38ba8'
+    yellow = '#f9e2af'
+    color2 = '#f9e2af'
+    green = '#a6e3a1'
+    color3 = '#a6e3a1'
+    blue = '#89b4fa'
+    color4 = '#89b4fa'
+    magenta = '#cba6f7'
+    color5 = '#cba6f7'
+    cyan = '#94e2d5'
+    color6 = '#94e2d5'
+    foreground = '#cdd6f4'
+    text = '#cdd6f4'
+    color7 = '#cdd6f4'
+
+    # subtext1 = '#bac2de'
+    # subtext0 = '#a6adc8'
+    surface5 = '#9399b2'
+    surface4 = '#7f849c'
+    surface3 = '#6c7086'
+    surface2 = '#585b70'
+    surface1 = '#45475a'
+    surface0 = '#313244'
+
 try:
-    from murtaza.colors import get_colors
-    colors = get_colors()
+    from murtaza.walcolors import colors
+    colors = colors
 except ImportError:
     print("Warning: pywal colors not found")
-    colors = None
-
-# print(f"Loaded pywal colors: {colors}")
-
-# Catppuccin Mocha colors
-COLORS = {
-    'rosewater': '#f5e0dc',
-    'flamingo': '#f2cdcd', 
-    'pink': '#f5c2e7',
-    'mauve': '#cba6f7',
-    'red': '#f38ba8',
-    'maroon': '#eba0ac',
-    'peach': '#fab387',
-    'yellow': '#f9e2af',
-    'green': '#a6e3a1',
-    'teal': '#94e2d5',
-    'sky': '#89dceb',
-    'sapphire': '#74c7ec',
-    'blue': '#89b4fa',
-    'lavender': '#b4befe',
-    'text': '#cdd6f4',
-    'subtext1': '#bac2de',
-    'subtext0': '#a6adc8',
-    'overlay2': '#9399b2',
-    'overlay1': '#7f849c',
-    'overlay0': '#6c7086',
-    'surface2': '#585b70',
-    'surface1': '#45475a',
-    'surface0': '#313244',
-    'base': '#1e1e2e',
-    'mantle': '#181825',
-    'crust': '#11111b'
-}
+    colors = MochaColors()
 
 def build_window_icon():
     """Build dynamic window icon string"""
@@ -52,6 +48,7 @@ def build_window_icon():
         "docker": "󰡨",
         "./run.sh": "",
         "ssh": "",
+        "man": "",
     }
 
     # Regex patterns
@@ -101,17 +98,15 @@ def apply_theme():
     set_('status-right-length', '100')
     
     # Status content components
-    in_copy_mode = f"#[bg=3,fg={COLORS['base']},bold]#{{?#{{==:#{{pane_mode}},copy-mode}}, COPY ,}}"
-    in_view_mode = f"#[bg=3,fg={COLORS['base']},bold]#{{?#{{==:#{{pane_mode}},view-mode}}, VIEW ,}}"
-    in_prefix_mode = f"#[bg=1,fg={COLORS['base']},bold]#{{?client_prefix, PREFIX ,}}"
+    in_copy_mode = f"#[bg=3,fg={colors.background},bold]#{{?#{{==:#{{pane_mode}},copy-mode}}, COPY ,}}"
+    in_view_mode = f"#[bg=3,fg={colors.background},bold]#{{?#{{==:#{{pane_mode}},view-mode}}, VIEW ,}}"
+    in_prefix_mode = f"#[bg=1,fg={colors.background},bold]#{{?client_prefix, PREFIX ,}}"
     
-    cal_next = f"#[fg={COLORS['text']}]#(gcal tmux --icon-only --popup)"
+    cal_next = f"#[fg={colors.foreground}]#(gcal tmux --icon-only --popup)"
     
-    session_and_dir = f"#[fg={COLORS['peach']},bg=default,nobold]#(tmux-dir)"
+    session_and_dir = f"#[bg=default]#(tmux-dir)"
     
-    show_time = f"#[fg=2,italics]#(date +\"%a %b %d\") #[default,fg=4,bold]#(date +\"%H:%M\")"
-    if colors:
-        show_time = f"#[fg={colors.color3},italics]#(date +\"%a %b %d\") #[default,fg={colors.color4},bold]#(date +\"%H:%M\")"
+    show_time = f"#[fg={colors.color3},italics]#(date +\"%a %b %d\") #[default,fg={colors.color4},bold]#(date +\"%H:%M\")"
     
     show_gitmux = ' #(gitmux -cfg ~/dotfiles/gitmux.yaml "#{pane_current_path}")'
     
@@ -127,35 +122,31 @@ def apply_theme():
     set_('status-right', status_right)
     
     # Messages
-    set_('message-style', f"fg={COLORS['sky']},bg={COLORS['surface0']},align=centre")
-    set_('message-command-style', f"fg={COLORS['sky']},bg={COLORS['surface0']},align=centre")
+    set_('message-style', f"fg={colors.cyan},bg={colors.surface0},align=centre")
+    set_('message-command-style', f"fg={colors.cyan},bg={colors.surface0},align=centre")
     
     # Panes
-    set_('pane-border-style', f"fg={COLORS['surface2']}")
+    set_('pane-border-style', f"fg={colors.surface2}")
     set_('pane-active-border-style', "fg=4")
     
     # Windows
-    setw('window-status-activity-style', f"fg={COLORS['text']},bg={COLORS['base']},none")
+    setw('window-status-activity-style', f"fg={colors.foreground},bg={colors.background},none")
     setw('window-status-separator', '')
     
     # Build dynamic window icon
     window_icon = build_window_icon()
     
     # Window formats
-    window_format = f"#[fg={COLORS['surface2']},bg=default] {window_icon}"
-    if colors:
-        window_format = f"#[fg={colors.bright_black},bg=default] {window_icon}"
+    window_format = f"#[fg={colors.surface2},bg=default] {window_icon}"
 
-    current_window_format = f"#[fg=4,bg=default] {window_icon}"
-    if colors:
-        current_window_format = f"#[fg={colors.color1},bg=default] {window_icon}"
+    current_window_format = f"#[fg={colors.color1},bg=default] {window_icon}"
     
     setw('window-status-format', window_format)
     setw('window-status-current-format', current_window_format)
     
     # Modes
-    setw('clock-mode-colour', COLORS['blue'])
-    setw('mode-style', f"fg={COLORS['pink']} bg={COLORS['surface2']} bold")
+    setw('clock-mode-colour', colors.blue)
+    setw('mode-style', f"fg={colors.color5} bg={colors.surface2} bold")
     
     # Execute all commands in single subprocess call
     # print(commands)
