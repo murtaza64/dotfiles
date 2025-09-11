@@ -131,6 +131,7 @@ end
 
 return {
   -- LSP Configuration & Plugins
+  on_attach=on_attach,
   'neovim/nvim-lspconfig',
   dependencies = {
     -- Automatically install LSPs to stdpath for neovim
@@ -190,6 +191,7 @@ return {
 
     mason_lspconfig.setup {
       ensure_installed = vim.tbl_keys(servers),
+      automatic_enable = false,
     }
     -- mason_lspconfig.setup_handlers {
     --   function(server_name)
@@ -259,19 +261,7 @@ return {
       filetypes = { 'haskell', 'lhaskell', 'cabal' },
     }
 
-    -- require('lspconfig')['basedpyright'].setup{
-    --   settings = {
-    --     basedpyright = {
-    --       analysis = {
-    --         typeCheckingMode = "standard"
-    --       },
-    --     }
-    --   },
-    --   on_attach = on_attach,
-    --   root_markers = { ".python-version", "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" }
-    -- }
-    vim.lsp.enable('basedpyright')
-    vim.lsp.config('basedpyright', {
+    require('lspconfig')['basedpyright'].setup{
       settings = {
         basedpyright = {
           analysis = {
@@ -280,7 +270,19 @@ return {
         }
       },
       on_attach = on_attach,
-    })
+      root_markers = { ".python-version", "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" }
+    }
+    -- vim.lsp.enable('basedpyright')
+    -- vim.lsp.config('basedpyright', {
+    --   settings = {
+    --     basedpyright = {
+    --       analysis = {
+    --         typeCheckingMode = "standard"
+    --       },
+    --     }
+    --   },
+    --   on_attach = on_attach,
+    -- })
     
 
     require('lspconfig')['svelte'].setup {

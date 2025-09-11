@@ -26,12 +26,15 @@ vim.keymap.set('c', '<CR>', "wildmenumode()? '<C-y>' : '<CR>'", { expr = true, s
 -- vim.keymap.set('n', '<CR>', ":noh<CR><CR>", { silent = true })
 
 vim.keymap.set('n', '<leader>o', function()
-  -- vim.cmd.Oil()
-  require('oil').open(nil, {preview={vertical=true}})
-  -- vim.wait(50)
-  -- require('oil.actions').preview.callback()
-  -- vim.wait(50)
-  -- vim.api.nvim_feedkeys('L', 'n', false)
+  -- Only use preview mode if not in a split
+  local win_count = #vim.api.nvim_tabpage_list_wins(0)
+  local oil_config = {}
+  
+  if win_count == 1 then
+    oil_config.preview = {vertical=true}
+  end
+  
+  require('oil').open(nil, oil_config)
 end, { desc = 'Open [o]il' })
 
 vim.keymap.set('n', '<leader>gg', '<cmd>:Neogit<cr>', { silent=true, desc = 'Open [n]eogit' })

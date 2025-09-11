@@ -96,6 +96,7 @@ require('lazy').setup({
   { import = 'plugins.nvim-treesitter' },
   { import = 'plugins.oil' },
   { import = 'plugins.telescope' },
+  { import = 'plugins.python_repl' },
 },
 {
   change_detection = { enabled = false },

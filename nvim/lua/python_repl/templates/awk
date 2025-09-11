@@ -1,0 +1,18 @@
+#!/usr/bin/awk -f
+
+# AWK Processing Mode - Text processing with AWK
+# Modify the script below to process text data
+#
+# Useful patterns:
+# { print }                   # Print all lines (default)
+# { print $1 }                # Print first field
+# NR > 1 { print }            # Skip header line
+# /pattern/ { print }         # Print lines matching pattern
+# { sum += $2 } END { print sum }  # Sum second column
+# { count[$1]++ } END { for (i in count) print i, count[i] }  # Count occurrences
+# { print NR ": " $0 }        # Add line numbers
+# length($0) > 80 { print }   # Print long lines
+# { gsub(/old/, "new"); print }  # Replace text
+
+# Default: print all lines
+{ print }

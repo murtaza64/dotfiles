@@ -163,3 +163,5 @@ ssh-ec2-instance() {
 alias wal="uv run --directory ~/pywal -m pywal -i"
 alias walm="uv run --directory ~/pywal -m pywal --modify"
 alias wals="uv run --directory ~/pywal -m pywal --modify --shuffle"
+
+alias ipython="uv run --with ipython ipython"

@@ -49,6 +49,7 @@ def build_window_icon():
         "./run.sh": "",
         "ssh": "",
         "man": "",
+        "aws": "󰸏",
     }
 
     # Regex patterns

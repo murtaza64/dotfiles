@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Script REPL Neovim - Shell pipeline wrapper
+# Usage: cat file.txt | nvim-python-repl [template]
+
+# Parse template argument
+TEMPLATE=${1:-python}
+
+# Create temporary files for input and output
+TEMP_INPUT=$(mktemp)
+TEMP_OUTPUT=$(mktemp)
+trap 'rm -f "$TEMP_INPUT" "$TEMP_OUTPUT"' EXIT
+
+# Read stdin into temp file
+cat > "$TEMP_INPUT"
+
+# Check if temp file is empty
+if [ ! -s "$TEMP_INPUT" ]; then
+    echo "Error: No input provided" >&2
+    exit 1
+fi
+
+# Launch nvim with Script REPL in stdin processing mode
+nvim -c "PythonReplProcessStdin $TEMP_INPUT $TEMP_OUTPUT $TEMPLATE" < /dev/tty > /dev/tty 2> /dev/tty
+
+# After nvim exits, output the results if output file exists
+if [ -s "$TEMP_OUTPUT" ]; then
+    cat "$TEMP_OUTPUT"
+fi

@@ -1,0 +1,23 @@
+#!/usr/bin/env jq -f
+
+# JQ Processing Mode - Interactive JSON processing
+# Modify the filter below to process JSON data
+#
+# Useful examples:
+# . | keys                    # Show all keys in JSON objects
+# .[] | select(.name)         # Filter objects that have a 'name' field
+# .[] | .name                 # Extract 'name' field from all objects
+# map(select(.age > 21))      # Filter array items by age
+# group_by(.category)         # Group objects by category
+# sort_by(.timestamp)         # Sort array by timestamp
+# length                      # Count items in array
+# .[0:5]                      # Take first 5 items
+# has("field")                # Check if object has field
+# {name, age}                 # Construct new object with specific fields
+# {id, user: {name, email}}   # Construct nested object
+# map({id, title: .name})     # Transform array to new object structure
+# to_entries                  # Transform object into array of {key, value} pairs
+# to_entries | map({k: .key, v: .value})  # Custom k,v pair format
+
+# Default: pass through all data as-is
+.

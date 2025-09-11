@@ -1,0 +1,29 @@
+#!/bin/bash
+set -eo pipefail
+# pydata - Interactive Python session with piped data
+# Usage: echo "data" | pydata
+#        cat file.json | pydata
+
+# Create temp files
+INPUT_FILE=$(mktemp)
+OUTPUT_FILE=$(mktemp)
+trap "rm -f $INPUT_FILE $OUTPUT_FILE" EXIT
+
+# Read stdin into temp file
+cat > "$INPUT_FILE"
+
+nvim $INPUT_FILE < /dev/tty > /dev/tty 2>&1
+
+# After Python session ends, handle output
+if [ -s "$INPUT_FILE" ]; then
+    # Check if stdout is a terminal (end of pipe) or being redirected/piped
+    if [ -t 1 ]; then
+        # stdout is a terminal - save to persistent temp file
+        SAVED_FILE="/tmp/nvimedit_output_$(date +%Y%m%d_%H%M%S).txt"
+        cp "$INPUT_FILE" "$SAVED_FILE"
+        echo "$SAVED_FILE"
+    else
+        # stdout is redirected/piped - send to stdout
+        cat "$INPUT_FILE"
+    fi
+fi

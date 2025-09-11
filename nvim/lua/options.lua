@@ -112,3 +112,4 @@ if distro_name and distro_name ~= "" then
   }
 end
 -- vim.o.clipboard = 'unnamedplus'
+vim.g.loaded_python_provider = 0
