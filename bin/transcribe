@@ -4,24 +4,32 @@ set -e
 # Simple audio recording and transcription script
 # Records until user stops with Ctrl+C
 
-TEMP_DIR=$(mktemp -d)
+TEMP_DIR=/tmp/transcribe_$(date +%Y-%m-%d_%H-%M-%S)
+mkdir -p "$TEMP_DIR"
 AUDIO_FILE="$TEMP_DIR/recording.wav"
 OUTPUT_FILE="$TEMP_DIR/output"
 WHISPER_MODEL="$HOME/whisper.cpp/models/ggml-large-v3-turbo.bin"
 WHISPER_CLI="$HOME/whisper.cpp/build/bin/whisper-cli"
 
-echo "Recording... Press Enter or Ctrl+D to stop and transcribe." >&2
+echo "Recording to $TEMP_DIR..." >&2
+echo "Press any key to end recording, Escape/^C to cancel." >&2
 
 # Start sox in background
 sox -t coreaudio "MacBook Pro Microphone" "$AUDIO_FILE" &
 SOX_PID=$!
 
-# Wait for user input (Enter or Ctrl+D)
-read -r
+# Wait for single character input
+read -n 1 -r INPUT
 
 # Kill sox
 kill -INT $SOX_PID 2>/dev/null
 wait $SOX_PID 2>/dev/null
+
+# Check if user pressed escape to cancel
+if [ "$INPUT" = $'\e' ] || [ "$INPUT" = $'\033' ]; then
+    echo -e "\nRecording cancelled." >&2
+    exit 0
+fi
 
 echo "Recording stopped. Transcribing..." >&2
 

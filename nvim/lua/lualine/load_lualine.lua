@@ -131,18 +131,18 @@ local get_opts = function()
     return out
   end
 
-  -- local noice_macro = {
-  --   function()
-  --     local mode = require("noice").api.statusline.mode.get()
-  --     -- if mode starts with recording
-  --     if string.find(mode, 'recording') then
-  --       return string.gsub(mode, 'recording @', '󰑋 ')
-  --     end
-  --     return mode
-  --   end,
-  --   cond = require("noice").api.statusline.mode.has,
-  --   color = { fg = colors.red, gui = 'bold' },
-  -- }
+  local noice_macro = {
+    function()
+      local mode = require("noice").api.statusline.mode.get()
+      -- if mode starts with recording
+      if string.find(mode, 'recording') then
+        return string.gsub(mode, 'recording @', '󰑋 ')
+      end
+      return mode
+    end,
+    cond = require("noice").api.statusline.mode.has,
+    color = { fg = colors.red, gui = 'bold' },
+  }
 
   local copilot = {
     'copilot',
@@ -188,7 +188,7 @@ local get_opts = function()
             return ""
           end,
         },
-        -- noice_macro,
+        noice_macro,
         {
           harpoon,
           color = { fg = colors.cyan, gui = 'italic' },

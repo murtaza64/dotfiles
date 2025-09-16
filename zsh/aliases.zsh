@@ -67,39 +67,10 @@ nvim () {
   done
 }
 
-# duo_gpt_cmd="python3 ~/gpt.py --prompt='short-md' --postprocess-command='glow -w 100 -s /Users/murtaza/dotfiles/glow-custom.json'"
-# alias '?'="$duo_gpt_cmd ask"
-# alias '??'="$duo_gpt_cmd continue"
-# alias '?!'="$duo_gpt_cmd clear"
-# alias '?.'="$duo_gpt_cmd"
-# alias '?y'="$duo_gpt_cmd copy"
-# duo_gpt_cmd=(
-#   python3 ~/gpt.py 
-#   --prompt='short-md' 
-#   --postprocess-command='glow -w 100 -s /Users/murtaza/dotfiles/glow-custom.json'
-# )
+alias '?'=ask
+alias '?!'='ask -c'
+alias '?y'='ask -y'
 
-# ask_and_pipe_glow() {
-#   gum spin --show-output -- python3 ~/gpt.py --prompt='short-md' ask $* | glow -w 100 -s ~/dotfiles/glow-custom.json
-# }
-ask_and_pipe_glow() {
-  gum spin --show-output --title "Clauding..." -- /Users/murtaza/.claude/local/claude --append-system-prompt "$(cat ~/scratch/murtaza/ai_prompts/short-md.prompt)" -p "$*" | glow -w 100 -s ~/dotfiles/glow-custom.json
-}
-alias '?'=ask_and_pipe_glow
-
-ask_and_put_cmdline() {
-  # ${=duo_gpt_cmd} ask | tee /tmp/gpt_command.txt
-  $duo_gpt_cmd ask $* | tee /tmp/gpt_command.txt
-  # remove comments
-  cmd=$(cat /tmp/gpt_command.txt | sed 's_#.*__g' | sed '/^$/d' | sed 's/\x1b\[[0-9;]*m//g')
-  # # put command on zsh command line
-  print -z $cmd
-  # send key <esc>dd to move the command into the register
-  zle -U "\edd"
-}
-# zle -N ask_and_put_cmdline ask_and_put_cmdline
-
-# download a jenkins log and open it in nvim
 jl() {
   if [[ ! $1 =~ .*job/.*/[0-9]+ ]]; then
     echo "not a jenkins run url"

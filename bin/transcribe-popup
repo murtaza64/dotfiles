@@ -10,12 +10,16 @@ TEMP_FILE=$(mktemp)
 trap "rm -f $TEMP_FILE" EXIT
 
 # Run transcription in tmux popup, redirecting output to temp file
-tmux display-popup -Ew60% -h20% -b rounded -S fg=cyan -T "speech to text" "$TRANSCRIBE_SCRIPT > $TEMP_FILE"
+tmux display-popup -Ew60% -h20 -b rounded -S fg=red -T " 󰑋 speech-to-text" "$TRANSCRIBE_SCRIPT > $TEMP_FILE"
 
 # If we got output, load it into tmux buffer and paste
 if [ -s "$TEMP_FILE" ]; then
-    # Load output into tmux buffer
-    tmux load-buffer -b transcription "$TEMP_FILE"
+    # If single line, trim trailing newline
+    if [ $(wc -l < "$TEMP_FILE") -eq 1 ]; then
+        printf '%s' "$(cat "$TEMP_FILE")" | tmux load-buffer -b transcription -
+    else
+        tmux load-buffer -b transcription "$TEMP_FILE"
+    fi
     # Paste into current client
     tmux paste-buffer -pb transcription
 fi

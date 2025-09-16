@@ -123,11 +123,11 @@ return {
       vim.keymap.set({ "o", "x" }, "a|", '<cmd>lua require("various-textobjs").shellPipe("outer")<CR>')
     end,
   },
-  {
-    'windwp/nvim-autopairs',
-    event = "InsertEnter",
-    opts = {}
-  },
+  -- {
+  --   'windwp/nvim-autopairs',
+  --   event = "InsertEnter",
+  --   opts = {}
+  -- },
   {
     "monaqa/dial.nvim",
     init = function()

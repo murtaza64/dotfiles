@@ -1,0 +1,221 @@
+#!/bin/bash
+
+# Claude CLI helper with sticky session management
+
+STICKY_SESSION_FILE="$HOME/.claude/sticky_session"
+CLAUDE_CLI="$HOME/.claude/local/claude"
+SYSTEM_PROMPT="$HOME/dotfiles/short-md.prompt"
+GLOW_CONFIG="$HOME/dotfiles/glow-custom.json"
+CACHE_FILE="$HOME/.claude/last_response.json"
+
+# Create claude directory if it doesn't exist
+mkdir -p "$HOME/.claude"
+
+show_help() {
+    cat << EOF
+Usage: ask [OPTIONS] [prompt]
+
+Options:
+    -s, --session <id>     Use specific session ID
+    -c, --clear            Clear sticky session (and start fresh if prompt provided)
+    -y, --yank             Select from cached examples to copy
+    -i, --interactive      Interactive mode: ask question, then offer to copy examples
+    -h, --help            Show this help message
+
+By default, questions continue in the last used session (sticky session).
+
+Examples:
+    ask "What is the weather like?"
+    ask -c "Start a new conversation"
+    ask -c                 (just clear session)
+    ask -y                 (select from cached examples)
+    ask -i                 (interactive: ask + copy flow)
+EOF
+}
+
+get_sticky_session() {
+    if [ -f "$STICKY_SESSION_FILE" ]; then
+        cat "$STICKY_SESSION_FILE"
+    else
+        # No sticky session exists
+        echo ""
+    fi
+}
+
+set_sticky_session() {
+    echo "$1" > "$STICKY_SESSION_FILE"
+    # echo "Sticky session set to: $1" >&2
+}
+
+copy_selected_example() {
+    local selected="$1"
+    if [ -n "$selected" ]; then
+        # Trim trailing newline if single line
+        if [ $(echo "$selected" | wc -l) -eq 1 ]; then
+            printf '%s' "$selected" | tmux-copy
+        else
+            echo "$selected" | tmux-copy
+        fi
+        return 0
+    fi
+    return 1
+}
+
+main() {
+    local session_id=""
+    local prompt=""
+    local clear_session=false
+    local yank_mode=false
+    local interactive_mode=false
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -s|--session)
+                session_id="$2"
+                shift 2
+                ;;
+            -c|--clear)
+                clear_session=true
+                shift
+                ;;
+            -y|--yank)
+                yank_mode=true
+                shift
+                ;;
+            -i|--interactive)
+                interactive_mode=true
+                shift
+                ;;
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            -*)
+                echo "Unknown option: $1" >&2
+                show_help >&2
+                exit 1
+                ;;
+            *)
+                prompt="$*"
+                break
+                ;;
+        esac
+    done
+
+    # Handle yank mode
+    if [ "$yank_mode" = true ]; then
+        if [ ! -f "$CACHE_FILE" ]; then
+            echo "No cached response found. Run a query first." >&2
+            exit 1
+        fi
+
+        # Extract COPYABLE_EXAMPLES from cached response
+        cached_examples=$(jq -r '.COPYABLE_EXAMPLES' "$CACHE_FILE" 2>/dev/null)
+        if [ "$cached_examples" = "null" ] || [ -z "$cached_examples" ]; then
+            echo "No copyable examples found in cached response." >&2
+            exit 1
+        fi
+
+        # Use select-from-array and copy selected item
+        set -o pipefail
+        selected=$(echo "$cached_examples" | select-from-array)
+        copy_selected_example "$selected"
+        exit $!
+    fi
+
+    # Allow clearing session without a prompt
+    if [ "$clear_session" = true ] && [ -z "$prompt" ]; then
+        if [ -f "$STICKY_SESSION_FILE" ]; then
+            CURRENT_SESSION=$(cat "$STICKY_SESSION_FILE")
+            rm -f "$STICKY_SESSION_FILE"
+            echo "Cleared sticky session: $CURRENT_SESSION"
+        else
+            echo "No sticky session to clear"
+        fi
+        exit 0
+    fi
+
+    if [ -z "$prompt" ]; then
+        # Interactively prompt for input
+        # echo -n "Ask claude: " >&2
+        # read -r prompt
+        prompt=$(gum input --no-show-help --placeholder "Ask Claude...")
+        if [ -z "$prompt" ]; then
+            echo "Error: No prompt provided" >&2
+            exit 1
+        fi
+    fi
+
+    # Handle clearing session
+    if [ "$clear_session" = true ]; then
+        if [ -f "$STICKY_SESSION_FILE" ]; then
+            CURRENT_SESSION=$(cat "$STICKY_SESSION_FILE")
+            rm -f "$STICKY_SESSION_FILE"
+            echo "Cleared sticky session: $CURRENT_SESSION" >&2
+        fi
+        # Don't set session_id, let Claude create a new one
+        session_id=""
+    fi
+
+    # Use specified session or get sticky session
+    if [ -z "$session_id" ]; then
+        session_id=$(get_sticky_session)
+    fi
+
+    # Build Claude command with JSON output to extract session ID
+    local claude_cmd="$CLAUDE_CLI --append-system-prompt \"\$(cat \"$SYSTEM_PROMPT\")\""
+
+    # Only add session-id if we have one
+    if [ -n "$session_id" ]; then
+        claude_cmd="$claude_cmd --resume \"$session_id\""
+    fi
+
+    claude_cmd="$claude_cmd -p --output-format json \"$prompt\""
+
+    # Execute command with spinner
+    local output
+    output=$(spinner --color magenta --title "Clauding" "$claude_cmd")
+
+    # Extract and save the session ID using jq
+    new_session_id=$(echo "$output" | jq -r '.session_id')
+    if [ -n "$new_session_id" ] && [ "$new_session_id" != "null" ]; then
+        set_sticky_session "$new_session_id"
+    fi
+
+    # Parse Claude's JSON response
+    claude_response=$(echo "$output" | jq -r '.result')
+
+    # Cache the parsed response
+    echo "$claude_response" > "$CACHE_FILE"
+
+    # Extract HELP and display via glow
+    help_content=$(echo "$claude_response" | jq -r '.HELP' 2>/dev/null)
+    if [ "$help_content" != "null" ] && [ -n "$help_content" ]; then
+        echo "$help_content" | glow -w 100 -s "$GLOW_CONFIG"
+    else
+        # Fallback: display raw response if not in expected JSON format
+        echo "$claude_response"
+    fi
+
+    # Handle interactive mode
+    if [ "$interactive_mode" = true ]; then
+        # Check if there are copyable examples
+        copyable_examples=$(echo "$claude_response" | jq -r '.COPYABLE_EXAMPLES' 2>/dev/null)
+        if [ "$copyable_examples" != "null" ] && [ -n "$copyable_examples" ] && [ "$copyable_examples" != "[]" ]; then
+            # Ask user if they want to copy
+            if gum confirm --no-show-help "Copy example?"; then
+                # Use select-from-array and copy
+                selected=$(echo "$copyable_examples" | select-from-array)
+                if [ $? -eq 0 ] && copy_selected_example "$selected"; then
+                    echo "Copied to clipboard!" >&2
+                fi
+            fi
+
+        else
+            exit 3
+        fi
+    fi
+}
+
+main "$@"

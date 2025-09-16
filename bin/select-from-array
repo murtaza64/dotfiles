@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+import sys
+import json
+import argparse
+
+def select_from_array(array_json):
+    """Select an item from a JSON array and output it."""
+    try:
+        items = json.loads(array_json)
+    except json.JSONDecodeError:
+        print("Error: Invalid JSON input", file=sys.stderr)
+        return 1
+
+    if not isinstance(items, list):
+        print("Error: Input must be a JSON array", file=sys.stderr)
+        return 1
+
+    if not items:
+        print("Error: Array is empty", file=sys.stderr)
+        return 1
+
+    if len(items) == 1:
+        # Only one item, just output it
+        print(items[0])
+        return 0
+
+    # Create preview versions for gum choose
+    previews = []
+    for item in items:
+        preview = item.replace('\n', '\\n')[:60]
+        if len(item) > 60:
+            preview += "..."
+        previews.append(preview)
+
+    try:
+        # Use gum choose with previews
+        import subprocess
+        cmd = ['gum', 'choose', '--height=6', '--no-show-help', '--header=Choose snippet:'] + previews
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
+
+        if result.returncode != 0:
+            # User cancelled or error
+            return 1
+
+        selected_preview = result.stdout.strip()
+
+        # Find the original item that matches this preview
+        for i, preview in enumerate(previews):
+            if preview == selected_preview:
+                print(items[i])
+                return 0
+
+        print("Error: Could not find selected item", file=sys.stderr)
+        return 1
+
+    except FileNotFoundError:
+        print("Error: gum command not found", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        return 1
+
+def main():
+    parser = argparse.ArgumentParser(description="Select an item from a JSON array")
+    parser.add_argument("array", nargs="?", help="JSON array as string (or read from stdin)")
+
+    args = parser.parse_args()
+
+    if args.array:
+        array_json = args.array
+    else:
+        # Read from stdin
+        try:
+            array_json = sys.stdin.read().strip()
+        except KeyboardInterrupt:
+            return 1
+
+    if not array_json:
+        parser.error("No input provided")
+
+    return select_from_array(array_json)
+
+if __name__ == "__main__":
+    sys.exit(main())

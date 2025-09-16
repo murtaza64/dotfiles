@@ -2,7 +2,7 @@ return {
   "folke/noice.nvim",
   event = "VeryLazy",
   name = 'noice',
-  enabled = false,
+  -- enabled = false,
   opts = {
     cmdline = {
       enabled = true,

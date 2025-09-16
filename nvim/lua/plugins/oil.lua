@@ -14,8 +14,8 @@ return {
         signcolumn = "yes:2",
       },
       keymaps = {
-        ["h"] = "actions.parent",
-        ["l"] = "actions.select",
+        ["H"] = "actions.parent",
+        ["L"] = "actions.select",
         ["q"] = "actions.close",
         ["gi"] = {
           callback = function()

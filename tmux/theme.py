@@ -44,19 +44,19 @@ def build_window_icon():
     window_icons = {
         "zsh": "",
         "nvim": "",
-        "claude": "󰧑",
+        "claude": "󰚩",
         "docker": "󰡨",
         "./run.sh": "",
-        "ssh": "",
+        "ssh": "󰢩",
         "man": "",
         "aws": "󰸏",
     }
 
     # Regex patterns
     regex_patterns = {
-        "python3?|uv": "",
+        "python3?|uv|bay.*": "󰌠",
         "btop|htop|top": "",
-        "git|gd|gcamp|gcmp|gcm|gcam|gs|gl": "",
+        "git|gd|gcamp|gcmp|gcm|gcam|gs|gl": "󰊢",
     }
     
     # Build conditionals
