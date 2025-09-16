@@ -1,8 +1,8 @@
 #!/bin/bash
 set -eo pipefail
-# pydata - Interactive Python session with piped data
-# Usage: echo "data" | pydata
-#        cat file.json | pydata
+# edit a stream in nvim
+# Usage: echo "data" | nvimedit
+#        cat file.json | nvimedit > edited_file.json
 
 # Create temp files
 INPUT_FILE=$(mktemp)
@@ -21,9 +21,7 @@ if [ -s "$INPUT_FILE" ]; then
         # stdout is a terminal - save to persistent temp file
         SAVED_FILE="/tmp/nvimedit_output_$(date +%Y%m%d_%H%M%S).txt"
         cp "$INPUT_FILE" "$SAVED_FILE"
-        echo "$SAVED_FILE"
-    else
-        # stdout is redirected/piped - send to stdout
-        cat "$INPUT_FILE"
+        echo "edited file: $SAVED_FILE" >&2
     fi
+    cat "$INPUT_FILE"
 fi
