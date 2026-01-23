@@ -76,17 +76,17 @@ button:hover {
 #workspaces button:hover {
     text-decoration: none;
     text-shadow: none;
-    border: 2px solid @color5;
+    border: 2px solid @color1;
 }
 
 #workspaces button.active {
-    background-color: @color5;
-    border: 2px solid @color5;
+    background-color: @color1;
+    border: 2px solid @color1;
     color: @background;
 }
 
 #workspaces button.urgent {
-    background-color: @color1;
+    background-color: @red;
 }
 
 #mode {
@@ -201,12 +201,12 @@ label:focus {
 
 #cpu {
     /* background-color: @color3; */
-    color: @color3;
-    border-color: @color3;
+    color: @color4;
+    border-color: @color4;
 }
 
 #cpu:hover {
-    background-color: @color3;
+    background-color: @color4;
     color: @background;
 }
 
@@ -224,11 +224,11 @@ label:focus {
 
 #network {
     /* background-color: @color6; */
-    border-color: @color6;
-    color: @color6;
+    border-color: @color3;
+    color: @color3;
 }
 #network:hover {
-    background-color: @color6;
+    background-color: @color3;
     color: @background;
     /* opacity: 0.8; */
 }

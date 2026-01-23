@@ -96,6 +96,14 @@ else
     log "moar not found"
 fi
 
+if command -v moor >/dev/null; then
+    export PAGER='moor'
+    export MANPAGER='moor'
+    export MOOR='--no-statusbar'
+else
+    log "moor not found"
+fi
+
 # don't beep when triggering menu complete
 unsetopt LIST_BEEP
 
