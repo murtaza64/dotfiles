@@ -217,6 +217,7 @@ local function load_pywal_colors()
   local highlights = {
     Normal = { bg = colors.background, fg = colors.foreground },
     Title = { fg = colors.blue, bold = true },
+    NormalFloat = { bg = colors.surface0 },
 
     -- UI
     CursorLine = { bg = colors.surface0 }, -- slightly lighter than background
@@ -255,6 +256,24 @@ local function load_pywal_colors()
     DiagnosticInfo = { fg = colors.blue },
     DiagnosticHint = { fg = colors.cyan },
     DiagnosticOk = { fg = colors.green },
+    LspDiagnosticsError = { fg = colors.red },
+    LspDiagnosticsWarning = { fg = colors.yellow },
+    LspDiagnosticsInfo = { fg = colors.blue },
+    LspDiagnosticsHint = { fg = colors.cyan },
+    LspDiagnosticsOk = { fg = colors.green },
+    LspDiagnosticsUnderlineError = { sp = colors.red, undercurl=true },
+    LspDiagnosticsUnderlineWarning = { sp = colors.yellow, undercurl=true },
+    LspDiagnosticsUnderlineInfo = { sp = colors.blue, undercurl=true },
+    LspDiagnosticsUnderlineHint = { sp = colors.cyan, undercurl=true },
+    DiagnosticUnderlineError = { sp = colors.red, undercurl=true },
+    DiagnosticUnderlineWarn = { sp = colors.yellow, undercurl=true },
+    DiagnosticUnderlineInfo = { sp = colors.blue, undercurl=true },
+    DiagnosticUnderlineHint = { sp = colors.cyan, undercurl=true },
+    DiagnosticFloatingError = { fg = colors.red },
+    DiagnosticFloatingWarn = { fg = colors.yellow },
+    DiagnosticFloatingInfo = { fg = colors.blue },
+    DiagnosticFloatingHint = { fg = colors.cyan },
+    DiagnosticFloatingOk = { fg = colors.cyan },
 
     -- Indentation
     Whitespace = { fg = colors.surface2 },

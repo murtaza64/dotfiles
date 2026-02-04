@@ -178,14 +178,6 @@ return {
     'WhoIsSethDaniel/mason-tool-installer.nvim',
     'ray-x/lsp_signature.nvim',
 
-    -- Couldn't get this to work
-    -- {
-    --   'xbase-lab/xbase',
-    --   build = 'make install',
-    --   config = function()
-    --     require('xbase').setup({})
-    --   end,
-    -- },
 
     {
       'hrsh7th/nvim-cmp',
@@ -234,7 +226,6 @@ return {
     require('mason-tool-installer').setup {
       ensure_installed = ensure_installed,
     }
-    -- (legacy mason-lspconfig handlers removed; use vim.lsp.config/enable)
     -- Configure and enable servers (nvim 0.11+)
     for name, cfg in pairs(servers) do
       cfg = cfg or {}
@@ -244,29 +235,6 @@ return {
       vim.lsp.config(name, cfg)
       vim.lsp.enable(name)
     end
-
-    local shellcheck = {
-      prefix = 'shellcheck',
-      -- lintCommand = 'shellcheck --color=never --format=gcc -',
-      lintIgnoreExitCode = true,
-      rootMarkers = {},
-      lintCommand = 'shellcheck -f gcc -x',
-      lintSource = 'shellcheck',
-      lintFormats = {
-        '%f:%l:%c: %trror: %m',
-        '%f:%l:%c: %tarning: %m',
-        '%f:%l:%c: %tote: %m'
-      }
-    }
-    local jenkins = {
-      prefix = 'jenkins',
-      lintSource = 'jenkins',
-      lintCommand = 'jenkins-validate',
-      lintIgnoreExitCode = true,
-      lintFormats = {
-        '%l:%c: %m'
-      }
-    }
 
     vim.diagnostic.config {
       severity_sort = true,
