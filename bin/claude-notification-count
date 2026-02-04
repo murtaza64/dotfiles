@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+"""
+Claude notification count for tmux status bar.
+Returns formatted count or empty string if no notifications.
+"""
+
+import json
+from pathlib import Path
+
+NOTIFICATIONS_FILE = Path.home() / '.cache' / 'claude-notifications.json'
+
+
+def main():
+    if not NOTIFICATIONS_FILE.exists():
+        return
+
+    try:
+        notifications = json.loads(NOTIFICATIONS_FILE.read_text())
+        count = len(notifications)
+        if count > 0:
+            print(f"󰚩 {count}")
+    except (json.JSONDecodeError, IOError):
+        pass
+
+
+if __name__ == '__main__':
+    main()

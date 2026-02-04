@@ -10,6 +10,9 @@ alias gds="git diff --staged"
 alias gl="git log --pretty=oneline-custom"
 alias pr="create-or-open-pr"
 alias gcm="git commit -m"
+alias oc="opencode"
+alias repo="gh repo view --web"
+alias hound="duo hound"
 if which eza > /dev/null; then
   alias ls="eza --icons always"
   alias ll="eza --icons -al --git"
@@ -136,3 +139,182 @@ alias walm="uv run --directory ~/pywal -m pywal --modify"
 alias wals="uv run --directory ~/pywal -m pywal --modify --shuffle"
 
 alias ipython="uv run --with ipython ipython"
+
+# Git worktree helpers
+wt-add() {
+  local project=$(basename $(git rev-parse --show-toplevel))
+  local branch=$1
+  local worktree_path="$HOME/worktrees/$project/$branch"
+  mkdir -p "$HOME/worktrees/$project"
+  git worktree add "$worktree_path" -b "$branch" 2>/dev/null || \
+  git worktree add "$worktree_path" "$branch" || return 1
+  tmux-sessionizer "$worktree_path"
+}
+
+wt-rm() {
+  local branch=$1
+  local project
+  local worktree_path
+  local session_name
+  local main_repo
+
+  # If no branch provided, try to detect from current directory
+  if [[ -z "$branch" ]]; then
+    if [[ "$PWD" == "$HOME/worktrees/"* ]]; then
+      # Extract project and branch from current path: ~/worktrees/project/branch/...
+      local rel_path="${PWD#$HOME/worktrees/}"
+      project="${rel_path%%/*}"
+      local rest="${rel_path#*/}"
+      branch="${rest%%/*}"
+      if [[ -z "$branch" || "$branch" == "$project" ]]; then
+        echo "Could not detect worktree branch from current directory" >&2
+        return 1
+      fi
+    else
+      echo "Not in a worktree and no branch specified" >&2
+      return 1
+    fi
+  else
+    project=$(basename $(git rev-parse --show-toplevel 2>/dev/null)) || {
+      echo "Not in a git repository" >&2
+      return 1
+    }
+  fi
+
+  worktree_path="$HOME/worktrees/$project/$branch"
+  session_name="${project}@${branch}"
+  main_repo="$HOME/$project"
+
+  if [[ ! -d "$worktree_path" ]]; then
+    echo "Worktree not found: $worktree_path" >&2
+    return 1
+  fi
+
+  if [[ ! -d "$main_repo/.git" ]]; then
+    echo "Main repo not found: $main_repo" >&2
+    return 1
+  fi
+
+  # Check for dirty state or unpushed commits
+  local is_dirty=0
+  local has_unpushed=0
+  local warnings=""
+
+  if [[ -n $(git -C "$worktree_path" status --porcelain 2>/dev/null) ]]; then
+    is_dirty=1
+    warnings+="  - Uncommitted changes\n"
+  fi
+
+  if git -C "$worktree_path" rev-parse @{u} &>/dev/null; then
+    local unpushed=$(git -C "$worktree_path" log @{u}.. --oneline 2>/dev/null)
+    if [[ -n "$unpushed" ]]; then
+      has_unpushed=1
+      warnings+="  - Unpushed commits:\n$(echo "$unpushed" | sed 's/^/      /')\n"
+    fi
+  else
+    # No upstream, check if there are any commits
+    local commits=$(git -C "$worktree_path" log --oneline -5 2>/dev/null)
+    if [[ -n "$commits" ]]; then
+      has_unpushed=1
+      warnings+="  - Branch has no upstream (commits may be lost)\n"
+    fi
+  fi
+
+  # Show warnings if any
+  if [[ -n "$warnings" ]]; then
+    echo "Warning: $session_name has:"
+    echo -e "$warnings"
+  fi
+
+  # First confirmation
+  echo -n "Remove worktree '$session_name' and kill session? [y/N] "
+  read -r confirm
+  if [[ "$confirm" != [yY] ]]; then
+    echo "Aborted"
+    return 0
+  fi
+
+  # Double confirm if dirty or unpushed
+  if [[ $is_dirty -eq 1 || $has_unpushed -eq 1 ]]; then
+    echo -n "Are you SURE? This will discard uncommitted/unpushed work! [yes/N] "
+    read -r confirm2
+    if [[ "$confirm2" != "yes" ]]; then
+      echo "Aborted"
+      return 0
+    fi
+  fi
+
+  # Remove worktree (force if dirty) - run from main repo
+  echo "Removing worktree: $worktree_path"
+  if [[ $is_dirty -eq 1 ]]; then
+    git -C "$main_repo" worktree remove --force "$worktree_path"
+  else
+    git -C "$main_repo" worktree remove "$worktree_path"
+  fi
+
+  # Kill tmux session at the very end (switch first, then kill)
+  if tmux has-session -t "$session_name" 2>/dev/null; then
+    # Switch to main repo session first if it exists
+    if tmux has-session -t "$project" 2>/dev/null; then
+      tmux switch-client -t "$project"
+    fi
+    echo "Killing session: $session_name"
+    tmux kill-session -t "$session_name"
+  fi
+
+  echo "Done"
+}
+
+wt-ls() {
+  git worktree list
+}
+
+_get_wt_project() {
+  # Get the project name, handling both main repo and worktree cases
+  local toplevel=$(git rev-parse --show-toplevel 2>/dev/null)
+  [[ -z "$toplevel" ]] && return 1
+
+  if [[ "$toplevel" == "$HOME/worktrees/"* ]]; then
+    # We're in a worktree: ~/worktrees/project/branch
+    local rel="${toplevel#$HOME/worktrees/}"
+    echo "${rel%%/*}"
+  else
+    # We're in main repo
+    basename "$toplevel"
+  fi
+}
+
+wt() {
+  local project=$(_get_wt_project) || {
+    echo "Not in a git repository" >&2
+    return 1
+  }
+
+  if [[ -n "$1" ]]; then
+    if [[ "$1" == "main" ]]; then
+      # Switch to main project session
+      tmux-sessionizer "$HOME/$project"
+    else
+      # Direct switch to specified worktree
+      tmux-sessionizer "$HOME/worktrees/$project/$1"
+    fi
+  else
+    # Show fzf picker
+    tmux-sessionizer --worktrees "$project"
+  fi
+}
+
+_wt() {
+  local project=$(_get_wt_project)
+  [[ -z "$project" ]] && return 1
+
+  local worktree_dir="$HOME/worktrees/$project"
+  local worktrees=("main")
+
+  if [[ -d "$worktree_dir" ]]; then
+    worktrees+=("${(@f)$(ls -1 "$worktree_dir" 2>/dev/null)}")
+  fi
+
+  _describe 'worktree' worktrees
+}
+compdef _wt wt

@@ -57,22 +57,60 @@ end
 --  Add any additional override configuration in the following tables. They will be passed to
 --  the `settings` field of the server config. You must look up that documentation yourself.
 local servers = {
-  -- clangd = {},
-  -- gopls = {},
-  -- pyright = {},
-  -- ruby_lsp = {},
+  clangd = {
+    cmd = { 'clangd', '--offset-encoding=utf-16' },
+  },
+
+  -- hls = {
+  --   filetypes = { 'haskell', 'lhaskell', 'cabal' },
+  -- },
+
+  basedpyright = {
+    settings = {
+      basedpyright = {
+        analysis = {
+          typeCheckingMode = 'standard',
+        },
+      },
+    },
+    root_markers = {
+      '.python-version',
+      'pyproject.toml',
+      'setup.py',
+      'setup.cfg',
+      'requirements.txt',
+      'Pipfile',
+      'pyrightconfig.json',
+      '.git',
+    },
+  },
+
+  svelte = {
+    on_attach = function(client, bufnr)
+      -- Preserve shared LSP keymaps/signature behavior
+      on_attach(client, bufnr)
+
+      vim.api.nvim_create_autocmd('BufWritePost', {
+        buffer = bufnr,
+        pattern = { '*.js', '*.ts' },
+        callback = function(ctx)
+          client.notify('$/onDidChangeTsOrJsFile', { uri = ctx.match })
+        end,
+      })
+    end,
+  },
+
   rust_analyzer = {},
   ts_ls = {},
   html = {},
   cssls = {},
-  -- terraform_lsp = {},
-  -- jdtls = {},
-  -- zls = {},
 
   lua_ls = {
-    Lua = {
-      workspace = { checkThirdParty = false },
-      telemetry = { enable = false },
+    settings = {
+      Lua = {
+        workspace = { checkThirdParty = false },
+        telemetry = { enable = false },
+      },
     },
   },
 }
@@ -137,6 +175,7 @@ return {
     -- Automatically install LSPs to stdpath for neovim
     { 'williamboman/mason.nvim', config = true },
     'williamboman/mason-lspconfig.nvim',
+    'WhoIsSethDaniel/mason-tool-installer.nvim',
     'ray-x/lsp_signature.nvim',
 
     -- Couldn't get this to work
@@ -186,29 +225,25 @@ return {
     local capabilities = vim.lsp.protocol.make_client_capabilities()
     capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
-    -- Ensure the servers above are installed
-    local mason_lspconfig = require 'mason-lspconfig'
-
-    mason_lspconfig.setup {
-      ensure_installed = vim.tbl_keys(servers),
+    -- Install/upgrade LSP servers via mason-tool-installer
+    require('mason-lspconfig').setup {
       automatic_enable = false,
     }
-    -- mason_lspconfig.setup_handlers {
-    --   function(server_name)
-    --     require('lspconfig')[server_name].setup {
-    --       capabilities = capabilities,
-    --       on_attach = on_attach,
-    --       settings = servers[server_name],
-    --     }
-    --   end,
-    --
-    --   jdtls = function() end
-    -- }
-    require('lspconfig').clangd.setup {
-      on_attach = on_attach,
-      capabilities = capabilities,
-      cmd = { 'clangd', '--offset-encoding=utf-16' },
+
+    local ensure_installed = vim.tbl_keys(servers)
+    require('mason-tool-installer').setup {
+      ensure_installed = ensure_installed,
     }
+    -- (legacy mason-lspconfig handlers removed; use vim.lsp.config/enable)
+    -- Configure and enable servers (nvim 0.11+)
+    for name, cfg in pairs(servers) do
+      cfg = cfg or {}
+      cfg.capabilities = vim.tbl_deep_extend('force', {}, capabilities, cfg.capabilities or {})
+      cfg.on_attach = cfg.on_attach or on_attach
+
+      vim.lsp.config(name, cfg)
+      vim.lsp.enable(name)
+    end
 
     local shellcheck = {
       prefix = 'shellcheck',
@@ -232,79 +267,6 @@ return {
         '%l:%c: %m'
       }
     }
-    -- require('lspconfig')['efm'].setup {
-    --   init_options = {documentFormatting = true},
-    --   filetypes = { 'sh', 'groovy', 'jenkins' },
-    --   -- capabilities = capabilities,
-    --   on_attach = on_attach,
-    --   settings = {
-    --     logLevel = 1,
-    --     logFile = '/Users/murtaza/efm-nvim.log',
-    --     rootMarkers = {".git/"},
-    --     languages = {
-    --       -- lua = {
-    --       --   -- {formatCommand = "lua-format -i", formatStdin = true}
-    --       -- },
-    --       sh = {
-    --         shellcheck
-    --       },
-    --       groovy = {
-    --         jenkins
-    --       },
-    --       jenkins = {
-    --         jenkins
-    --       },
-    --     }
-    --   }
-    -- }
-    require('lspconfig')['hls'].setup{
-      filetypes = { 'haskell', 'lhaskell', 'cabal' },
-    }
-
-    require('lspconfig')['basedpyright'].setup{
-      settings = {
-        basedpyright = {
-          analysis = {
-            typeCheckingMode = "standard"
-          },
-        }
-      },
-      on_attach = on_attach,
-      root_markers = { ".python-version", "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "Pipfile", "pyrightconfig.json", ".git" }
-    }
-    -- vim.lsp.enable('basedpyright')
-    -- vim.lsp.config('basedpyright', {
-    --   settings = {
-    --     basedpyright = {
-    --       analysis = {
-    --         typeCheckingMode = "standard"
-    --       },
-    --     }
-    --   },
-    --   on_attach = on_attach,
-    -- })
-    
-
-    require('lspconfig')['svelte'].setup {
-      on_attach = function(client, bufnr)
-        vim.api.nvim_create_autocmd("BufWritePost", {
-          pattern = { "*.js", "*.ts" },
-          callback = function(ctx)
-            client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
-          end,
-        })
-      end,
-    }
-    -- require("lspconfig")["gdscript"].setup({
-    --   name = "godot",
-    --   cmd = {"godot-wsl-lsp", "--host", "localhost"},
-    --   on_attach = on_attach,
-    -- })
-
-    -- require'lspconfig'.sourcekit.setup{
-    --   cmd = {'xcrun', 'sourcekit-lsp'},
-    --   on_attach = on_attach,
-    -- }
 
     vim.diagnostic.config {
       severity_sort = true,

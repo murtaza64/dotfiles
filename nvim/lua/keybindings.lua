@@ -76,6 +76,7 @@ vim.keymap.set("n", "gx", function()
 end)
 
 -- Esc clears search highlighting in normal mode
+vim.keymap.set('n', '<C-C>', function() vim.cmd('noh') end)
 vim.keymap.set('n', '<Esc>', function()
   if vim.v.hlsearch ~= 0 then
    vim.cmd("noh")

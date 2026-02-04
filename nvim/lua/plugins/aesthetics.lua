@@ -20,12 +20,12 @@ return {
     main = 'ibl',
     opts = {
       -- char = '┊',
-      indent = { char = '▏' },
+      indent = {
+        char = '▏',
+        highlight = { "Whitespace" },
+      },
       scope = { enabled = false },
     },
-    init = function()
-      vim.api.nvim_set_hl(0, 'IblIndent', { fg = require('catppuccin.palettes').get_palette('mocha').surface1})
-    end
   },
 
   -- highlight surrounding braces
@@ -92,5 +92,46 @@ return {
     config = function ()
       require'alpha'.setup(require'alpha-theme'.config)
     end
+  },
+  {
+    "esmuellert/codediff.nvim",
+    dependencies = { "MunifTanjim/nui.nvim" },
+    cmd = { "CodeDiff" },
+    opts = {
+      -- keep it close to your current git navigation
+      keymaps = {
+        view = {
+          quit = "q",
+          next_hunk = "]g",
+          prev_hunk = "[g",
+        },
+      },
+      diff = {
+        disable_inlay_hints = true,
+        original_position = "left",
+      },
+      explorer = {
+        position = "left",
+        width = 45,
+        view_mode = "list",
+        initial_focus = "explorer",
+      },
+      history = {
+        position = "bottom",
+        height = 15,
+        initial_focus = "history",
+        view_mode = "list",
+      },
+      highlights = {
+        line_insert = "DiffAdd",
+        line_delete = "DiffDelete",
+        char_brightness = nil, -- let it auto-tune for catppuccin + background
+      },
+    },
+    init = function()
+      -- complements your existing <leader>gg (neogit)
+      vim.keymap.set("n", "<leader>gd", "<cmd>CodeDiff<cr>", { desc = "CodeDiff" })
+      vim.keymap.set("n", "<leader>gD", "<cmd>CodeDiff file HEAD<cr>", { desc = "CodeDiff (file vs HEAD)" })
+    end,
   },
 }

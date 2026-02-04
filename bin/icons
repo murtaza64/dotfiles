@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Nerd font icons - source this file from other scripts
+# Usage: source "$(dirname "$0")/icons"
+
+ICON_HOME=" "
+ICON_FOLDER=" "
+ICON_TREE="󰹩 "
+ICON_TERMINAL=" "
+ICON_GIT=" "

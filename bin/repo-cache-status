@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Show repo cache update status
+
+LOG_FILE="$HOME/.cache/repos/.update-log"
+
+if [[ ! -f "$LOG_FILE" ]]; then
+    echo "No update log found."
+    echo "Run 'update-repo-cache' to update repos or 'install-repo-cache-cronjob' to set up automatic updates."
+    exit 0
+fi
+
+# Show the log
+cat "$LOG_FILE"

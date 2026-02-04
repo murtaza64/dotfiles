@@ -1,0 +1,1057 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "psutil",
+# ]
+# [tool.uv.sources]
+# murtaza = { path = "/Users/murtaza/dotfiles/python" }
+# ///
+
+"""
+pfind - Find process and show its tree and tmux location
+
+Usage: 
+    pfind                   # Interactive mode (fzf browser)
+    pfind [OPTIONS] <pid|pattern>
+    
+Options:
+    -j, --jump    Jump to tmux pane (only works with single match)
+    -r, --regex   Use full regex instead of word boundary matching
+    
+Examples:
+    pfind                   # Interactive fzf browser with actions
+    pfind 1234              # Show tree for PID 1234
+    pfind opencode          # Search for "opencode" (word boundary)
+    pfind -r "python.*"     # Regex search
+    pfind -j 1234           # Jump to tmux pane of PID
+    pfind -j opencode       # Jump if exactly one match
+"""
+
+import argparse
+import os
+import re
+import shutil
+import subprocess
+import sys
+from datetime import timedelta
+
+import psutil
+
+# ANSI color codes
+BOLD = '\033[1m'
+GREEN = '\033[32m'
+YELLOW = '\033[33m'
+BLUE = '\033[34m'
+MAGENTA = '\033[35m'
+CYAN = '\033[36m'
+RED = '\033[31m'
+WHITE = '\033[37m'
+GREY = '\033[90m'
+DIM = '\033[2m'
+RESET = '\033[0m'
+
+
+def get_process_cmdline(proc):
+    """Get command line for a process with fallback handling.
+    
+    Args:
+        proc: psutil.Process object
+    
+    Returns:
+        str: Command line string or process name
+    """
+    try:
+        cmdline = ' '.join(proc.cmdline())
+        if not cmdline:
+            cmdline = proc.name()
+        return cmdline
+    except (psutil.AccessDenied, PermissionError):
+        try:
+            return proc.name()
+        except (psutil.AccessDenied, PermissionError):
+            return "<unknown>"
+
+
+def find_root_nodes(tree_nodes):
+    """Find root nodes in tree (nodes with no parents).
+    
+    Args:
+        tree_nodes: Dict of tree nodes
+    
+    Returns:
+        list: Sorted list of root node PIDs
+    """
+    all_children = set()
+    for node in tree_nodes.values():
+        all_children.update(node['children'])
+    
+    root_nodes = [pid for pid in tree_nodes if pid not in all_children]
+    return sorted(root_nodes)
+
+
+def get_excluded_ancestor_pids(pid):
+    """Get PIDs to exclude (the given PID and all its ancestors).
+    
+    Args:
+        pid: Process ID
+    
+    Returns:
+        set: Set of PIDs to exclude
+    """
+    excluded_pids = set()
+    try:
+        current = psutil.Process(pid)
+        while current is not None:
+            excluded_pids.add(current.pid)
+            try:
+                current = current.parent()
+                if current is None or current.pid == 0:
+                    break
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                break
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        pass
+    
+    return excluded_pids
+
+
+def format_tmux_target(tmux_location):
+    """Convert tmux location from session:window:pane to session:window.pane format.
+    
+    Args:
+        tmux_location: "session:window:pane" format
+    
+    Returns:
+        str: "session:window.pane" format
+    """
+    parts = tmux_location.split(':')
+    return f"{parts[0]}:{parts[1]}.{parts[2]}"
+
+
+def get_tmux_panes():
+    """Get all tmux pane PIDs and their locations.
+    
+    Returns:
+        dict: {pane_pid: "session:window:pane"}
+    """
+    try:
+        result = subprocess.run(
+            ['tmux', 'list-panes', '-a', '-F', '#{pane_pid}:#{session_name}:#{window_index}:#{pane_index}'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        pane_map = {}
+        for line in result.stdout.strip().split('\n'):
+            if line:
+                parts = line.split(':', 3)
+                if len(parts) == 4:
+                    pane_pid = int(parts[0])
+                    tmux_location = f"{parts[1]}:{parts[2]}:{parts[3]}"
+                    pane_map[pane_pid] = tmux_location
+        
+        return pane_map
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return {}
+
+
+def find_tmux_pane(pid, pane_map):
+    """Walk up process tree to find which tmux pane contains the PID.
+    
+    Args:
+        pid: Target process ID
+        pane_map: Dict of {pane_pid: "session:window:pane"}
+    
+    Returns:
+        str or None: "session:window:pane" if found, None otherwise
+    """
+    try:
+        current = psutil.Process(pid)
+        
+        while current.pid != 0:
+            if current.pid in pane_map:
+                return pane_map[current.pid]
+            
+            try:
+                current = current.parent()
+                if current is None:
+                    break
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                break
+        
+        return None
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        return None
+
+
+def get_all_user_processes(pane_map):
+    """Get all user processes (exclude system processes).
+    
+    On macOS, filters processes to focus on user-owned processes:
+    - Excludes processes with UID < 500 (system processes)
+    - Excludes kernel threads and system daemons
+    
+    Args:
+        pane_map: Dict of {pane_pid: "session:window:pane"}
+    
+    Returns:
+        list: List of dicts with keys: pid, cmdline, info, tmux_loc
+    """
+    processes = []
+    current_user_uid = os.getuid()
+    
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline', 'uids']):
+        try:
+            # Filter: Only current user's processes
+            if proc.info['uids'] and proc.info['uids'].real != current_user_uid:
+                continue
+            
+            pid = proc.info['pid']
+            cmdline = ' '.join(proc.info['cmdline']) if proc.info['cmdline'] else proc.info['name']
+            
+            # Get process info
+            info = get_process_info(pid)
+            
+            # Find tmux pane (from process or ancestor)
+            tmux_loc = find_tmux_pane(pid, pane_map)
+            
+            processes.append({
+                'pid': pid,
+                'cmdline': cmdline,
+                'info': info,
+                'tmux_loc': tmux_loc
+            })
+        except (psutil.NoSuchProcess, psutil.AccessDenied, TypeError):
+            continue
+    
+    return processes
+
+
+def format_flat_line(pid, cmdline, info, tmux_loc):
+    """Format a single flat line for fzf.
+    
+    Format: [PID] cpu% command
+    - With ANSI colors for better readability
+    - Tab-separated for easier parsing
+    
+    Args:
+        pid: Process ID
+        cmdline: Command line string
+        info: Dict with 'elapsed', 'cpu_percent' keys
+        tmux_loc: Tmux location string or None (unused, kept for compatibility)
+    
+    Returns:
+        str: Formatted line with ANSI colors
+    """
+    # Format PID (magenta)
+    pid_str = f"{MAGENTA}[{pid}]{RESET}"
+    
+    # Format CPU percentage (grey)
+    cpu_display = "?%" if info['cpu_percent'] < 0 else f"{info['cpu_percent']:.1f}%"
+    cpu_str = f"{GREY}{cpu_display}{RESET}"
+    
+    # Command stays uncolored for better readability
+    
+    # Build line: [PID] cpu% command
+    parts = [pid_str, cpu_str, cmdline]
+    return '\t'.join(parts)
+
+
+def walk_process_tree(target_pid, pane_map):
+    """Walk up from target_pid, stop at tmux parent if reached.
+    
+    Args:
+        target_pid: Target process ID
+        pane_map: Dict of {pane_pid: "session:window:pane"}
+    
+    Returns:
+        tuple: (tree, tmux_location) where tree is list of (pid, cmdline) tuples
+    """
+    try:
+        tree = []
+        current = psutil.Process(target_pid)
+        tmux_location = None
+        
+        # Build list from target up to root or tmux parent
+        while current is not None:
+            try:
+                cmdline = get_process_cmdline(current)
+                tree.append((current.pid, cmdline))
+                
+                # Move to parent
+                try:
+                    parent = current.parent()
+                except (psutil.AccessDenied, PermissionError):
+                    break
+                
+                # Stop if no parent or reached PID 0
+                if parent is None or parent.pid == 0:
+                    break
+                
+                # Check if parent is a tmux pane - if so, stop here
+                if parent.pid in pane_map:
+                    tmux_location = pane_map[parent.pid]
+                    break
+                
+                current = parent
+            except psutil.NoSuchProcess:
+                break
+        
+        # Reverse to show root first
+        tree.reverse()
+        
+        return tree, tmux_location
+    except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
+        print(f"Error: Cannot access process {target_pid}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def format_elapsed_time(seconds):
+    """Format elapsed time in a human-readable format.
+    
+    Args:
+        seconds: Elapsed time in seconds
+    
+    Returns:
+        str: Formatted time like "4d 2h 30m" or "2h 30m" or "45m"
+    """
+    td = timedelta(seconds=seconds)
+    days = td.days
+    hours, remainder = divmod(td.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+    
+    parts = []
+    if days > 0:
+        parts.append(f"{days}d")
+    if hours > 0:
+        parts.append(f"{hours}h")
+    if minutes > 0:
+        parts.append(f"{minutes}m")
+    
+    return ''.join(parts) if parts else "0m"
+
+
+def get_process_info(pid):
+    """Get elapsed time and CPU percentage for process.
+    
+    Args:
+        pid: Process ID
+    
+    Returns:
+        dict: {'elapsed': str, 'cpu_percent': float}
+    """
+    try:
+        proc = psutil.Process(pid)
+        
+        # Get elapsed time (time since process started)
+        create_time = proc.create_time()
+        elapsed_seconds = psutil.time.time() - create_time
+        elapsed = format_elapsed_time(int(elapsed_seconds))
+        
+        # Get CPU percentage (calculate over entire lifetime)
+        # CPU % = (total_cpu_time / elapsed_time) * 100
+        cpu_times = proc.cpu_times()
+        total_cpu_seconds = cpu_times.user + cpu_times.system
+        if elapsed_seconds > 0:
+            cpu_percent = (total_cpu_seconds / elapsed_seconds) * 100
+        else:
+            cpu_percent = 0.0
+        
+        return {
+            'elapsed': elapsed,
+            'cpu_percent': cpu_percent
+        }
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        # Return default values for processes we can't access (like PID 1)
+        return {
+            'elapsed': '?m',
+            'cpu_percent': -1.0  # Will display as ?%
+        }
+
+
+def jump_to_pane(tmux_location):
+    """Switch to tmux pane.
+    
+    Args:
+        tmux_location: "session:window:pane" format
+    """
+    target = format_tmux_target(tmux_location)
+    
+    # Check if we're in a tmux session
+    if not os.environ.get('TMUX'):
+        print("Error: Cannot jump - not currently in a tmux session", file=sys.stderr)
+        print(f"Try: tmux switch-client -t {target}", file=sys.stderr)
+        sys.exit(1)
+    
+    # Jump to the pane
+    try:
+        subprocess.run(['tmux', 'switch-client', '-t', target], check=True)
+        print(f"Jumped to {target}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error: Failed to switch to pane {target}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def search_processes(pattern, use_regex=False):
+    """Search for processes matching a pattern.
+    
+    Args:
+        pattern: String or regex to search for in process names/commands
+        use_regex: If True, treat pattern as full regex; if False, use word boundaries
+    
+    Returns:
+        list: List of matching PIDs
+    """
+    matching_pids = []
+    
+    # Build regex pattern
+    if use_regex:
+        try:
+            regex_pattern = re.compile(pattern, re.IGNORECASE)
+        except re.error as e:
+            print(f"Error: Invalid regex pattern: {e}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        # Use word boundaries for matching (case-insensitive)
+        regex_pattern = re.compile(r'\b' + re.escape(pattern) + r'\b', re.IGNORECASE)
+    
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            # Get command line
+            cmdline = ' '.join(proc.info['cmdline']) if proc.info['cmdline'] else proc.info['name']
+            
+            # Check if pattern matches
+            if regex_pattern.search(cmdline):
+                matching_pids.append(proc.info['pid'])
+        except (psutil.NoSuchProcess, psutil.AccessDenied, TypeError):
+            continue
+    
+    return matching_pids
+
+
+def get_terminal_width():
+    """Get terminal width, default to 80 if unavailable."""
+    try:
+        return shutil.get_terminal_size().columns
+    except:
+        return 80
+
+
+def strip_ansi(text):
+    """Remove ANSI escape codes from text for length calculation."""
+    ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
+    return ansi_escape.sub('', text)
+
+
+def wrap_line(text, prefix, terminal_width):
+    """Wrap long lines while preserving tree structure.
+    
+    Args:
+        text: Text to wrap (may contain ANSI codes)
+        prefix: Current tree prefix (e.g., "│   ") WITHOUT color codes
+        terminal_width: Terminal width
+    
+    Returns:
+        str: Wrapped text with proper continuation prefix
+    """
+    # Calculate visible length (without ANSI codes)
+    visible_text = strip_ansi(text)
+    visible_prefix = strip_ansi(prefix)
+    
+    # If it fits, return as-is
+    if len(visible_prefix) + len(visible_text) <= terminal_width:
+        return text
+    
+    # Calculate continuation prefix (replace tree chars with spaces/pipes)
+    continuation = prefix.replace("├─", "│ ").replace("└─", "  ")
+    continuation_visible = strip_ansi(continuation)
+    
+    # Available width for text on first line
+    available_first = terminal_width - len(visible_prefix)
+    
+    # Available width for continuation lines
+    available_cont = terminal_width - len(continuation_visible)
+    
+    # Build wrapped output
+    lines = []
+    remaining = text
+    remaining_visible = visible_text
+    is_first = True
+    
+    while remaining_visible:
+        if is_first:
+            available = available_first
+            is_first = False
+        else:
+            available = available_cont
+        
+        if len(remaining_visible) <= available:
+            # Last piece fits
+            if lines:
+                # Add grey continuation prefix
+                lines.append(f"{GREY}{continuation}{RESET}" + remaining)
+            else:
+                lines.append(remaining)
+            break
+        
+        # Need to split - find split point accounting for ANSI codes
+        split_point = 0
+        visible_count = 0
+        in_ansi = False
+        
+        for i, char in enumerate(remaining):
+            if char == '\x1b':
+                in_ansi = True
+            elif in_ansi and char == 'm':
+                in_ansi = False
+            elif not in_ansi:
+                visible_count += 1
+                if visible_count >= available:
+                    split_point = i + 1
+                    break
+        
+        # Split and continue
+        if split_point == 0:
+            split_point = len(remaining)
+        
+        if lines:
+            # Add grey continuation prefix
+            lines.append(f"{GREY}{continuation}{RESET}" + remaining[:split_point])
+        else:
+            lines.append(remaining[:split_point])
+        
+        remaining = remaining[split_point:]
+        remaining_visible = strip_ansi(remaining)
+    
+    return '\n'.join(lines)
+
+
+def highlight_match(text, pattern):
+    """Highlight matching pattern in text with red color.
+    
+    Args:
+        text: Text to search in
+        pattern: Pattern to highlight (empty string means no highlighting)
+    
+    Returns:
+        str: Text with highlighted matches
+    """
+    if not pattern:
+        return text
+    
+    # Case-insensitive replacement
+    def replace_func(match):
+        return f"{RED}{match.group(0)}{RESET}"
+    
+    return re.sub(re.escape(pattern), replace_func, text, flags=re.IGNORECASE)
+
+
+def is_tmux_process(cmdline):
+    """Check if a process is a tmux server process (just 'tmux' with no args)."""
+    return cmdline.strip() == 'tmux'
+
+
+def build_minimal_tree(pids, pane_map):
+    """Build minimal tree containing all target PIDs and their common ancestors.
+    
+    Logic:
+    - If tmux is in ancestors of ANY target, it should be in the tree
+    - If tmux IS the parent of a match, stop there (don't go to PID 1)
+    - If tmux is NOT the parent of a match, keep going to PID 1
+    - Result: If ALL matches are in tmux, PID 1 not included; otherwise it is
+    
+    Args:
+        pids: List of target PIDs
+        pane_map: Dict of {pane_pid: "session:window:pane"}
+    
+    Returns:
+        tuple: (tree_nodes dict, target_pids set)
+    """
+    # Build ancestor chains for each target PID
+    ancestor_chains = {}
+    has_tmux_parent = False  # Track if ANY match has tmux as an ancestor
+    
+    for pid in pids:
+        try:
+            chain = []
+            current = psutil.Process(pid)
+            
+            while current is not None:
+                cmdline = get_process_cmdline(current)
+                chain.append((current.pid, cmdline))
+                
+                # Check if this is a tmux process
+                if is_tmux_process(cmdline):
+                    has_tmux_parent = True
+                
+                # Move to parent
+                try:
+                    parent = current.parent()
+                except (psutil.AccessDenied, PermissionError):
+                    break
+                
+                if parent is None or parent.pid == 0:
+                    break
+                
+                # Stop at PID 1 if we found it
+                if parent.pid == 1:
+                    parent_cmdline = get_process_cmdline(parent)
+                    chain.append((parent.pid, parent_cmdline))
+                    break
+                
+                current = parent
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+        
+        ancestor_chains[pid] = chain
+    
+    # Determine if we should filter out PID 1
+    # Logic: If tmux exists in ancestors AND all matches have tmux as parent, remove PID 1
+    # We check: does every chain that reaches PID 1 also contain tmux?
+    if has_tmux_parent:
+        # Check if ALL chains have tmux
+        all_have_tmux = all(
+            any(is_tmux_process(cmdline) for _, cmdline in chain)
+            for chain in ancestor_chains.values()
+        )
+        
+        if all_have_tmux:
+            # Remove PID 1 from all chains
+            for pid in ancestor_chains:
+                chain = ancestor_chains[pid]
+                # Filter out PID 1 (but keep everything else including tmux)
+                ancestor_chains[pid] = [(p, c) for p, c in chain if p != 1]
+    
+    # Find common ancestors and build tree structure
+    tree_nodes = {}
+    target_pids = set(pids)
+    
+    for pid, chain in ancestor_chains.items():
+        for proc_pid, cmdline in chain:
+            if proc_pid not in tree_nodes:
+                tree_nodes[proc_pid] = {
+                    'cmdline': cmdline,
+                    'is_target': proc_pid in target_pids,
+                    'children': set(),
+                    'tmux_location': pane_map.get(proc_pid)
+                }
+        
+        # Build parent-child relationships
+        for i in range(len(chain) - 1):
+            parent_pid = chain[i + 1][0]
+            child_pid = chain[i][0]
+            if parent_pid in tree_nodes:
+                tree_nodes[parent_pid]['children'].add(child_pid)
+    
+    return tree_nodes, target_pids
+
+
+def print_tree(node_pid, tree_nodes, target_pids, pattern, prefix="", is_last=True, pane_map=None, no_wrap=False):
+    """Recursively print tree structure with box drawing characters.
+    
+    Args:
+        node_pid: Current node PID
+        tree_nodes: Dict of tree nodes
+        target_pids: Set of target PIDs
+        pattern: Search pattern for highlighting
+        prefix: Current line prefix for tree drawing
+        is_last: Whether this is the last child
+        pane_map: Dict of {pane_pid: "session:window:pane"}
+        no_wrap: Disable line wrapping
+    """
+    if node_pid not in tree_nodes:
+        return
+    
+    node = tree_nodes[node_pid]
+    cmdline = node['cmdline']
+    is_target = node['is_target']
+    
+    # Get tmux location - only show if this process IS a tmux pane
+    tmux_location = None
+    if pane_map and node_pid in pane_map:
+        tmux_location = pane_map[node_pid]
+    
+    # Get terminal width
+    terminal_width = get_terminal_width()
+    
+    # Get process info
+    info = get_process_info(node_pid)
+    
+    # Single line: [PID] command tmux_loc time cpu
+    if is_target:
+        # Target: colored PID, bold command, cyan tmux, grey times
+        line_parts = [f"{MAGENTA}[{node_pid}]{RESET}"]
+        
+        # Add command with highlighting
+        highlighted_cmdline = highlight_match(cmdline, pattern)
+        line_parts.append(f"{BOLD}{highlighted_cmdline}{RESET}")
+        
+        # Add tmux location (no icon)
+        if tmux_location:
+            line_parts.append(f"{CYAN}{tmux_location}{RESET}")
+        
+        # Add elapsed time and CPU percentage (grey)
+        line_parts.append(f"{GREY}{info['elapsed']}{RESET}")
+        cpu_display = "?%" if info['cpu_percent'] < 0 else f"{info['cpu_percent']:.1f}%"
+        line_parts.append(f"{GREY}{cpu_display}{RESET}")
+    else:
+        # Non-target: everything grey except tmux annotation
+        line_parts = [f"{GREY}[{node_pid}]{RESET}"]
+        line_parts.append(f"{GREY}{cmdline}{RESET}")
+        
+        # Add tmux location in cyan (no icon)
+        if tmux_location:
+            line_parts.append(f"{CYAN}{tmux_location}{RESET}")
+        
+        # Add elapsed time and CPU percentage (grey)
+        line_parts.append(f"{GREY}{info['elapsed']}{RESET}")
+        cpu_display = "?%" if info['cpu_percent'] < 0 else f"{info['cpu_percent']:.1f}%"
+        line_parts.append(f"{GREY}{cpu_display}{RESET}")
+    
+    line = " ".join(line_parts)
+    
+    # Apply wrapping only if not disabled
+    if no_wrap:
+        output = line
+    else:
+        output = wrap_line(line, prefix, terminal_width)
+    
+    # Print with grey tree prefix (only for first line, wrap_line handles continuation)
+    if prefix:
+        print(f"{GREY}{prefix}{RESET}{output}")
+    else:
+        print(output)
+    
+    # Print children
+    children = sorted(node['children'])
+    for i, child_pid in enumerate(children):
+        is_last_child = (i == len(children) - 1)
+        
+        # Build prefix for child
+        if prefix == "":
+            # Root level
+            child_prefix = "├─" if not is_last_child else "└─"
+        else:
+            # Nested level
+            extension = prefix.replace("├─", "│ ").replace("└─", "  ")
+            child_prefix = extension + ("├─" if not is_last_child else "└─")
+        
+        print_tree(child_pid, tree_nodes, target_pids, pattern, child_prefix, is_last_child, pane_map, no_wrap)
+
+
+def show_action_menu(pid, pane_map):
+    """Show action menu for selected process.
+    
+    Args:
+        pid: Selected process ID
+        pane_map: Dict of {pane_pid: "session:window:pane"}
+    """
+    # Check if process still exists
+    if not psutil.pid_exists(pid):
+        print(f"Error: Process {pid} no longer exists", file=sys.stderr)
+        sys.exit(1)
+    
+    # Get process info for display
+    try:
+        proc = psutil.Process(pid)
+        cmdline = ' '.join(proc.cmdline()) if proc.cmdline() else proc.name()
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        print(f"Error: Cannot access process {pid}", file=sys.stderr)
+        sys.exit(1)
+    
+    # Find tmux location
+    tmux_loc = find_tmux_pane(pid, pane_map)
+    
+    # Build action list
+    actions = [
+        "1\tShow process tree",
+        "4\tShow full command",
+        "5\tCancel"
+    ]
+    
+    # Add tmux jump option if in tmux
+    if tmux_loc:
+        actions.insert(1, "2\tJump to tmux pane")
+    
+    # Add kill option
+    actions.insert(-1, "3\tKill process (SIGTERM)")
+    
+    # Show context header
+    header = f"Selected: [{pid}] {cmdline[:60]}..."
+    
+    # Use fzf for action selection
+    try:
+        fzf_cmd = [
+            'fzf',
+            '--header', header,
+            '--delimiter', '\t',
+            '--with-nth', '2',  # Show only action description
+            '--no-preview',
+            '--height', '40%',
+            '--reverse',
+            '--prompt', 'Action> '
+        ]
+        
+        result = subprocess.run(
+            fzf_cmd,
+            input='\n'.join(actions),
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        # Parse selected action
+        selected = result.stdout.strip()
+        if not selected:
+            return
+        
+        action_num = selected.split('\t')[0]
+        
+        # Execute action
+        if action_num == '1':
+            # Show process tree
+            print()
+            tree_nodes, target_pids = build_minimal_tree([pid], pane_map)
+            root_nodes = find_root_nodes(tree_nodes)
+            for root_pid in root_nodes:
+                print_tree(root_pid, tree_nodes, target_pids, "", pane_map=pane_map)
+        
+        elif action_num == '2':
+            # Jump to tmux pane
+            if tmux_loc:
+                jump_to_pane(tmux_loc)
+            else:
+                print("Error: Process is not in a tmux session", file=sys.stderr)
+                sys.exit(1)
+        
+        elif action_num == '3':
+            # Kill process
+            print(f"\nKill process [{pid}] {cmdline}?")
+            confirm = input("Type 'yes' to confirm: ")
+            if confirm.lower() == 'yes':
+                try:
+                    proc = psutil.Process(pid)
+                    proc.terminate()
+                    print(f"Sent SIGTERM to process {pid}")
+                except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
+                    print(f"Error: {e}", file=sys.stderr)
+                    sys.exit(1)
+            else:
+                print("Cancelled")
+        
+        elif action_num == '4':
+            # Show full command
+            print(f"\n[{pid}] {cmdline}")
+        
+        elif action_num == '5':
+            # Cancel
+            return
+    
+    except subprocess.CalledProcessError:
+        # User cancelled (ESC)
+        return
+    except FileNotFoundError:
+        print("Error: fzf not found. Please install fzf.", file=sys.stderr)
+        sys.exit(1)
+
+
+def interactive_mode(pane_map):
+    """Launch interactive fzf-based process browser.
+    
+    Flow:
+    1. Get all user processes
+    2. Format as flat list
+    3. Pipe to fzf with preview
+    4. On selection, show action menu
+    
+    Args:
+        pane_map: Dict of {pane_pid: "session:window:pane"}
+    """
+    # Get all user processes
+    processes = get_all_user_processes(pane_map)
+    
+    # Filter out pfind processes (current process and any pfind in ancestors)
+    excluded_pids = set()
+    try:
+        current = psutil.Process(os.getpid())
+        while current is not None:
+            cmdline = get_process_cmdline(current)
+            if 'pfind' in cmdline:
+                excluded_pids.add(current.pid)
+            try:
+                current = current.parent()
+                if current is None or current.pid == 0:
+                    break
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                break
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        pass
+    
+    processes = [p for p in processes if p['pid'] not in excluded_pids]
+    
+    if not processes:
+        print("No user processes found", file=sys.stderr)
+        sys.exit(1)
+    
+    # Sort by CPU % (descending - highest CPU first)
+    processes.sort(key=lambda p: p['info']['cpu_percent'], reverse=True)
+    
+    # Format lines for fzf
+    lines = []
+    for proc_dict in processes:
+        line = format_flat_line(
+            proc_dict['pid'],
+            proc_dict['cmdline'],
+            proc_dict['info'],
+            proc_dict['tmux_loc']
+        )
+        lines.append(line)
+    
+    # Get path to pfind script for preview
+    pfind_path = os.path.abspath(sys.argv[0])
+    
+    # Build fzf command with preview
+    # Extract PID from [PID] format using a shell command
+    preview_cmd = f"echo {{1}} | sed 's/\\[\\([0-9]*\\)\\]/\\1/' | xargs {pfind_path}"
+    
+    fzf_cmd = [
+        'fzf',
+        '--ansi',  # Allow ANSI colors in preview
+        '--preview', preview_cmd,  # Preview shows tree for PID (extract from [PID])
+        '--preview-window', 'up:60%:wrap',
+        '--delimiter', '\t',
+        '--height', '60%',
+    ]
+    
+    try:
+        result = subprocess.run(
+            fzf_cmd,
+            input='\n'.join(lines),
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        # Parse selected PID from first field
+        selected = result.stdout.strip()
+        if not selected:
+            return
+        
+        # Extract PID from [PID] format
+        pid_match = re.match(r'\[(\d+)\]', selected)
+        if not pid_match:
+            print("Error: Could not parse PID from selection", file=sys.stderr)
+            sys.exit(1)
+        
+        selected_pid = int(pid_match.group(1))
+        
+        # Show action menu
+        show_action_menu(selected_pid, pane_map)
+    
+    except subprocess.CalledProcessError:
+        # User cancelled (ESC) - exit gracefully
+        return
+    except FileNotFoundError:
+        print("Error: fzf not found. Please install fzf.", file=sys.stderr)
+        sys.exit(1)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Show process tree and tmux location for a PID or search pattern',
+        epilog='Examples:\n'
+               '  pfind               # Interactive mode (fzf browser)\n'
+               '  pfind 1234          # Show tree for PID 1234\n'
+               '  pfind opencode      # Search for "opencode" processes\n'
+               '  pfind -r "python.*server"  # Regex search\n'
+               '  pfind -j 1234       # Jump to tmux pane of PID 1234\n'
+               '  pfind -j opencode   # Jump if exactly one match found',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    parser.add_argument('query', nargs='?', help='PID or search pattern (omit for interactive mode)')
+    parser.add_argument(
+        '-j', '--jump',
+        action='store_true',
+        help='Jump to the tmux pane (only works with single match)'
+    )
+    parser.add_argument(
+        '-r', '--regex',
+        action='store_true',
+        help='Treat search pattern as full regex instead of word boundary match'
+    )
+    parser.add_argument(
+        '--no-wrap',
+        action='store_true',
+        help='Disable line wrapping (automatically set when output is not a TTY)'
+    )
+    
+    args = parser.parse_args()
+    
+    # Auto-detect if output is not a TTY (e.g., in fzf preview)
+    if not sys.stdout.isatty():
+        args.no_wrap = True
+    
+    # Get all tmux panes
+    pane_map = get_tmux_panes()
+    
+    # Interactive mode when no query provided
+    if args.query is None:
+        if args.jump or args.regex or args.no_wrap:
+            parser.error("Interactive mode does not accept -j, -r, or --no-wrap flags")
+        interactive_mode(pane_map)
+        return
+    
+    # Determine if query is a PID or search pattern
+    matching_pids = []
+    search_pattern = None
+    
+    # Try to parse as PID first
+    try:
+        pid = int(args.query)
+        if psutil.pid_exists(pid):
+            matching_pids = [pid]
+        else:
+            print(f"Error: PID {pid} does not exist", file=sys.stderr)
+            sys.exit(1)
+    except ValueError:
+        # Not a number, treat as search pattern
+        search_pattern = args.query
+        matching_pids = search_processes(search_pattern, use_regex=args.regex)
+        
+        # Filter out current process and its ancestors
+        excluded_pids = get_excluded_ancestor_pids(os.getpid())
+        matching_pids = [pid for pid in matching_pids if pid not in excluded_pids]
+        
+        if not matching_pids:
+            print(f"No processes found matching '{search_pattern}'", file=sys.stderr)
+            sys.exit(1)
+    
+    # Handle jump mode - only works with single match
+    if args.jump:
+        if len(matching_pids) != 1:
+            print(f"Error: Jump requires exactly one match, found {len(matching_pids)}", file=sys.stderr)
+            sys.exit(1)
+        
+        tmux_location = find_tmux_pane(matching_pids[0], pane_map)
+        
+        if tmux_location:
+            jump_to_pane(tmux_location)
+        else:
+            print(f"Error: Process is not part of any tmux session", file=sys.stderr)
+            sys.exit(1)
+        return
+    
+    # Build and display tree
+    tree_nodes, target_pids = build_minimal_tree(matching_pids, pane_map)
+    root_nodes = find_root_nodes(tree_nodes)
+    
+    for root_pid in root_nodes:
+        print_tree(root_pid, tree_nodes, target_pids, search_pattern or "", pane_map=pane_map, no_wrap=args.no_wrap)
+        print()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Colors
+RED='\033[31m'
+GREEN='\033[32m'
+YELLOW='\033[33m'
+RESET='\033[0m'
+
+# Show usage if no arguments
+if [[ $# -eq 0 ]]; then
+    echo "Usage: clone [owner/]repo | <git-url>"
+    echo ""
+    echo "Examples:"
+    echo "  clone infra-jenkins             # defaults to duolingo/infra-jenkins"
+    echo "  clone duolingo/infra-jenkins"
+    echo "  clone neovim/neovim"
+    echo "  clone https://github.com/rust-lang/rust.git"
+    echo "  clone git@github.com:user/repo.git"
+    exit 1
+fi
+
+INPUT="$1"
+
+# Parse input to extract owner/repo
+if [[ "$INPUT" =~ ^https?://github\.com/([^/]+)/([^/]+)(\.git)?$ ]]; then
+    # HTTPS URL: https://github.com/owner/repo or https://github.com/owner/repo.git
+    OWNER="${BASH_REMATCH[1]}"
+    REPO="${BASH_REMATCH[2]}"
+    GIT_URL="$INPUT"
+elif [[ "$INPUT" =~ ^git@github\.com:([^/]+)/([^/]+)(\.git)?$ ]]; then
+    # SSH URL: git@github.com:owner/repo or git@github.com:owner/repo.git
+    OWNER="${BASH_REMATCH[1]}"
+    REPO="${BASH_REMATCH[2]}"
+    GIT_URL="$INPUT"
+elif [[ "$INPUT" =~ ^([^/]+)/([^/]+)$ ]]; then
+    # Short form: owner/repo
+    OWNER="${BASH_REMATCH[1]}"
+    REPO="${BASH_REMATCH[2]}"
+    # Default to HTTPS URL
+    GIT_URL="https://github.com/$OWNER/$REPO.git"
+elif [[ "$INPUT" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    # Just repo name, default to duolingo
+    OWNER="duolingo"
+    REPO="$INPUT"
+    GIT_URL="https://github.com/$OWNER/$REPO.git"
+else
+    echo -e "${RED}Error: Invalid input format${RESET}" >&2
+    echo "Expected: [owner/]repo or a GitHub URL" >&2
+    exit 1
+fi
+
+# Remove .git suffix from repo name if present
+REPO="${REPO%.git}"
+
+# Target directory
+TARGET_DIR="$HOME/$REPO"
+
+# Check if directory already exists
+if [[ -d "$TARGET_DIR" ]]; then
+    echo -e "${RED}Error: Directory already exists: $TARGET_DIR${RESET}" >&2
+    exit 1
+fi
+
+# Clone the repository
+echo -e "${GREEN}Cloning $OWNER/$REPO...${RESET}"
+git clone "$GIT_URL" "$TARGET_DIR"
+
+# Check if clone was successful
+if [[ ! -d "$TARGET_DIR" ]]; then
+    echo -e "${RED}Error: Clone failed${RESET}" >&2
+    exit 1
+fi
+
+echo -e "${GREEN}✓ Successfully cloned to: $TARGET_DIR${RESET}"
+
+# Run tmux-sessionizer on the cloned repo
+if command -v tmux-sessionizer &> /dev/null; then
+    echo -e "${YELLOW}Starting tmux session...${RESET}"
+    tmux-sessionizer "$TARGET_DIR"
+else
+    echo -e "${YELLOW}Warning: tmux-sessionizer not found${RESET}" >&2
+    echo "Repository cloned to: $TARGET_DIR"
+fi

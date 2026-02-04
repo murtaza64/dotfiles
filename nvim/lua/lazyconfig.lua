@@ -99,6 +99,49 @@ require('lazy').setup({
   -- Mini.pick for lightweight pickers
   'echasnovski/mini.pick',
 
+  -- 'lewis6991/satellite.nvim',
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.nvim' },            -- if you use the mini.nvim suite
+    -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.icons' },        -- if you use standalone mini plugins
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+    ---@module 'render-markdown'
+    ---@type render.md.UserConfig
+    opts = {
+      heading = {
+        border = true,
+        -- border_virtual = true,
+        width = 'block',
+        left_pad = 2,
+        right_pad = 4,
+        icons = { "#  ", "##  ", "###  ", "####  ", "#####  ", "######  " },
+      },
+      -- indent = {
+      --   enabled = true,
+      --   skip_heading = true,
+      --   icon = '▏',
+      -- },
+    },
+  },
+  { 
+    "serhez/bento.nvim",
+    opts = {
+      dual_access_last_accessed = true,
+      ordering_metric = "filename",
+      ui = {
+        mode = "floating", -- "floating" | "tabline"
+        floating = {
+          position = "middle",
+          alignment = "left",
+          border = "single",
+        },
+      },
+      -- highlights = {
+      --   window_bg = "BentoNormalCustom",
+      -- },
+    }
+  },
+
   { import = 'plugins.colors' },
   -- noice is quite buggy/heavy
   { import = 'plugins.noice' },

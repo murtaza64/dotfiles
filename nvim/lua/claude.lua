@@ -127,7 +127,7 @@ end
 local function claude_send_code_inline(sel_info)
     local sel = sel_info or get_selection_info()
     local code
-    
+
     if sel.mode == 'v' and sel.start_line == sel.end_line then
         -- Character-wise visual selection on single line
         local line = vim.fn.getline(sel.start_line)
@@ -136,13 +136,13 @@ local function claude_send_code_inline(sel_info)
         -- Line-wise or multi-line selection
         local lines = vim.fn.getline(sel.start_line, sel.end_line)
         code = table.concat(lines, '\n')
-        
+
         -- Trim leading whitespace for single line in normal mode
         if sel.mode == 'n' and sel.start_line == sel.end_line then
             code = code:match('^%s*(.-)%s*$') or code  -- Trim leading and trailing whitespace
         end
     end
-    
+
     local message
     local line_count = sel.end_line - sel.start_line + 1
     if line_count <= 1 and #code < 80 then
@@ -152,9 +152,15 @@ local function claude_send_code_inline(sel_info)
         -- Multiple lines or long text - use fenced code block
         message = '\n```\n' .. code .. '\n``` \n'
     end
-    
+
     send_to_claude(message)
     vim.notify('Sent code inline to claude (' .. line_count .. ' line' .. (line_count == 1 and '' or 's') .. ')')
+end
+
+local function claude_copy_reference()
+    local code_ref = get_code_reference()
+    vim.fn.setreg('+', code_ref)
+    vim.notify('Copied to clipboard: ' .. code_ref)
 end
 
 -- Telescope picker for Claude actions  
@@ -176,6 +182,7 @@ local function claude_picker(args)
     local claude_actions = {
         { name = "Send Code Ref", desc = "Send file/line reference to Claude", func = claude_send_code_ref },
         { name = "Send Code Inline", desc = "Send actual code to Claude", func = claude_send_code_inline },
+        { name = "Copy Reference", desc = "Copy code reference to clipboard", func = function() claude_copy_reference() end },
         { name = "Explain Code", desc = "Ask Claude to explain selected code", func = claude_explain },
         { name = "Inline Test", desc = "Generate and run inline test for code", func = claude_inline_test },
     }
@@ -218,4 +225,5 @@ end
 
 vim.keymap.set({ 'n', 'v' }, '<leader>cl', claude_send_code_ref, { noremap = true, silent = true })
 vim.keymap.set({ 'n', 'v' }, '<leader>ci', claude_send_code_inline, { noremap = true, silent = true })
+vim.keymap.set({ 'n', 'v' }, '<leader>cy', claude_copy_reference, { noremap = true, silent = true, desc = "Copy code reference to clipboard" })
 vim.keymap.set({ 'n', 'v' }, '<leader>cc', claude_picker, { noremap = true, silent = true, desc = "Claude actions picker" })

@@ -2,6 +2,7 @@
 
 import subprocess
 import sys
+from murtaza.icons import Icons
 
 class MochaColors:
     background = '#1e1e2e'
@@ -42,23 +43,24 @@ def build_window_icon():
     """Build dynamic window icon string"""
     # Window name to icon mappings
     window_icons = {
-        "zsh": "",
-        "nvim": "",
-        "claude": "󰚩",
-        "docker": "󰡨",
-        "./run.sh": "",
-        "ssh": "󰢩",
-        "man": "",
-        "aws": "󰸏",
+        "zsh": Icons.ZSH,
+        "nvim": Icons.NVIM,
+        "claude": Icons.CLAUDE,
+        "opencode": Icons.OPENCODE,
+        "docker": Icons.DOCKER,
+        "./run.sh": Icons.SERVER,
+        "ssh": Icons.SSH,
+        "man": Icons.MAN,
+        "aws": Icons.AWS,
     }
 
     # Regex patterns
     regex_patterns = {
-        "python3?|uv|bay.*": "󰌠",
-        "btop|htop|top": "",
-        "git|gd|gcamp|gcmp|gcm|gcam|gs|gl": "󰊢",
+        "python3?|uv|bay.*": Icons.PYTHON,
+        "btop|htop|top": Icons.PROCESSOR,
+        "git|gd|gcamp|gcmp|gcm|gcam|gs|gl": Icons.GIT,
     }
-    
+
     # Build conditionals
     conditionals = []
     
@@ -114,10 +116,12 @@ def apply_theme():
     show_batt = '#(tmux-batt)'
     
     show_docker = '#[fg=6]#(docker-container-count)'
-    
+
+    show_claude_notifications = f'#[fg={colors.magenta}]#(claude-notification-count)'
+
     # Set status left and right
     status_left = f"{in_copy_mode}{in_prefix_mode}{in_view_mode}{session_and_dir}{show_gitmux} {cal_next}"
-    status_right = f"{show_docker} {show_time} {show_batt}"
+    status_right = f"{show_claude_notifications} {show_docker} {show_time} {show_batt}"
     
     set_('status-left', status_left)
     set_('status-right', status_right)

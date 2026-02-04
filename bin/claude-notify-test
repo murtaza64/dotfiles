@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Test claude-notify with fake hook data
+# Usage: claude-notify-test [idle|permission] [message] [tmux_target]
+
+type="${1:-idle}"
+message="${2:-This is a test notification message}"
+target="${3:-dotfiles:1.0}"
+
+if [[ "$type" == "permission" ]]; then
+    notification_type="permission_prompt"
+else
+    notification_type="idle_prompt"
+fi
+
+export CLAUDE_NOTIFY_TARGET="$target"
+cat <<EOF | claude-notify
+{
+  "notification_type": "$notification_type",
+  "message": "$message",
+  "cwd": "$HOME/dotfiles",
+  "session_id": "test-session-$(date +%s)"
+}
+EOF
+
+echo "Sent $type notification -> $target"

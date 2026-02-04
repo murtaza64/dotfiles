@@ -46,6 +46,11 @@ return {
           AlphaHeader = { fg = colors.lavender },
           AlphaDivider = { fg = colors.yellow },
           MsgArea = { link = 'Normal' },
+          BentoNormalCustom = { bg = colors.base },
+          CodeDiffLineInsert = { bg = "#1a2b1a" },  -- very dark green
+          CodeDiffLineDelete = { bg = "#2b1a1a" },  -- very dark red
+          CodeDiffCharInsert = { bg = "#264a26" },  -- muted green
+          CodeDiffCharDelete = { bg = "#4a2626" },  -- muted red
         }
       end,
       integrations = {

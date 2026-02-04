@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 
+source "$(dirname "$0")/icons"
+
 # Use walcolor if available, fallback to hardcoded colors
 if command -v walcolor >/dev/null 2>&1; then
   color1=$(walcolor 1 2>/dev/null)
   color2=$(walcolor 2 2>/dev/null)
-  
+
   if [[ -n "$color2" ]]; then
     ORANGE="#[fg=$color2]"
   else
     ORANGE='#[fg=3]'
   fi
-  
+
   if [[ -n "$color1" ]]; then
     MAGENTA="#[fg=$color1]"
   else
@@ -20,14 +22,45 @@ else
   ORANGE='#[fg=3]'
   MAGENTA='#[fg=5]'
 fi
+
 session=$(tmux display-message -p '#S' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 # get directory relative to ~
 dir=$(tmux display-message -p "#{pane_current_path}" \
   | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
   | sed -e "s|^$HOME/||")
 
+# Check if this is a worktree session (contains @)
+if [[ "$session" == *"@"* ]]; then
+  project="${session%%@*}"
+  branch="${session##*@}"
+  worktree_dir="worktrees/$project/$branch"
+  is_worktree=1
+  # Check if current git branch matches worktree name
+  git_branch=$(git -C "$HOME/$worktree_dir" branch --show-current 2>/dev/null)
+  if [[ "$git_branch" == "$branch" ]]; then
+    branch_matches=1
+  else
+    branch_matches=0
+  fi
+else
+  is_worktree=0
+fi
+
 if [ "$dir" == "$HOME" ]; then
-  echo " $MAGENTA$session$ORANGE  "
+  echo " $MAGENTA$session$ORANGE $ICON_HOME "
+elif [[ $is_worktree -eq 1 && "$dir" == "$worktree_dir" ]]; then
+  if [[ $branch_matches -eq 1 ]]; then
+    echo "$ORANGE$ICON_TREE$MAGENTA$project"
+  else
+    echo " $MAGENTA$project$ORANGE $ICON_TREE$MAGENTA$branch"
+  fi
+elif [[ $is_worktree -eq 1 && "$dir" == "$worktree_dir/"* ]]; then
+  relative_dir="${dir#$worktree_dir/}"
+  if [[ $branch_matches -eq 1 ]]; then
+    echo "$ORANGE$ICON_TREE$MAGENTA$project$ORANGE/$relative_dir"
+  else
+    echo "$ORANGE$ICON_TREE$MAGENTA$session$ORANGE/$relative_dir"
+  fi
 elif [ "$dir" != "$session" ]; then
   absolute_dir=$(realpath $HOME/$dir)
   if echo $absolute_dir | grep -q "^$HOME/$session/"; then
@@ -35,9 +68,9 @@ elif [ "$dir" != "$session" ]; then
     echo " $MAGENTA$session$ORANGE/$relative_dir"
   else
     if echo $absolute_dir | grep -q "^$HOME/"; then
-      echo " $MAGENTA$session$ORANGE   $dir"
+      echo " $MAGENTA$session$ORANGE $ICON_HOME  $dir"
     else
-      echo " $MAGENTA$session$ORANGE   $dir"
+      echo " $MAGENTA$session$ORANGE $ICON_FOLDER  $dir"
     fi
   fi
 else

@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+
+# Update all repos in ~/.cache/repos to latest master/main
+# Log output to ~/.cache/repos/.update-log
+
+REPOS_DIR="$HOME/.cache/repos"
+LOG_FILE="$REPOS_DIR/.update-log"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+# Create repos dir if it doesn't exist
+mkdir -p "$REPOS_DIR"
+
+# Start log file
+{
+    echo "======================================"
+    echo "Repo Cache Update: $TIMESTAMP"
+    echo "======================================"
+    echo ""
+} > "$LOG_FILE"
+
+FAILED_REPOS=()
+SUCCESS_COUNT=0
+TOTAL_COUNT=0
+
+# Update each repo
+for repo_path in "$REPOS_DIR"/*; do
+    # Skip if not a directory or if it's the log file
+    if [[ ! -d "$repo_path" ]] || [[ "$repo_path" == *"/.update-log" ]]; then
+        continue
+    fi
+    
+    repo_name=$(basename "$repo_path")
+    TOTAL_COUNT=$((TOTAL_COUNT + 1))
+    
+    echo "Updating: $repo_name" >> "$LOG_FILE"
+    
+    cd "$repo_path" || {
+        echo "  ❌ ERROR: Cannot cd to $repo_name" >> "$LOG_FILE"
+        FAILED_REPOS+=("$repo_name: cannot cd")
+        echo "" >> "$LOG_FILE"
+        continue
+    }
+    
+    # Detect default branch
+    DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+    if [[ -z "$DEFAULT_BRANCH" ]]; then
+        # Fallback: try to detect from remote
+        if git ls-remote --heads origin main 2>/dev/null | grep -q main; then
+            DEFAULT_BRANCH="main"
+        else
+            DEFAULT_BRANCH="master"
+        fi
+    fi
+    
+    # Try to reset to default branch
+    if ! git checkout "$DEFAULT_BRANCH" >> "$LOG_FILE" 2>&1; then
+        echo "  ❌ ERROR: Cannot checkout $DEFAULT_BRANCH" >> "$LOG_FILE"
+        FAILED_REPOS+=("$repo_name: checkout failed")
+        echo "" >> "$LOG_FILE"
+        continue
+    fi
+    
+    # Try to reset any local changes
+    if ! git reset --hard "origin/$DEFAULT_BRANCH" >> "$LOG_FILE" 2>&1; then
+        echo "  ⚠️  WARNING: Cannot reset to origin/$DEFAULT_BRANCH" >> "$LOG_FILE"
+        FAILED_REPOS+=("$repo_name: reset failed")
+    fi
+    
+    # Try to pull latest
+    if ! git pull >> "$LOG_FILE" 2>&1; then
+        echo "  ❌ ERROR: Cannot pull latest changes" >> "$LOG_FILE"
+        FAILED_REPOS+=("$repo_name: pull failed")
+        echo "" >> "$LOG_FILE"
+        continue
+    fi
+    
+    echo "  ✓ Updated successfully" >> "$LOG_FILE"
+    SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+    echo "" >> "$LOG_FILE"
+done
+
+# Summary
+{
+    echo "======================================"
+    echo "Summary"
+    echo "======================================"
+    echo "Total repos: $TOTAL_COUNT"
+    echo "Successfully updated: $SUCCESS_COUNT"
+    echo "Failed: ${#FAILED_REPOS[@]}"
+    echo ""
+    
+    if [[ ${#FAILED_REPOS[@]} -gt 0 ]]; then
+        echo "Failed repos:"
+        for failed in "${FAILED_REPOS[@]}"; do
+            echo "  - $failed"
+        done
+        echo ""
+    fi
+    
+    echo "Update completed at: $(date '+%Y-%m-%d %H:%M:%S')"
+} >> "$LOG_FILE"
+
+# Exit with error if any repos failed
+if [[ ${#FAILED_REPOS[@]} -gt 0 ]]; then
+    exit 1
+fi
+
+exit 0

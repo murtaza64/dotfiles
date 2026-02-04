@@ -81,6 +81,15 @@ local lighten_color = function(hex_color, amount)
   return rgb_to_hex(new_r, new_g, new_b)
 end
 
+local darken_color = function(hex_color, amount)
+  amount = amount or 0.1 -- default 10% darker
+  local r, g, b = hex_to_rgb(hex_color)
+  local h, s, l = rgb_to_hsl(r, g, b)
+  l = math.max(0.0, l * (1 - amount)) -- decrease lightness, floor at 0.0
+  local new_r, new_g, new_b = hsl_to_rgb(h, s, l)
+  return rgb_to_hex(new_r, new_g, new_b)
+end
+
 FALLBACK_COLORS = {
   -- catppuccin-mocha
   background = "#1e1e2e",
@@ -211,6 +220,7 @@ local function load_pywal_colors()
 
     -- UI
     CursorLine = { bg = colors.surface0 }, -- slightly lighter than background
+    BentoNormalCustom = { bg = colors.surface0 },
     FloatBorder = { fg = colors.color1 },
     LineNr = { fg = colors.surface2 },
     CursorLineNr = { fg = colors.color1 },
@@ -246,72 +256,78 @@ local function load_pywal_colors()
     DiagnosticHint = { fg = colors.cyan },
     DiagnosticOk = { fg = colors.green },
 
+    -- Indentation
+    Whitespace = { fg = colors.surface2 },
+    IblIndent = { fg = colors.surface2 },
+    IblWhitespace = { fg = colors.surface2 },
+    ["@ibl.indent.char.1"] = { fg = colors.surface2 },
+
 
     -- Syntax
     Comment = { fg = colors.surface4 }, -- just comments
     SpecialComment = { link = "Special" }, -- special things inside a comment
     Constant = { fg = colors.orange }, -- (preferred) any constant
-    String = { fg = colors.green }, -- a string constant: "this is a string"
-    Character = { fg = colors.blue }, --  a character constant: 'c', '\n'
+    String = { fg = colors.color2 }, -- a string constant: "this is a string"
+    Character = { fg = colors.color4 }, --  a character constant: 'c', '\n'
     Number = { fg = colors.orange }, --   a number constant: 234, 0xff
     Float = { link = "Number" }, --  a floating point constant: 2.3e10
     Boolean = { fg = colors.orange }, --  a boolean constant: TRUE, false
-    Identifier = { fg = colors.magenta }, -- (preferred) any variable name
-    Function = { fg = colors.blue }, -- function name (also: methods for classes)
-    Statement = { fg = colors.magenta }, -- (preferred) any statement
-    Conditional = { fg = colors.magenta }, --  if, then, else, endif, switch, etc.
-    Repeat = { fg = colors.magenta }, --   for, do, while, etc.
-    Label = { fg = colors.sapphire }, --  case, default, etc.
-    Operator = { fg = colors.sky }, -- "sizeof", "+", "*", etc.
-    Keyword = { fg = colors.red }, --  any other keyword
-    Exception = { fg = colors.magenta }, --  try, catch, throw
+    Identifier = { fg = colors.color5 }, -- (preferred) any variable name
+    Function = { fg = colors.color4 }, -- function name (also: methods for classes)
+    Statement = { fg = colors.color5 }, -- (preferred) any statement
+    Conditional = { fg = colors.color5 }, --  if, then, else, endif, switch, etc.
+    Repeat = { fg = colors.color5 }, --   for, do, while, etc.
+    Label = { fg = colors.color6 }, --  case, default, etc.
+    Operator = { fg = colors.color6 }, -- "sizeof", "+", "*", etc.
+    Keyword = { fg = colors.color1 }, --  any other keyword
+    Exception = { fg = colors.color5 }, --  try, catch, throw
 
-    PreProc = { fg = colors.red }, -- (preferred) generic Preprocessor
-    Include = { fg = colors.magenta }, --  preprocessor #include
+    PreProc = { fg = colors.color1 }, -- (preferred) generic Preprocessor
+    Include = { fg = colors.color5 }, --  preprocessor #include
     Define = { link = "PreProc" }, -- preprocessor #define
-    Macro = { fg = colors.magenta }, -- same as Define
+    Macro = { fg = colors.color5 }, -- same as Define
     PreCondit = { link = "PreProc" }, -- preprocessor #if, #else, #endif, etc.
 
-    StorageClass = { fg = colors.yellow }, -- static, register, volatile, etc.
-    Structure = { fg = colors.yellow }, --  struct, union, enum, etc.
-    Special = { fg = colors.red }, -- (preferred) any special symbol
-    Type = { fg = colors.yellow }, -- (preferred) int, long, char, etc.
+    StorageClass = { fg = colors.color3 }, -- static, register, volatile, etc.
+    Structure = { fg = colors.color3 }, --  struct, union, enum, etc.
+    Special = { fg = colors.color1 }, -- (preferred) any special symbol
+    Type = { fg = colors.color3 }, -- (preferred) int, long, char, etc.
     Typedef = { link = "Type" }, --  A typedef
     SpecialChar = { link = "Special" }, -- special character in a constant
-    Tag = { fg = colors.cyan }, -- you can use CTRL-] on this
+    Tag = { fg = colors.color6 }, -- you can use CTRL-] on this
     Delimiter = { fg = colors.surface4 }, -- character that needs attention
     Debug = { link = "Special" }, -- debugging statements
 
-    Error = { fg = colors.red },
+    Error = { fg = colors.color1 },
 
 
     -- Treesitter
-    ["@parameter"] = { fg = colors.red },
+    ["@parameter"] = { fg = colors.color1 },
 
     -- https://github.com/catppuccin/nvim/blob/30fa4d122d9b22ad8b2e0ab1b533c8c26c4dde86/lua/catppuccin/groups/integrations/treesitter.lua
     -- Reference: https://github.com/nvim-treesitter/nvim-treesitter/blob/master/CONTRIBUTING.md
     -- Identifiers
     ["@variable"] = { fg = colors.foreground }, -- Any variable name that does not have another highlight.
-    ["@variable.builtin"] = { fg = colors.red }, -- Variable names that are defined by the languages, like this or self.
-    ["@variable.parameter"] = { fg = colors.red }, -- For parameters of a function.
+    ["@variable.builtin"] = { fg = colors.color1 }, -- Variable names that are defined by the languages, like this or self.
+    ["@variable.parameter"] = { fg = colors.color1 }, -- For parameters of a function.
     ["@variable.member"] = { fg = colors.foreground }, -- For fields.
 
     ["@constant"] = { link = "Constant" }, -- For constants
     ["@constant.builtin"] = { fg = colors.orange }, -- For constant that are built in the language: nil in Lua.
     ["@constant.macro"] = { link = "Macro" }, -- For constants that are defined by macros: NULL in C.
 
-    ["@module"] = { fg = colors.yellow }, -- For identifiers referring to modules and namespaces.
+    ["@module"] = { fg = colors.color3 }, -- For identifiers referring to modules and namespaces.
     ["@label"] = { link = "Label" }, -- For labels: label: in C and :label: in Lua.
 
     -- Literals
     ["@string"] = { link = "String" }, -- For strings.
-    ["@string.documentation"] = { fg = colors.cyan }, -- For strings documenting code (e.g. Python docstrings).
-    ["@string.regexp"] = { fg = colors.magenta }, -- For regexes.
-    ["@string.escape"] = { fg = colors.magenta }, -- For escape characters within a string.
+    ["@string.documentation"] = { fg = colors.color6 }, -- For strings documenting code (e.g. Python docstrings).
+    ["@string.regexp"] = { fg = colors.color5 }, -- For regexes.
+    ["@string.escape"] = { fg = colors.color5 }, -- For escape characters within a string.
     ["@string.special"] = { link = "Special" }, -- other special strings (e.g. dates)
     ["@string.special.path"] = { link = "Special" }, -- filenames
-    ["@string.special.symbol"] = { fg = colors.magenta }, -- symbols or atoms
-    ["@string.special.url"] = { fg = colors.blue }, -- urls, links and emails
+    ["@string.special.symbol"] = { fg = colors.color5 }, -- symbols or atoms
+    ["@string.special.url"] = { fg = colors.color4 }, -- urls, links and emails
     ["@punctuation.delimiter.regex"] = { link = "@string.regexp" },
 
     ["@character"] = { link = "Character" }, -- character literals
@@ -323,7 +339,7 @@ local function load_pywal_colors()
 
     -- Types
     ["@type"] = { link = "Type" }, -- For types.
-    ["@type.builtin"] = { fg = colors.magenta }, -- For builtin types.
+    ["@type.builtin"] = { fg = colors.color5 }, -- For builtin types.
     ["@type.definition"] = { link = "Type" }, -- type definitions (e.g. `typedef` in C)
 
     ["@attribute"] = { link = "Constant" }, -- attribute annotations (e.g. Python decorators)
@@ -333,12 +349,12 @@ local function load_pywal_colors()
     ["@function"] = { link = "Function" }, -- For function (calls and definitions).
     ["@function.builtin"] = { fg = colors.orange }, -- For builtin functions: table.insert in Lua.
     ["@function.call"] = { link = "Function" }, -- function calls
-    ["@function.macro"] = { fg = colors.magenta }, -- For macro defined functions (calls and definitions): each macro_rules in Rust.
+    ["@function.macro"] = { fg = colors.color5 }, -- For macro defined functions (calls and definitions): each macro_rules in Rust.
 
     ["@function.method"] = { link = "Function" }, -- For method definitions.
     ["@function.method.call"] = { link = "Function" }, -- For method calls.
 
-    ["@constructor"] = { fg = colors.yellow }, -- For constructor calls and definitions: = { } in Lua, and Java constructors.
+    ["@constructor"] = { fg = colors.color3 }, -- For constructor calls and definitions: = { } in Lua, and Java constructors.
     ["@operator"] = { link = "Operator" }, -- For any operator: +, but also -> and * in C.
 
     -- Keywords
@@ -346,11 +362,11 @@ local function load_pywal_colors()
     ["@keyword.modifier"] = { link = "Keyword" }, -- For keywords modifying other constructs (e.g. `const`, `static`, `public`)
     ["@keyword.type"] = { link = "Keyword" }, -- For keywords describing composite types (e.g. `struct`, `enum`)
     ["@keyword.coroutine"] = { link = "Keyword" }, -- For keywords related to coroutines (e.g. `go` in Go, `async/await` in Python)
-    ["@keyword.function"] = { fg = colors.magenta }, -- For keywords used to define a function.
-    ["@keyword.operator"] = { fg = colors.magenta }, -- For new keyword operator
+    ["@keyword.function"] = { fg = colors.color5 }, -- For keywords used to define a function.
+    ["@keyword.operator"] = { fg = colors.color5 }, -- For new keyword operator
     ["@keyword.import"] = { link = "Include" }, -- For includes: #include in C, use or extern crate in Rust, or require in Lua.
     ["@keyword.repeat"] = { link = "Repeat" }, -- For keywords related to loops.
-    ["@keyword.return"] = { fg = colors.magenta },
+    ["@keyword.return"] = { fg = colors.color5 },
     ["@keyword.debug"] = { link = "Exception" }, -- For keywords related to debugging
     ["@keyword.exception"] = { link = "Exception" }, -- For exception related keywords.
 
@@ -360,7 +376,7 @@ local function load_pywal_colors()
     ["@keyword.directive"] = { link = "PreProc" }, -- various preprocessor directives & shebangs
     ["@keyword.directive.define"] = { link = "Define" }, -- preprocessor definition directives
     -- JS & derivative
-    ["@keyword.export"] = { fg = colors.magenta },
+    ["@keyword.export"] = { fg = colors.color5 },
 
     -- Punctuation
     ["@punctuation.delimiter"] = { link = "Delimiter" }, -- For delimiters (e.g. `;` / `.` / `,`).
@@ -371,43 +387,43 @@ local function load_pywal_colors()
     ["@comment"] = { link = "Comment" },
     ["@comment.documentation"] = { link = "Comment" }, -- For comments documenting code
 
-    ["@comment.error"] = { fg = colors.surface0, bg = colors.red },
-    ["@comment.warning"] = { fg = colors.surface0, bg = colors.yellow },
-    ["@comment.hint"] = { fg = colors.surface0, bg = colors.blue },
-    ["@comment.todo"] = { fg = colors.surface0, bg = colors.red },
-    ["@comment.note"] = { fg = colors.surface0, bg = colors.magenta },
+    ["@comment.error"] = { fg = colors.surface0, bg = colors.color1 },
+    ["@comment.warning"] = { fg = colors.surface0, bg = colors.color3 },
+    ["@comment.hint"] = { fg = colors.surface0, bg = colors.color4 },
+    ["@comment.todo"] = { fg = colors.surface0, bg = colors.color1 },
+    ["@comment.note"] = { fg = colors.surface0, bg = colors.color5 },
 
     -- Markup
     ["@markup"] = { fg = colors.foreground }, -- For strings considerated text in a markup language.
-    ["@markup.strong"] = { fg = colors.red }, -- bold
-    ["@markup.italic"] = { fg = colors.red }, -- italic
+    ["@markup.strong"] = { bold=true }, -- bold
+    ["@markup.italic"] = { italic=true }, -- italic
     ["@markup.strikethrough"] = { fg = colors.foreground }, -- strikethrough text
     ["@markup.underline"] = { link = "Underlined" }, -- underlined text
 
-    ["@markup.heading"] = { fg = colors.blue }, -- titles like: # Example
+    ["@markup.heading"] = { fg = colors.color4 }, -- titles like: # Example
     ["@markup.heading.markdown"] = {  }, -- bold headings in markdown, but not in HTML or other markup
 
-    ["@markup.math"] = { fg = colors.blue }, -- math environments (e.g. `$ ... $` in LaTeX)
-    ["@markup.quote"] = { fg = colors.magenta }, -- block quotes
-    ["@markup.environment"] = { fg = colors.magenta }, -- text environments of markup languages
-    ["@markup.environment.name"] = { fg = colors.blue }, -- text indicating the type of an environment
+    ["@markup.math"] = { fg = colors.color4 }, -- math environments (e.g. `$ ... $` in LaTeX)
+    ["@markup.quote"] = { fg = colors.color5 }, -- block quotes
+    ["@markup.environment"] = { fg = colors.color5 }, -- text environments of markup languages
+    ["@markup.environment.name"] = { fg = colors.color4 }, -- text indicating the type of an environment
 
-    ["@markup.link"] = { fg = colors.blue }, -- text references, footnotes, citations, etc.
-    ["@markup.link.label"] = { fg = colors.blue }, -- link, reference descriptions
-    ["@markup.link.url"] = { fg = colors.blue }, -- urls, links and emails
+    ["@markup.link"] = { fg = colors.color4 }, -- text references, footnotes, citations, etc.
+    ["@markup.link.label"] = { fg = colors.color4 }, -- link, reference descriptions
+    ["@markup.link.url"] = { fg = colors.color4 }, -- urls, links and emails
 
-    ["@markup.raw"] = { fg = colors.green }, -- used for inline code in markdown and for doc in python (""")
+    ["@markup.raw"] = { fg = colors.color2 }, -- used for inline code in markdown and for doc in python (""")
 
-    ["@markup.list"] = { fg = colors.blue },
-    ["@markup.list.checked"] = { fg = colors.green }, -- todo notes
+    ["@markup.list"] = { fg = colors.color4 },
+    ["@markup.list.checked"] = { fg = colors.color2 }, -- todo notes
     ["@markup.list.unchecked"] = { fg = colors.surface2 }, -- todo notes
 
 
     -- Tags
-    ["@tag"] = { fg = colors.cyan }, -- Tags like HTML tag names.
-    ["@tag.builtin"] = { fg = colors.cyan }, -- JSX tag names.
-    ["@tag.attribute"] = { fg = colors.yellow }, -- XML/HTML attributes (foo in foo="bar").
-    ["@tag.delimiter"] = { fg = colors.cyan }, -- Tag delimiter like < > /
+    ["@tag"] = { fg = colors.color6 }, -- Tags like HTML tag names.
+    ["@tag.builtin"] = { fg = colors.color6 }, -- JSX tag names.
+    ["@tag.attribute"] = { fg = colors.color3 }, -- XML/HTML attributes (foo in foo="bar").
+    ["@tag.delimiter"] = { fg = colors.color6 }, -- Tag delimiter like < > /
 
     -- Misc
     ["@error"] = { link = "Error" },
@@ -415,72 +431,98 @@ local function load_pywal_colors()
     -- Language specific:
 
     -- Bash
-    ["@function.builtin.bash"] = { fg = colors.red },
-    ["@variable.parameter.bash"] = { fg = colors.green },
+    ["@function.builtin.bash"] = { fg = colors.color1 },
+    ["@variable.parameter.bash"] = { fg = colors.color2 },
 
     -- markdown
-    ["@markup.heading.1.markdown"] = { link = "rainbow1" },
-    ["@markup.heading.2.markdown"] = { link = "rainbow2" },
-    ["@markup.heading.3.markdown"] = { link = "rainbow3" },
-    ["@markup.heading.4.markdown"] = { link = "rainbow4" },
-    ["@markup.heading.5.markdown"] = { link = "rainbow5" },
-    ["@markup.heading.6.markdown"] = { link = "rainbow6" },
+    ["@markup.heading.1.markdown"] = { fg = colors.color1, bold = true },
+    ["@markup.heading.2.markdown"] = { fg = colors.color2, bold = true },
+    ["@markup.heading.3.markdown"] = { fg = colors.color3, bold = true },
+    ["@markup.heading.4.markdown"] = { fg = colors.color4, bold = true },
+    ["@markup.heading.5.markdown"] = { fg = colors.color5, bold = true },
+    ["@markup.heading.6.markdown"] = { fg = colors.color6, bold = true },
+
+
+    RenderMarkdownH1 = { link = "rainbow1" },
+    RenderMarkdownH2 = { link = "rainbow2" },
+    RenderMarkdownH3 = { link = "rainbow3" },
+    RenderMarkdownH4 = { link = "rainbow4" },
+    RenderMarkdownH5 = { link = "rainbow5" },
+    RenderMarkdownH6 = { link = "rainbow6" },
+    
+
+    -- rainbow1 = { fg = colors.color1 },
+    -- rainbow2 = { fg = colors.color3 },
+    -- rainbow3 = { fg = colors.color2 },
+    -- rainbow6 = { fg = colors.color6 },
+    -- rainbow4 = { fg = colors.color4 },
+    -- rainbow5 = { fg = colors.color5 },
+
+    RenderMarkdownH1Bg = { bg = darken_color(colors.color1, 0.8) },
+    RenderMarkdownH2Bg = { bg = darken_color(colors.color3, 0.8) },
+    RenderMarkdownH3Bg = { bg = darken_color(colors.color2, 0.8) },
+    RenderMarkdownH4Bg = { bg = darken_color(colors.color4, 0.8) },
+    RenderMarkdownH5Bg = { bg = darken_color(colors.color5, 0.8) },
+    RenderMarkdownH6Bg = { bg = darken_color(colors.color6, 0.8) },
+
+    RenderMarkdownCode = { bg = colors.surface0 },
+    RenderMarkdownCodeInline = { bg = colors.surface1 },
 
     -- Java
     -- ["@constant.java"] = { fg = C.teal },
 
     -- CSS
-    ["@property.css"] = { fg = colors.blue },
-    ["@property.scss"] = { fg = colors.blue },
-    ["@property.id.css"] = { fg = colors.yellow },
-    ["@property.class.css"] = { fg = colors.yellow },
-    ["@type.css"] = { fg = colors.blue },
-    ["@type.tag.css"] = { fg = colors.cyan },
+    ["@property.css"] = { fg = colors.color4 },
+    ["@property.scss"] = { fg = colors.color4 },
+    ["@property.id.css"] = { fg = colors.color3 },
+    ["@property.class.css"] = { fg = colors.color3 },
+    ["@type.css"] = { fg = colors.color4 },
+    ["@type.tag.css"] = { fg = colors.color6 },
     ["@string.plain.css"] = { fg = colors.foreground },
     ["@number.css"] = { fg = colors.orange },
     ["@keyword.directive.css"] = { link = "Keyword" }, -- CSS at-rules: https://developer.mozilla.org/en-US/docs/Web/CSS/At-rule.
 
     -- HTML
-    ["@string.special.url.html"] = { fg = colors.green }, -- Links in href, src attributes.
+    ["@string.special.url.html"] = { fg = colors.color2 }, -- Links in href, src attributes.
     ["@markup.link.label.html"] = { fg = colors.foreground }, -- Text between <a></a> tags.
-    ["@character.special.html"] = { fg = colors.red }, -- Symbols such as &nbsp;.
+    ["@character.special.html"] = { fg = colors.color1 }, -- Symbols such as &nbsp;.
 
     -- TOML
-    ["@property.toml"] = { fg = colors.blue }, -- For fields.
+    ["@property.toml"] = { fg = colors.color4 }, -- For fields.
 
     -- JSON
-    ["@property.json"] = { fg = colors.blue }, -- For fields.
+    ["@property.json"] = { fg = colors.color4 }, -- For fields.
 
     -- Lua
     ["@constructor.lua"] = { link = "@punctuation.bracket" }, -- For constructor calls and definitions: = { } in Lua.
 
     -- Python
-    ["@constructor.python"] = { fg = colors.cyan }, -- __init__(), __new__().
+    ["@constructor.python"] = { fg = colors.color6 }, -- __init__(), __new__().
 
     -- YAML
-    ["@property.yaml"] = { fg = colors.blue }, -- For fields.
-    ["@label.yaml"] = { fg = colors.yellow }, -- Anchor and alias names.
+    ["@property.yaml"] = { fg = colors.color4 }, -- For fields.
+    ["@label.yaml"] = { fg = colors.color3 }, -- Anchor and alias names.
 
     -- Nix
-    ["@variable.member.nix"] = { fg = colors.blue }, -- For fields.
-    ["@lsp.type.property.nix"] = { fg = colors.blue }, -- Also for fields, from LSP.
+    ["@variable.member.nix"] = { fg = colors.color4 }, -- For fields.
+    ["@lsp.type.property.nix"] = { fg = colors.color4 }, -- Also for fields, from LSP.
 
     -- Ruby
-    ["@string.special.symbol.ruby"] = { fg = colors.red },
+    ["@string.special.symbol.ruby"] = { fg = colors.color1 },
 
     -- PHP
     ["@function.method.php"] = { link = "Function" },
     ["@function.method.call.php"] = { link = "Function" },
 
     -- C/CPP
-    ["@keyword.import.c"] = { fg = colors.yellow },
-    ["@keyword.import.cpp"] = { fg = colors.yellow },
+    ["@keyword.import.c"] = { fg = colors.color3 },
+    ["@keyword.import.cpp"] = { fg = colors.color3 },
 
     -- C#
-    ["@attribute.c_sharp"] = { fg = colors.yellow },
+    ["@attribute.c_sharp"] = { fg = colors.color3 },
 
     -- gitcommit
-    ["@comment.warning.gitcommit"] = { fg = colors.yellow },
+    ["@comment.warning.gitcommit"] = { fg = colors.color3 },
 
     -- gitignore
     ["@string.special.path.gitignore"] = { fg = colors.foreground },
@@ -488,25 +530,25 @@ local function load_pywal_colors()
     -- Misc
     -- gitcommitSummary = { fg = C.rosewater },
 
-    rainbow1 = { fg = colors.red },
-    rainbow2 = { fg = colors.yellow },
-    rainbow3 = { fg = colors.green },
-    rainbow6 = { fg = colors.cyan },
-    rainbow4 = { fg = colors.blue },
-    rainbow5 = { fg = colors.magenta },
+    rainbow1 = { fg = colors.color1 },
+    rainbow2 = { fg = colors.color2 },
+    rainbow3 = { fg = colors.color3 },
+    rainbow4 = { fg = colors.color4 },
+    rainbow5 = { fg = colors.color5 },
+    rainbow6 = { fg = colors.color6 },
 
-    RainbowDelimiterRed = { fg = colors.red },
+    RainbowDelimiterRed = { fg = colors.color1 },
     RainbowDelimiterOrange = { fg = colors.orange },
-    RainbowDelimiterYellow = { fg = colors.yellow },
-    RainbowDelimiterGreen = { fg = colors.green },
-    RainbowDelimiterBlue = { fg = colors.blue },
-    RainbowDelimiterCyan = { fg = colors.cyan },
-    RainbowDelimiterViolet = { fg = colors.magenta },
+    RainbowDelimiterYellow = { fg = colors.color3 },
+    RainbowDelimiterGreen = { fg = colors.color2 },
+    RainbowDelimiterBlue = { fg = colors.color4 },
+    RainbowDelimiterCyan = { fg = colors.color6 },
+    RainbowDelimiterViolet = { fg = colors.color5 },
 
-    AlphaButtonLabel = { fg = colors.green, bold = true },
+    AlphaButtonLabel = { fg = colors.color2, bold = true },
     AlphaButtonSides = { fg = colors.surface2 },
-    AlphaHeader = { fg = colors.red },
-    AlphaDivider = { fg = colors.yellow },
+    AlphaHeader = { fg = colors.color1 },
+    AlphaDivider = { fg = colors.color3 },
 
   }
 

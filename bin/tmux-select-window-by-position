@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Select tmux window by position (1-9) rather than by index
+
+position=$1
+
+if [[ -z "$position" ]]; then
+    exit 1
+fi
+
+# Get the window index at the specified position
+window_index=$(tmux list-windows -F '#I' | sed -n "${position}p")
+
+if [[ -n "$window_index" ]]; then
+    tmux select-window -t "$window_index"
+fi

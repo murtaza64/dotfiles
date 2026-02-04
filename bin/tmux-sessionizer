@@ -1,44 +1,203 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
 import os
 import subprocess as sp
 import sys
 from pathlib import Path
+from murtaza.icons import Icons
+
+
+MRU_CACHE = Path.home() / '.cache' / 'tmux-sessionizer-mru'
+
+
+def read_mru():
+    """Read MRU list from cache file."""
+    if MRU_CACHE.exists():
+        lines = MRU_CACHE.read_text().strip().split('\n')
+        return [l for l in lines if l]
+    return []
+
+
+def update_mru(session_name):
+    """Update MRU cache with session at top."""
+    mru = read_mru()
+    if session_name in mru:
+        mru.remove(session_name)
+    mru.insert(0, session_name)
+    mru = mru[:100]
+    MRU_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    MRU_CACHE.write_text('\n'.join(mru))
+
+
+def sort_by_mru(sessions):
+    """Sort sessions by MRU order, unknown sessions at end."""
+    mru = read_mru()
+    mru_order = {name: i for i, name in enumerate(mru)}
+    return sorted(sessions, key=lambda s: mru_order.get(s, float('inf')))
+
+
+# ANSI color codes
+GREEN = "\033[32m"
+RESET = "\033[0m"
+
+def get_session_name(path, home):
+    """Generate tmux session name from path."""
+    if 'worktrees' in path.parts:
+        # ~/worktrees/project/feature -> project@feature
+        idx = path.parts.index('worktrees')
+        project = path.parts[idx + 1]
+        worktree = path.name
+        return f"{project}@{worktree}".replace('.', '_')
+    else:
+        return path.name.replace('.', '_')
+
+
+def create_session(selected_path, home):
+    """Create a new tmux session for the given path."""
+    session_name = get_session_name(selected_path, home)
+
+    # Create new session
+    result = sp.run(['tmux', 'new-session', '-ds', session_name, '-c', str(selected_path), '-P'],
+                           capture_output=True, text=True)
+    new_session = result.stdout.strip()
+
+    # Send escape and 'n' to first window to open neovim
+    sp.run(['tmux', 'send-keys', '-t', new_session, 'Escape', 'n'])
+
+    # Create opencode window
+    result = sp.run(['tmux', 'new-window', '-dt', new_session, '-c', str(selected_path), '-P'],
+                           capture_output=True, text=True)
+    opencode_window = result.stdout.strip()
+    sp.run(['tmux', 'send-keys', '-t', opencode_window, 'opencode', 'Enter'])
+
+    # Create third window
+    sp.run(['tmux', 'new-window', '-dt', new_session, '-c', str(selected_path)])
+
+    # Switch to the new session
+    sp.run(['tmux', 'switch-client', '-t', session_name])
+    update_mru(session_name)
+
 
 def main():
-    # Set FZF options
+    home = Path.home()
+    worktrees_only = None
+
+    # Parse arguments
+    args = sys.argv[1:]
+    if args and args[0] == '--worktrees':
+        if len(args) < 2:
+            print("--worktrees requires a project name", file=sys.stderr)
+            sys.exit(1)
+        worktrees_only = args[1]
+        args = args[2:]
+
+    # If a path is provided as argument, skip fzf and use it directly
+    if args:
+        selected_path = Path(args[0]).expanduser().resolve()
+        if not selected_path.is_dir():
+            print(f"No such directory: {selected_path}", file=sys.stderr)
+            sys.exit(1)
+        session_name = get_session_name(selected_path, home)
+        # Check if session already exists - just switch to it
+        result = sp.run(['tmux', 'has-session', '-t', session_name],
+                        capture_output=True)
+        if result.returncode == 0:
+            sp.run(['tmux', 'switch-client', '-t', session_name])
+        else:
+            create_session(selected_path, home)
+        update_mru(session_name)
+        sys.exit(0)
+
+    # Set FZF options (use tab delimiter, display from column 2, enable ANSI colors)
     os.environ['FZF_DEFAULT_OPTS'] = (
         " --prompt='  ' --pointer=' ' "
         "--color=spinner:#f5e0dc,gutter:-1,bg+:-1,hl:red,hl+:red "
         "--color=header:#f38ba8,info:magenta,fg+:yellow,pointer:yellow "
         "--color=marker:#f5e0dc,prompt:magenta,query:magenta "
-        "--info inline-right"
+        "--info inline-right "
+        "--ansi "
+        "-d '\t' --with-nth=2.."
     )
 
-    # Get all directories in home directory
-    home = Path.home()
-    dirs = [d for d in home.iterdir() if d.is_dir()]
-    
     # Get existing tmux sessions
     try:
-        result = sp.run(['tmux', 'list-sessions', '-F', '#{session_name}'], 
+        result = sp.run(['tmux', 'list-sessions', '-F', '#{session_name}'],
                                capture_output=True, text=True, check=True)
         sessions = result.stdout.strip().split('\n') if result.stdout.strip() else []
     except sp.CalledProcessError:
         sessions = []
-    
-    # Filter out directories that already have sessions
-    session_basenames = {Path(session).name for session in sessions if session}
-    available_dirs = [d for d in dirs if d.name not in session_basenames]
-    
-    # Filter out directories without git repos
-    git_dirs = [d for d in available_dirs if (d / '.git').is_dir()]
-    
-    # Convert paths to strings with ~ notation
-    git_dir_strs = [str(d).replace(str(home), '~') for d in git_dirs]
-    
+
+    # Get all directories in home directory with .git directories or .sessionizer marker
+    dirs = [d for d in home.iterdir() if d.is_dir()]
+    git_dirs = [d for d in dirs if (d / '.git').is_dir()]
+    session_dirs = [d for d in dirs if (d / '.sessionizer').exists() and d not in git_dirs]
+
+    # Get worktrees from ~/worktrees/
+    worktrees_dir = home / 'worktrees'
+    worktrees = []
+    if worktrees_dir.is_dir():
+        for project_dir in worktrees_dir.iterdir():
+            if project_dir.is_dir():
+                for wt in project_dir.iterdir():
+                    # Worktrees have a .git FILE, not directory
+                    if wt.is_dir() and (wt / '.git').is_file():
+                        worktrees.append(wt)
+
+    # Filter out directories/worktrees that already have sessions
+    existing_session_names = set(sessions)
+    available_dirs = [d for d in git_dirs if get_session_name(d, home) not in existing_session_names]
+    available_session_dirs = [d for d in session_dirs if get_session_name(d, home) not in existing_session_names]
+    available_worktrees = [wt for wt in worktrees if get_session_name(wt, home) not in existing_session_names]
+
+    # Create lookup maps for session type
+    git_session_names = {get_session_name(d, home) for d in git_dirs}
+    session_dir_names = {get_session_name(d, home) for d in session_dirs}
+
+    # Format: value\tdisplay (fzf shows column 2+, returns full line)
+    def format_session(s):
+        if '@' in s:
+            return f"{s}\t{GREEN}{Icons.TREE}{RESET}  {s}"
+        elif s in git_session_names:
+            return f"{s}\t{GREEN}{Icons.GIT}{RESET}  {s}"
+        elif s in session_dir_names:
+            return f"{s}\t{GREEN}{Icons.SERVER}{RESET}  {s}"
+        else:
+            return f"{s}\t{GREEN}{Icons.TERMINAL}{RESET}  {s}"
+
+    def format_worktree(wt):
+        path_str = str(wt).replace(str(home), '~')
+        project = wt.parent.name
+        branch = wt.name
+        return f"{path_str}\t{Icons.NEWTAB} {Icons.TREE}  {project}@{branch}"
+
+    def format_repo(d):
+        path_str = str(d).replace(str(home), '~')
+        return f"{path_str}\t{Icons.GIT}  {d.name}"
+
+    def format_session_dir(d):
+        path_str = str(d).replace(str(home), '~')
+        return f"{path_str}\t{Icons.SERVER}  {d.name}"
+
+    # Sort sessions by MRU
+    sessions = sort_by_mru(sessions)
+
+    # Filter by project if --worktrees flag is set
+    if worktrees_only:
+        # Show main session + worktree sessions and available worktrees for this project
+        session_strs = [format_session(s) for s in sessions
+                        if s == worktrees_only or s.startswith(f"{worktrees_only}@")]
+        git_dir_strs = []
+        session_dir_strs = []
+        worktree_strs = [format_worktree(wt) for wt in available_worktrees
+                         if wt.parent.name == worktrees_only]
+    else:
+        session_strs = [format_session(s) for s in sessions]
+        git_dir_strs = [format_repo(d) for d in available_dirs]
+        session_dir_strs = [format_session_dir(d) for d in available_session_dirs]
+        worktree_strs = [format_worktree(wt) for wt in available_worktrees]
+
     # Combine sessions and directories for fzf
-    choices = sessions + git_dir_strs
+    choices = session_strs + git_dir_strs + session_dir_strs + worktree_strs
     
     if not choices:
         sys.exit(0)
@@ -56,40 +215,24 @@ def main():
     
     if not selected:
         sys.exit(0)
-    
+
+    # Extract value (first column before tab)
+    selected = selected.split('\t')[0]
+
     # If selected is an existing session, switch to it
     if selected in sessions:
         sp.run(['tmux', 'switch-client', '-t', selected])
+        update_mru(selected)
         sys.exit(0)
     
     # Create new session from directory
     selected_path = Path(selected.replace('~', str(home)))
-    
+
     if not selected_path.is_dir():
         print(f"No such directory: {selected_path}", file=sys.stderr)
         sys.exit(1)
-    
-    session_name = selected_path.name.replace('.', '_')
-    
-    # Create new session
-    result = sp.run(['tmux', 'new-session', '-ds', session_name, '-c', str(selected_path), '-P'],
-                           capture_output=True, text=True)
-    new_session = result.stdout.strip()
-    
-    # Send escape and 'n' to first window to open neovim
-    sp.run(['tmux', 'send-keys', '-t', new_session, 'Escape', 'n'])
-    
-    # Create claude window
-    result = sp.run(['tmux', 'new-window', '-dt', new_session, '-c', str(selected_path), '-P'],
-                           capture_output=True, text=True)
-    claude_window = result.stdout.strip()
-    sp.run(['tmux', 'send-keys', '-t', claude_window, 'claude', 'Enter'])
-    
-    # Create third window
-    sp.run(['tmux', 'new-window', '-dt', new_session, '-c', str(selected_path)])
-    
-    # Switch to the new session
-    sp.run(['tmux', 'switch-client', '-t', session_name])
+
+    create_session(selected_path, home)
 
 if __name__ == '__main__':
     main()

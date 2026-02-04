@@ -1,6 +1,9 @@
 # ZSH_ROOT=~/.config/zsh
 # This should be set in .zshenv
 
+# Gum spinner color
+export GUM_SPIN_SPINNER_FOREGROUND=5
+
 # move prompt to bottom (skip when in SSH)
 [[ -z "$SSH_CONNECTION" ]] && printf '\n%.0s' {1..100}
 

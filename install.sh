@@ -19,5 +19,11 @@ done
 ln -s $HOME/.config/tmux/tmux.conf $HOME/.tmux.conf
 ln -s $HOME/.cache/wal $DOTFILES_ROOT/walcache
 
+# OpenCode config symlinks
+mkdir -p $HOME/.config/opencode
+ln -sf $DOTFILES_ROOT/opencode/opencode.jsonc $HOME/.config/opencode/opencode.jsonc
+ln -sf $DOTFILES_ROOT/opencode/opencode-mem.jsonc $HOME/.config/opencode/opencode-mem.jsonc
+ln -sf $DOTFILES_ROOT/opencode/AGENTS.md $HOME/.config/opencode/AGENTS.md
+
 echo "install the following packages:"
 echo "git tmux neovim ripgrep fd delta fzf gitmux eza gh"

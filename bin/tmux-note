@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+NOTES_DIR="$HOME/.local/share/notes"
+SESSION=$(tmux display-message -p '#S')
+GLOBAL_NOTE="$NOTES_DIR/scratchpad.md"
+SESSION_NOTE="$NOTES_DIR/sessions/${SESSION}.md"
+
+mkdir -p "$NOTES_DIR/sessions"
+
+# Initialize global note if needed
+if [[ ! -f "$GLOBAL_NOTE" ]]; then
+    echo -e "# global notes\n\n" > "$GLOBAL_NOTE"
+fi
+
+# Initialize session note if needed
+if [[ ! -f "$SESSION_NOTE" ]]; then
+    echo -e "# $SESSION Notes\n\n" > "$SESSION_NOTE"
+fi
+
+if [[ "$1" == "--session" ]]; then
+    NOTE_FILE="$SESSION_NOTE"
+else
+    NOTE_FILE="$GLOBAL_NOTE"
+fi
+
+export NOTES_GLOBAL="$GLOBAL_NOTE"
+export NOTES_SESSION="$SESSION_NOTE"
+
+nvim +"lua local function s() local o={buffer=true,silent=true} vim.keymap.set('n','q',':wq<CR>',o) vim.keymap.set('n','<C-c>',':q!<CR>',o) vim.keymap.set('n','<Tab>',function() vim.cmd('w') local f=vim.fn.expand('%:p'):match('sessions') and vim.env.NOTES_GLOBAL or vim.env.NOTES_SESSION vim.cmd('e '..f) vim.cmd('normal G') s() end,o) end s() vim.cmd('normal G')" "$NOTE_FILE"

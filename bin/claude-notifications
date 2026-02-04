@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+"""
+Claude notifications picker - view and jump to Claude sessions with pending notifications.
+"""
+
+import json
+import os
+import subprocess as sp
+import sys
+from datetime import datetime
+from pathlib import Path
+
+NOTIFICATIONS_FILE = Path.home() / '.cache' / 'claude-notifications.json'
+
+
+def read_notifications():
+    """Read existing notifications from file."""
+    if NOTIFICATIONS_FILE.exists():
+        try:
+            return json.loads(NOTIFICATIONS_FILE.read_text())
+        except (json.JSONDecodeError, IOError):
+            return []
+    return []
+
+
+def write_notifications(notifications):
+    """Write notifications to file."""
+    NOTIFICATIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    NOTIFICATIONS_FILE.write_text(json.dumps(notifications, indent=2))
+
+
+def time_ago(timestamp_str):
+    """Convert ISO timestamp to human-readable time ago."""
+    try:
+        ts = datetime.fromisoformat(timestamp_str)
+        delta = datetime.now() - ts
+        seconds = delta.total_seconds()
+
+        if seconds < 60:
+            return 'now'
+        elif seconds < 3600:
+            mins = int(seconds / 60)
+            return f'{mins}m'
+        elif seconds < 86400:
+            hours = int(seconds / 3600)
+            return f'{hours}h'
+        else:
+            days = int(seconds / 86400)
+            return f'{days}d'
+    except (ValueError, TypeError):
+        return '?'
+
+
+def format_notification(n, idx):
+    """Format notification for fzf display."""
+    cwd = n.get('cwd', '?').replace(str(Path.home()), '~')
+    # Get just the last directory component for compactness
+    cwd_short = Path(n.get('cwd', '')).name or cwd
+    message = n.get('message', 'No message')[:60]
+    age = time_ago(n.get('timestamp'))
+    notification_type = n.get('type', 'idle_prompt')
+    tmux_target = n.get('tmux_target', '')
+    tmux_part = tmux_target.split(".")[0] if tmux_target else cwd_short 
+
+    # Different icons for different types
+    if notification_type == 'permission_prompt':
+        icon = ''  # lock icon for permissions
+    else:
+        icon = ''  # claude icon for idle
+
+    # Format: id\ticon cwd_short | message | age
+    return f"{idx}\t{icon}  {tmux_part}  {message}  {age}"
+
+
+def jump_to_notification(notification, notifications, idx):
+    """Jump to a notification and remove it from the list."""
+    tmux_target = notification.get('tmux_target')
+
+    # Remove notification from list (auto-dismiss)
+    notifications.pop(idx)
+    write_notifications(notifications)
+
+    # Switch to tmux target
+    if tmux_target:
+        sp.run(['tmux', 'switch-client', '-t', tmux_target])
+    else:
+        print(f"No tmux target for notification", file=sys.stderr)
+
+
+def main():
+    notifications = read_notifications()
+
+    if not notifications:
+        print("No Claude notifications")
+        sys.exit(0)
+
+    # If only one notification, go directly without fzf
+    if len(notifications) == 1:
+        jump_to_notification(notifications[0], notifications, 0)
+        sys.exit(0)
+
+    # Set FZF options
+    os.environ['FZF_DEFAULT_OPTS'] = (
+        " --prompt='󰚩 ' --pointer=' ' "
+        "--color=spinner:#f5e0dc,gutter:-1,bg+:-1,hl:magenta,hl+:magenta "
+        "--color=header:#cba6f7,info:magenta,fg+:yellow,pointer:yellow "
+        "--color=marker:#f5e0dc,prompt:magenta,query:magenta "
+        "--info inline-right "
+        "-d '\t' --with-nth=2.."
+    )
+
+    # Format notifications for fzf (most recent first)
+    choices = [format_notification(n, i) for i, n in enumerate(notifications)]
+    choices.reverse()  # Most recent at top
+
+    # Run fzf
+    try:
+        fzf_input = '\n'.join(choices)
+        result = sp.run(['fzf'], input=fzf_input, text=True, capture_output=True)
+        if result.returncode != 0:
+            sys.exit(0)
+        selected = result.stdout.strip()
+    except FileNotFoundError:
+        print("fzf not found", file=sys.stderr)
+        sys.exit(1)
+
+    if not selected:
+        sys.exit(0)
+
+    # Extract index from selection and jump
+    idx = int(selected.split('\t')[0])
+    jump_to_notification(notifications[idx], notifications, idx)
+
+
+if __name__ == '__main__':
+    main()

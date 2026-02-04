@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Save current directory
+ORIGINAL_DIR="$PWD"
+
+# Parse arguments
+REPO_URL=""
+FILE_PATH=""
+LINE_NUM=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --file)
+            FILE_PATH="$2"
+            shift 2
+            ;;
+        --line)
+            LINE_NUM="$2"
+            shift 2
+            ;;
+        *)
+            REPO_URL="$1"
+            shift
+            ;;
+    esac
+done
+
+if [[ -z "$REPO_URL" ]]; then
+    echo "Usage: codejump <repo-url> [--file <path>] [--line <number>]"
+    echo "Example: codejump github.com/duolingo/my-repo --file src/main.py --line 42"
+    exit 1
+fi
+
+# Extract repo name from URL
+# Handles: github.com/duolingo/repo, duolingo/repo, or just repo
+REPO_NAME=$(echo "$REPO_URL" | sed -E 's#.*github\.com/duolingo/##' | sed -E 's#^duolingo/##' | sed -E 's#\.git$##')
+
+REPOS_DIR="$HOME/.cache/repos"
+REPO_PATH="$REPOS_DIR/$REPO_NAME"
+
+# Clone if doesn't exist
+if [[ ! -d "$REPO_PATH" ]]; then
+    echo "Repository not found locally. Cloning..."
+    mkdir -p "$REPOS_DIR"
+    git clone "https://github.com/duolingo/$REPO_NAME.git" "$REPO_PATH"
+fi
+
+cd "$REPO_PATH"
+
+# Detect default branch (main or master)
+DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+if [[ -z "$DEFAULT_BRANCH" ]]; then
+    # Fallback: try to detect from remote
+    if git ls-remote --heads origin main | grep -q main; then
+        DEFAULT_BRANCH="main"
+    else
+        DEFAULT_BRANCH="master"
+    fi
+fi
+
+# Checkout default branch
+CHECKOUT_FAILED=0
+git checkout "$DEFAULT_BRANCH" 2>/dev/null || {
+    echo "Warning: Could not checkout $DEFAULT_BRANCH"
+    CHECKOUT_FAILED=1
+}
+
+# Try to pull
+PULL_FAILED=0
+PULL_OUTPUT=$(git pull 2>&1)
+PULL_EXIT=$?
+if [[ $PULL_EXIT -ne 0 ]]; then
+    PULL_FAILED=1
+fi
+
+# If checkout or pull failed, show warning and confirm
+if [[ $CHECKOUT_FAILED -eq 1 ]] || [[ $PULL_FAILED -eq 1 ]]; then
+    echo ""
+    echo "⚠️  Warning: Could not checkout/pull latest changes."
+    echo "   This may be due to uncommitted changes or merge conflicts."
+    echo "   Continuing with current state..."
+    echo ""
+    
+    if command -v gum &> /dev/null; then
+        gum confirm "Continue?" || exit 1
+    else
+        read -p "Continue? (y/n) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    fi
+fi
+
+# Open neovim in readonly mode
+if [[ -n "$FILE_PATH" ]]; then
+    if [[ -n "$LINE_NUM" ]]; then
+        nvim -R "+$LINE_NUM" "+normal! zz" "$FILE_PATH"
+    else
+        nvim -R "$FILE_PATH"
+    fi
+else
+    nvim -R .
+fi
+
+# Return to original directory
+cd "$ORIGINAL_DIR"

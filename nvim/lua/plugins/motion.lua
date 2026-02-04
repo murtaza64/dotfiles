@@ -1,6 +1,6 @@
 return {
   {
-    'ggandor/leap.nvim',
+    'https://codeberg.org/andyg/leap.nvim',
     lazy = false,
     config = function()
       require('leap').setup({

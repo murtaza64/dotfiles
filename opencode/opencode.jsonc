@@ -1,0 +1,87 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "pywal",
+  "formatter": false,
+  "default_agent": "normal",
+  "permission": {
+    "edit": {
+      "*": "ask",
+      "/tmp/*": "allow"
+    }
+  },
+  "agent": {
+    "build": {
+      "disable": true
+    },
+    "normal": {
+      "name": "normal",
+      "description": "Standard agent that asks permission for edits and commands",
+      "mode": "primary",
+      "permission": {
+        "edit": "ask",
+        "write": "ask",
+        "bash": {
+          "*": "ask",
+          "ls *": "allow",
+          "find *": "allow",
+          "cat *": "allow",
+          "wc *": "allow",
+          "head *": "allow",
+          "tail *": "allow",
+          "grep *": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git branch*": "allow",
+          "git remote*": "allow",
+          "pwd": "allow",
+          "echo *": "allow",
+          "date*": "allow",
+          "which *": "allow",
+          "whoami": "allow"
+        }
+      }
+    },
+    "yolo": {
+      "name": "yolo",
+      "description": "Agent with full permissions, no asking",
+      "mode": "primary",
+      "permission": {
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    }
+  },
+  "keybinds": {
+    "app_exit": "ctrl+d",
+    "session_list": "ctrl+s",
+  },
+  "plugin": [
+    // "@tarquinen/opencode-dcp@latest"
+  ],
+  "instructions": [
+    "~/.claude/claude-murtaza-preferences.txt"
+  ],
+  "mcp": {
+    "github": {
+      "enabled": true,
+      "type": "local",
+      "command": [
+        "docker",
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "-e",
+        "GITHUB_TOOLSETS",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "environment": {
+        "GITHUB_TOOLSETS": "repos,pull_requests,users"
+      },
+    },
+  },
+}

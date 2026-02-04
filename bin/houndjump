@@ -1,0 +1,271 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+# Colors
+CYAN='\033[36m'
+MAGENTA='\033[35m'
+GREEN='\033[32m'
+RED='\033[31m'
+YELLOW='\033[33m'
+BOLD='\033[1m'
+RESET='\033[0m'
+GREY='\033[90m'
+
+# Show usage if no arguments
+if [[ $# -eq 0 ]]; then
+    echo "Usage: houndjump [duo hound options] <query> [file-pattern]"
+    echo "Example: houndjump -i 'hello_world'"
+    echo "Example: houndjump 'def process' '\.py$'"
+    exit 1
+fi
+
+# Check and display repo cache update log if it exists
+REPOS_DIR="$HOME/.cache/repos"
+LOG_FILE="$REPOS_DIR/.update-log"
+if [[ -f "$LOG_FILE" ]]; then
+    # Check if there were any failures in the last update
+    if grep -q "❌\|⚠️" "$LOG_FILE" 2>/dev/null; then
+        echo -e "${YELLOW}⚠️  Warning: Some repos failed to update in the last sync${RESET}" >&2
+        echo -e "${GREY}Run 'cat $LOG_FILE' for details${RESET}" >&2
+        echo "" >&2
+    fi
+fi
+
+# Check if duo command is available
+if ! command -v duo &> /dev/null; then
+    echo "Error: 'duo' command not found" >&2
+    exit 1
+fi
+
+# Check if fzf is available
+if ! command -v fzf &> /dev/null; then
+    echo "Error: 'fzf' command not found" >&2
+    exit 1
+fi
+
+# Run duo hound with --plain flag and 10 lines of context, capture output
+if command -v gum &> /dev/null; then
+    HOUND_OUTPUT=$(gum spin --spinner="dot" --title="Searching..." -- duo hound --plain -C 10 "$@")
+    HOUND_EXIT=$?
+else
+    HOUND_OUTPUT=$(duo hound --plain -C 10 "$@")
+    HOUND_EXIT=$?
+fi
+
+# Check if hound failed
+if [[ $HOUND_EXIT -ne 0 ]]; then
+    echo "$HOUND_OUTPUT" >&2
+    exit $HOUND_EXIT
+fi
+
+# Extract only the result lines (exclude the summary line at the end)
+# Format: repo/path/to/file.py:42:content
+# The summary line starts with "Found" and goes to stderr, but we filter to be safe
+RESULTS=$(echo "$HOUND_OUTPUT" | grep -E '^[^:]+:[0-9]+:' || true)
+
+if [[ -z "$RESULTS" ]]; then
+    echo "No results found" >&2
+    exit 0
+fi
+
+# Extract search pattern from arguments for highlighting (first non-flag argument)
+SEARCH_PATTERN=""
+for arg in "$@"; do
+    if [[ ! "$arg" =~ ^- ]]; then
+        SEARCH_PATTERN="$arg"
+        break
+    fi
+done
+
+# Format results for fzf with colors
+# Input format: repo/path/to/file.py:42:matching line content
+# Output format: [repo] path/to/file:42 matching line content (with colors)
+format_line() {
+    local line="$1"
+    local pattern="$2"
+    
+    # Parse the line: repo/file:linenum:content
+    local repo_file="${line%%:*}"
+    local rest="${line#*:}"
+    local linenum="${rest%%:*}"
+    local content="${rest#*:}"
+    
+    # Split repo and file path
+    local repo="${repo_file%%/*}"
+    local filepath="${repo_file#*/}"
+    
+    # Skip highlighting in the list view - too slow with perl/sed
+    # The pattern will be highlighted in the preview window by awk
+    
+    # Format: [repo] file:line content
+    echo -e "${CYAN}[${repo}]${RESET} ${MAGENTA}${filepath}${RESET}:${GREEN}${linenum}${RESET} ${content}"
+}
+
+# Format all results
+FORMATTED_RESULTS=""
+while IFS= read -r line; do
+    formatted=$(format_line "$line" "$SEARCH_PATTERN")
+    FORMATTED_RESULTS="${FORMATTED_RESULTS}${formatted}\n"
+done <<< "$RESULTS"
+
+# Calculate terminal height and preview window size
+TERMINAL_HEIGHT=$(tput lines)
+PREVIEW_PERCENT=60
+PREVIEW_HEIGHT=$((TERMINAL_HEIGHT * PREVIEW_PERCENT / 100))
+# Calculate context lines: half of preview height minus ~3 lines for borders/padding
+CONTEXT_LINES=$((PREVIEW_HEIGHT / 2 - 3))
+if [[ $CONTEXT_LINES -lt 2 ]]; then
+    CONTEXT_LINES=2
+fi
+
+# Write hound output to temporary file for safe preview access
+HOUND_OUTPUT_FILE=$(mktemp)
+echo "$HOUND_OUTPUT" > "$HOUND_OUTPUT_FILE"
+
+# Create preview script as a temporary file to avoid shell injection
+PREVIEW_SCRIPT=$(mktemp)
+trap "rm -f $PREVIEW_SCRIPT $HOUND_OUTPUT_FILE" EXIT
+
+cat > "$PREVIEW_SCRIPT" << 'PREVIEW_EOF'
+#!/usr/bin/env bash
+line="$1"
+hound_file="$2"
+search_pattern="$3"
+
+# ANSI colors
+CYAN='\033[36m'
+GREEN='\033[32m'
+GREY='\033[90m'
+RED='\033[31m'
+BOLD='\033[1m'
+RESET='\033[0m'
+
+# Extract repo from [repo] format
+repo=$(echo "$line" | sed -n 's/^\[\([^]]*\)\].*/\1/p')
+# Extract file path and line number
+rest=$(echo "$line" | sed 's/^\[[^]]*\] //')
+filepath=$(echo "$rest" | cut -d: -f1)
+target_linenum=$(echo "$rest" | cut -d: -f2 | cut -d' ' -f1)
+
+# Show header: <bold>repo</bold> path/to/file.ext
+echo -e "${BOLD}${CYAN}${repo}${RESET} ${filepath}"
+
+# Construct local file path
+local_file="$HOME/.cache/repos/$repo/$filepath"
+
+# Calculate line range for context (dynamically based on preview height)
+CONTEXT=CONTEXT_PLACEHOLDER
+start=$((target_linenum - CONTEXT))
+end=$((target_linenum + CONTEXT))
+if [[ $start -lt 1 ]]; then
+    start=1
+fi
+
+# Try to use bat for syntax highlighting if file exists
+if [[ -f "$local_file" ]] && command -v bat &> /dev/null; then
+    bat --color=always \
+        --style=numbers,grid \
+        --highlight-line "$target_linenum" \
+        --line-range "$start:$end" \
+        "$local_file" 2>/dev/null
+else
+    # Fallback: show plaintext context from hound output
+    # Strategy: Find the exact match line, then show 10 lines before and 10 after from hound output
+    grep -E "^$repo/$filepath:[0-9]+" "$hound_file" | \
+    awk -v target="$target_linenum" -v pattern="$search_pattern" \
+        -v green="${GREEN}" -v grey="${GREY}" -v red="${RED}" -v bold="${BOLD}" -v reset="${RESET}" '
+    {
+        # Parse: repo/filepath:linenum:content or repo/filepath:linenum-content
+        # Find the second colon position (after repo/filepath:)
+        colon_pos = index($0, ":")
+        if (colon_pos > 0) {
+            rest = substr($0, colon_pos + 1)
+            
+            # Extract line number (digits at start)
+            linenum = 0
+            for (i = 1; i <= length(rest); i++) {
+                c = substr(rest, i, 1)
+                if (c ~ /[0-9]/) {
+                    linenum = linenum * 10 + int(c)
+                } else {
+                    separator = c
+                    content = substr(rest, i + 1)
+                    break
+                }
+            }
+            
+            if (linenum > 0) {
+                # Store the line
+                lines[linenum] = content
+                line_seps[linenum] = separator
+                
+                # Track if this is the target match line
+                if (linenum == target && separator == ":") {
+                    found_target = 1
+                }
+            }
+        }
+    }
+    END {
+        if (!found_target) {
+            print "Match not found in hound output"
+            exit
+        }
+        
+        # Show 10 lines before and after target
+        for (i = target - 10; i <= target + 10; i++) {
+            if (i in lines) {
+                content = lines[i]
+                separator = line_seps[i]
+                
+                # Highlight search pattern in match lines (case-insensitive)
+                if (pattern != "" && separator == ":") {
+                    IGNORECASE = 1
+                    gsub(pattern, red bold "&" reset, content)
+                    IGNORECASE = 0
+                }
+                
+                # Color line numbers: green for match, grey for context
+                if (separator == ":") {
+                    printf "%s%s%s%s%s\n", green, i, reset, separator, content
+                } else {
+                    printf "%s%s%s%s%s\n", grey, i, reset, separator, content
+                }
+            }
+        }
+    }
+    '
+fi
+PREVIEW_EOF
+
+# Replace the context placeholder with actual value
+sed -i '' "s/CONTEXT_PLACEHOLDER/$CONTEXT_LINES/" "$PREVIEW_SCRIPT"
+
+chmod +x "$PREVIEW_SCRIPT"
+
+# Run fzf with formatted results
+SELECTED=$(echo -e "$FORMATTED_RESULTS" | fzf \
+    --ansi \
+    --preview="$PREVIEW_SCRIPT {} $HOUND_OUTPUT_FILE '$SEARCH_PATTERN'" \
+    --preview-window="up:60%:wrap" \
+    --delimiter=':' \
+    --prompt="/$SEARCH_PATTERN/ " \
+    --height=100% \
+    --bind="enter:accept")
+
+# Exit if nothing selected
+if [[ -z "$SELECTED" ]]; then
+    exit 0
+fi
+
+# Parse selection to extract repo, file, line
+# Format: [repo] path/to/file:42 content...
+REPO=$(echo "$SELECTED" | sed -n 's/^\[\([^]]*\)\].*/\1/p')
+REST=$(echo "$SELECTED" | sed 's/^\[[^]]*\] //')
+FILEPATH=$(echo "$REST" | cut -d: -f1)
+LINENUM=$(echo "$REST" | cut -d: -f2 | cut -d' ' -f1)
+
+# Execute codejump
+echo "Opening $REPO/$FILEPATH:$LINENUM"
+codejump "github.com/duolingo/$REPO" --file "$FILEPATH" --line "$LINENUM"
