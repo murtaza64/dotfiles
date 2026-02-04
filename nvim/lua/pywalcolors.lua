@@ -119,7 +119,7 @@ FALLBACK_COLORS = {
   surface3 = "#6c7086",
   surface4 = "#7f849c",
   surface5 = "#9399b2",
-  
+
   color0 = "#1e1e2e", -- black
   color1 = "#f38ba8", -- red
   color2 = "#a6e3a1", -- green
@@ -244,7 +244,7 @@ local function load_pywal_colors()
     TelescopeSelection = { fg = colors.magenta, bg = colors.surface0, bold = true },
     TelescopeMatching = { fg = colors.blue },
     TelescopePromptPrefix = { fg = colors.color1 },
-    
+
     -- Diagnostics
     DiagnosticSignError = { fg = colors.red },
     DiagnosticSignWarn = { fg = colors.yellow },
@@ -468,7 +468,7 @@ local function load_pywal_colors()
     RenderMarkdownH4 = { link = "rainbow4" },
     RenderMarkdownH5 = { link = "rainbow5" },
     RenderMarkdownH6 = { link = "rainbow6" },
-    
+
 
     -- rainbow1 = { fg = colors.color1 },
     -- rainbow2 = { fg = colors.color3 },
@@ -576,7 +576,7 @@ local function load_pywal_colors()
     -- print(vim.inspect(hl))
     vim.api.nvim_set_hl(0, group, hl)
   end
-  
+
   vim.notify("Pywal colors loaded successfully", vim.log.levels.INFO)
 end
 
@@ -588,7 +588,7 @@ end
 local auto_reload_pywal_colors = function()
   local colors_file = os.getenv("HOME") .. "/.cache/wal/colors.properties"
   local last_mtime = 0
-  
+
   local function check_and_reload()
     local stat = vim.uv.fs_stat(colors_file)
     if stat and stat.mtime.sec > last_mtime then
@@ -596,17 +596,17 @@ local auto_reload_pywal_colors = function()
       reload_pywal_colors()
     end
   end
-  
+
   -- Initial check to set baseline mtime
   local stat = vim.uv.fs_stat(colors_file)
   if stat then
     last_mtime = stat.mtime.sec
   end
-  
+
   -- Create timer that checks every 3 seconds
   local timer = vim.uv.new_timer()
   timer:start(0, 3000, vim.schedule_wrap(check_and_reload))
-  
+
   return timer
 end
 
